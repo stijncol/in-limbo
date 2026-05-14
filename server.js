@@ -1,6 +1,5 @@
 const express = require('express');
-const initSqlJs = require('sql.js');
-const fs = require('fs');
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
@@ -8,26 +7,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const DB_PATH = path.join(__dirname, 'videos.db');
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://in_limbo_db_user:R81k6JoQsAzzZNEBxU4Yetqzik6MowsV@dpg-d832nvbrjlhs73817e00-a/in_limbo_db';
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'limbo2026';
 const STUDENT_USER = 'student';
 const STUDENT_PASS = 'inlimbo';
 
-let db;
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: DATABASE_URL.includes('render.com') ? { rejectUnauthorized: false } : false
+});
 
 // --- Init DB ---
 async function initDB() {
-  const SQL = await initSqlJs();
-  if (fs.existsSync(DB_PATH)) {
-    const buf = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(buf);
-  } else {
-    db = new SQL.Database();
-  }
-
-  db.run(`CREATE TABLE IF NOT EXISTS videos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+  await pool.query(`CREATE TABLE IF NOT EXISTS videos (
+    id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     students TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -38,33 +32,13 @@ async function initDB() {
     archived INTEGER DEFAULT 0,
     sort_order INTEGER DEFAULT 0,
     status TEXT DEFAULT 'approved',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMP DEFAULT NOW()
   )`);
-
-  // Add status column if missing (existing DBs)
-  try { db.run(`ALTER TABLE videos ADD COLUMN status TEXT DEFAULT 'approved'`); } catch(e) {}
-
-  saveDB();
 }
 
-function saveDB() {
-  const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
-}
-
-function getVideos() {
-  return db.exec(`SELECT * FROM videos ORDER BY sort_order ASC, id DESC`);
-}
-
-function getVideoRows() {
-  const result = getVideos();
-  if (!result.length) return [];
-  const cols = result[0].columns;
-  return result[0].values.map(row => {
-    const obj = {};
-    cols.forEach((c, i) => obj[c] = row[i]);
-    return obj;
-  });
+async function getVideoRows() {
+  const result = await pool.query('SELECT * FROM videos ORDER BY sort_order ASC, id DESC');
+  return result.rows;
 }
 
 // --- Basic Auth middleware ---
@@ -99,70 +73,62 @@ function requireStudent(req, res, next) {
 }
 
 // --- API ---
-app.get('/api/videos', (req, res) => {
-  res.json(getVideoRows());
+app.get('/api/videos', async (req, res) => {
+  res.json(await getVideoRows());
 });
 
-app.post('/api/videos', requireAuth, (req, res) => {
+app.post('/api/videos', requireAuth, async (req, res) => {
   const { title, students, description, vimeo_link, year, tags, featured, archived, sort_order } = req.body;
-  // Extract vimeo ID from link
   const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
   const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
-
-  db.run(`INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  await pool.query(
+    `INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [title, students, description, vimeo_id, parseInt(year), tags || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
-  saveDB();
   res.json({ ok: true });
 });
 
-app.put('/api/videos/:id', requireAuth, (req, res) => {
+app.put('/api/videos/:id', requireAuth, async (req, res) => {
   const { title, students, description, vimeo_link, year, tags, featured, archived, sort_order } = req.body;
   const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
   const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
-
-  db.run(`UPDATE videos SET title=?, students=?, description=?, vimeo_id=?, year=?, tags=?, featured=?, archived=?, sort_order=? WHERE id=?`,
+  await pool.query(
+    `UPDATE videos SET title=$1, students=$2, description=$3, vimeo_id=$4, year=$5, tags=$6, featured=$7, archived=$8, sort_order=$9 WHERE id=$10`,
     [title, students, description, vimeo_id, parseInt(year), tags || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
-  saveDB();
   res.json({ ok: true });
 });
 
-app.delete('/api/videos/:id', requireAuth, (req, res) => {
-  db.run(`DELETE FROM videos WHERE id=?`, [req.params.id]);
-  saveDB();
+app.delete('/api/videos/:id', requireAuth, async (req, res) => {
+  await pool.query('DELETE FROM videos WHERE id=$1', [req.params.id]);
   res.json({ ok: true });
 });
 
 // Student submit — always pending
-app.post('/api/submit', requireStudent, (req, res) => {
+app.post('/api/submit', requireStudent, async (req, res) => {
   const { title, students, description, vimeo_link, year, tags } = req.body;
   const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
   const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
-  db.run(`INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order, status)
-          VALUES (?, ?, ?, ?, ?, ?, 0, 0, 999, 'pending')`,
+  await pool.query(
+    `INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,0,0,999,'pending')`,
     [title, students, description, vimeo_id, parseInt(year), tags || '']);
-  saveDB();
   res.json({ ok: true });
 });
 
 // Admin approve/reject
-app.put('/api/videos/:id/approve', requireAuth, (req, res) => {
+app.put('/api/videos/:id/approve', requireAuth, async (req, res) => {
   const { featured, archived } = req.body;
-  db.run(`UPDATE videos SET status='approved', featured=?, archived=? WHERE id=?`,
-    [featured ? 1 : 0, archived ? 1 : 0, req.params.id]);
-  saveDB();
+  await pool.query('UPDATE videos SET status=$1, featured=$2, archived=$3 WHERE id=$4',
+    ['approved', featured ? 1 : 0, archived ? 1 : 0, req.params.id]);
   res.json({ ok: true });
 });
 
-app.put('/api/videos/:id/reject', requireAuth, (req, res) => {
-  db.run(`UPDATE videos SET status='rejected' WHERE id=?`, [req.params.id]);
-  saveDB();
+app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
+  await pool.query('UPDATE videos SET status=$1 WHERE id=$2', ['rejected', req.params.id]);
   res.json({ ok: true });
 });
 
 // --- Public frontend ---
-app.get('/', (req, res) => {
-  const allVideos = getVideoRows().filter(v => v.status === 'approved' || !v.status);
+app.get('/', async (req, res) => {
+  const allVideos = (await getVideoRows()).filter(v => v.status === 'approved' || !v.status);
   const featured = allVideos.filter(v => v.featured && !v.archived);
   const archive = allVideos.filter(v => v.archived || !v.featured);
 
@@ -1090,8 +1056,8 @@ app.get('/submit', requireStudent, (req, res) => {
 });
 
 // --- Admin panel ---
-app.get('/user', requireAuth, (req, res) => {
-  const videos = getVideoRows();
+app.get('/user', requireAuth, async (req, res) => {
+  const videos = await getVideoRows();
 
   function esc(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1502,12 +1468,11 @@ app.get('/user', requireAuth, (req, res) => {
 });
 
 // --- Start ---
+const PORT = process.env.PORT || 3000;
 initDB().then(() => {
-  app.listen(3000, () => {
-    console.log('in limbo running at http://localhost:3000');
-    console.log('admin panel at http://localhost:3000/user');
-    console.log('student submit at http://localhost:3000/submit');
-    console.log('admin: admin / limbo2026');
-    console.log('student: student / inlimbo');
+  app.listen(PORT, () => {
+    console.log('in limbo running at http://localhost:' + PORT);
+    console.log('admin panel at /user');
+    console.log('student submit at /submit');
   });
 });
