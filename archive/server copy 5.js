@@ -671,13 +671,8 @@ ${archiveCards}
 
     function dither(noiseX, noiseY, noiseRadius) {
       const d = new Float32Array(gray);
-      // Add noise
-      if (noiseRadius === -1) {
-        // Full thumbnail shimmer
-        for (let i = 0; i < d.length; i++) {
-          d[i] += (Math.random() - 0.5) * 25;
-        }
-      } else if (noiseRadius > 0) {
+      // Add noise near cursor
+      if (noiseRadius > 0) {
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             const dist = Math.sqrt((x - noiseX)**2 + (y - noiseY)**2);
@@ -722,24 +717,20 @@ ${archiveCards}
     canvas.style.imageRendering = 'pixelated';
     thumb.appendChild(canvas);
 
-    // Shimmer on hover — whole thumbnail
-    let shimmerActive = false;
+    // Shimmer on mousemove
     let shimmerFrame = null;
-
-    function shimmerLoop() {
-      if (!shimmerActive) return;
-      dither(0, 0, -1); // -1 = full noise
-      shimmerFrame = requestAnimationFrame(shimmerLoop);
-    }
-
-    thumb.addEventListener('mouseenter', () => {
-      shimmerActive = true;
-      shimmerLoop();
+    thumb.addEventListener('mousemove', (e) => {
+      if (shimmerFrame) return; // throttle
+      shimmerFrame = requestAnimationFrame(() => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = ((e.clientX - rect.left) / rect.width) * w;
+        const my = ((e.clientY - rect.top) / rect.height) * h;
+        dither(mx, my, 80);
+        shimmerFrame = null;
+      });
     });
 
     thumb.addEventListener('mouseleave', () => {
-      shimmerActive = false;
-      if (shimmerFrame) cancelAnimationFrame(shimmerFrame);
       dither(0, 0, 0); // reset to clean
     });
   }
