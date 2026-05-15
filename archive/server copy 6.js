@@ -675,7 +675,7 @@ ${archiveCards}
       if (noiseRadius === -1) {
         // Full thumbnail shimmer
         for (let i = 0; i < d.length; i++) {
-          d[i] += (Math.random() - 0.5) * 20;
+          d[i] += (Math.random() - 0.5) * 25;
         }
       } else if (noiseRadius > 0) {
         for (let y = 0; y < h; y++) {
@@ -728,10 +728,8 @@ ${archiveCards}
 
     function shimmerLoop() {
       if (!shimmerActive) return;
-      dither(0, 0, -1);
-      setTimeout(() => {
-        shimmerFrame = requestAnimationFrame(shimmerLoop);
-      }, 120);
+      dither(0, 0, -1); // -1 = full noise
+      shimmerFrame = requestAnimationFrame(shimmerLoop);
     }
 
     thumb.addEventListener('mouseenter', () => {
