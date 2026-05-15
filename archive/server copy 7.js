@@ -501,7 +501,7 @@ app.get('/', async (req, res) => {
   }
   .lightbox .lb-read-more:hover { color: rgba(255,255,255,0.8); }
   .lightbox .lb-desc-wrap {
-    width: 100%;
+    max-width: 420px;
     text-align: left;
     overflow: hidden;
     max-height: 0;
@@ -509,7 +509,7 @@ app.get('/', async (req, res) => {
     margin-top: 0;
   }
   .lightbox .lb-desc-wrap.open {
-    max-height: 400px;
+    max-height: 300px;
     margin-top: 12px;
   }
   .lightbox .lb-desc-wrap p {
@@ -517,9 +517,6 @@ app.get('/', async (req, res) => {
     font-size: 13px;
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
-    column-count: 2;
-    column-gap: 32px;
-    column-rule: none;
   }
   .lightbox .lb-close {
     position: absolute;
