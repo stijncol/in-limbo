@@ -509,7 +509,7 @@ app.get('/', async (req, res) => {
     margin-top: 0;
   }
   .lightbox .lb-desc-wrap.open {
-    max-height: 500px;
+    max-height: 400px;
     margin-top: 12px;
   }
   .lightbox .lb-desc-wrap p {
@@ -517,11 +517,10 @@ app.get('/', async (req, res) => {
     font-size: 13px;
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
-    column-count: 2;
     column-gap: 32px;
-    column-fill: auto;
-    height: auto;
-    max-height: 200px;
+  }
+  .lightbox .lb-desc-wrap p.two-col {
+    column-count: 2;
   }
   .lightbox .lb-close {
     position: absolute;
@@ -789,6 +788,7 @@ ${archiveCards}
       lbAuthors.textContent = card.dataset.authors || '';
       lbYear.textContent = card.dataset.year || '';
       lbDesc.textContent = card.dataset.desc || '';
+      lbDesc.classList.toggle('two-col', (card.dataset.desc || '').split(/\s+/).length > 40);
       lbDescWrap.classList.remove('open');
       lbReadMore.textContent = 'read synopsis ↓';
       lightbox.classList.add('open');
