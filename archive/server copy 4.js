@@ -651,9 +651,11 @@ ${archiveCards}
     const canvasRatio = w / h;
     let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
     if (imgRatio > canvasRatio) {
+      // Image is wider: crop sides
       sw = img.naturalHeight * canvasRatio;
       sx = (img.naturalWidth - sw) / 2;
     } else {
+      // Image is taller: crop top/bottom
       sh = img.naturalWidth / canvasRatio;
       sy = (img.naturalHeight - sh) / 2;
     }
@@ -662,77 +664,41 @@ ${archiveCards}
     // Get dominant color before converting
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // Store original grayscale for re-dithering
-    const origData = ctx.getImageData(0, 0, w, h);
-    const gray = new Float32Array(w * h);
-    for (let i = 0; i < origData.data.length; i += 4) {
-      gray[i/4] = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const d = imageData.data;
+
+    // Convert to grayscale
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+      d[i] = gray; d[i+1] = gray; d[i+2] = gray;
     }
 
-    function dither(noiseX, noiseY, noiseRadius) {
-      const d = new Float32Array(gray);
-      // Add noise near cursor
-      if (noiseRadius > 0) {
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            const dist = Math.sqrt((x - noiseX)**2 + (y - noiseY)**2);
-            if (dist < noiseRadius) {
-              const strength = (1 - dist / noiseRadius) * 40;
-              d[y * w + x] += (Math.random() - 0.5) * strength;
-            }
-          }
-        }
+    // Floyd-Steinberg dither
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        const old = d[i];
+        const nw = old > 120 ? 255 : 0;
+        d[i] = nw; d[i+1] = nw; d[i+2] = nw;
+        const err = old - nw;
+        if (x + 1 < w) d[(y*w+x+1)*4] += err * 7/16;
+        if (y + 1 < h && x > 0) d[((y+1)*w+x-1)*4] += err * 3/16;
+        if (y + 1 < h) d[((y+1)*w+x)*4] += err * 5/16;
+        if (y + 1 < h && x + 1 < w) d[((y+1)*w+x+1)*4] += err * 1/16;
       }
-
-      // Floyd-Steinberg
-      const out = new Uint8Array(w * h);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const i = y * w + x;
-          const old = d[i];
-          const nw = old > 120 ? 255 : 0;
-          out[i] = nw;
-          const err = old - nw;
-          if (x + 1 < w) d[i+1] += err * 7/16;
-          if (y + 1 < h && x > 0) d[i+w-1] += err * 3/16;
-          if (y + 1 < h) d[i+w] += err * 5/16;
-          if (y + 1 < h && x + 1 < w) d[i+w+1] += err * 1/16;
-        }
-      }
-
-      // Apply to canvas
-      const imageData = ctx.createImageData(w, h);
-      for (let i = 0; i < out.length; i++) {
-        const v = out[i] / 255;
-        imageData.data[i*4]   = Math.round(v * cr);
-        imageData.data[i*4+1] = Math.round(v * cg);
-        imageData.data[i*4+2] = Math.round(v * cb);
-        imageData.data[i*4+3] = 255;
-      }
-      ctx.putImageData(imageData, 0, 0);
     }
 
-    // Initial render
-    dither(0, 0, 0);
+    // Apply dominant color: black stays black, white becomes the tint color
+    for (let i = 0; i < d.length; i += 4) {
+      const v = d[i] / 255; // 0 = black, 1 = white
+      d[i]   = Math.round(v * cr);         // R
+      d[i+1] = Math.round(v * cg);         // G
+      d[i+2] = Math.round(v * cb);         // B
+    }
+
+    ctx.putImageData(imageData, 0, 0);
     canvas.style.imageRendering = 'pixelated';
     thumb.appendChild(canvas);
-
-    // Shimmer on mousemove
-    let shimmerFrame = null;
-    thumb.addEventListener('mousemove', (e) => {
-      if (shimmerFrame) return; // throttle
-      shimmerFrame = requestAnimationFrame(() => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = ((e.clientX - rect.left) / rect.width) * w;
-        const my = ((e.clientY - rect.top) / rect.height) * h;
-        dither(mx, my, 80);
-        shimmerFrame = null;
-      });
-    });
-
-    thumb.addEventListener('mouseleave', () => {
-      dither(0, 0, 0); // reset to clean
-    });
   }
 
   document.querySelectorAll('.card[data-vimeo]').forEach(card => {
