@@ -514,14 +514,14 @@ app.get('/', async (req, res) => {
   }
   .lightbox .lb-desc-wrap p {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
     column-count: 2;
     column-gap: 32px;
     column-fill: auto;
     height: auto;
-    max-height: 120px;
+    max-height: 200px;
   }
   .lightbox .lb-close {
     position: absolute;
