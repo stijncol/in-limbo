@@ -514,11 +514,11 @@ app.get('/', async (req, res) => {
   }
   .lightbox .lb-desc-wrap p {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
     color: rgba(255,255,255,0.55);
     column-count: 2;
-    column-gap: 32px;
+    column-gap: 28px;
     column-rule: none;
   }
   .lightbox .lb-close {
