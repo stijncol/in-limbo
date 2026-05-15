@@ -518,7 +518,7 @@ app.get('/', async (req, res) => {
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
     column-count: 2;
-    column-gap: 32px;
+    column-gap: 20px;
     column-fill: auto;
     height: auto;
     max-height: 120px;
