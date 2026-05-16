@@ -371,14 +371,18 @@ app.get('/', async (req, res) => {
   .card .meta {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     padding: 6px 0 2px;
     gap: 12px;
+    height: 28px;
+    overflow: hidden;
   }
   .card .tags {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 6px;
+    overflow: hidden;
+    min-width: 0;
   }
   .card .tags span {
     font-size: 11px;
@@ -386,6 +390,8 @@ app.get('/', async (req, res) => {
     color: #999;
     cursor: pointer;
     transition: color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .card .tags span:hover { color: #111; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
