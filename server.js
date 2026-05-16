@@ -377,8 +377,11 @@ app.get('/', async (req, res) => {
   }
   .card .tags {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 6px;
+    overflow: hidden;
+    max-width: 65%;
+    position: relative;
   }
   .card .tags span {
     font-size: 11px;
@@ -386,6 +389,8 @@ app.get('/', async (req, res) => {
     color: #999;
     cursor: pointer;
     transition: color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .card .tags span:hover { color: #111; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
@@ -619,7 +624,7 @@ app.get('/', async (req, res) => {
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory and the studio Positioneren 2: Stelling-Strategie. The archive includes works produced from 2021 to the present.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio <em>Positioneren 2: Stelling–Strategie</em>. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including Frame, Il n'y a pas de hors-architecture, The Gaze, and most recently (2026), In Limbo.</p>
       </div>
     </div>
@@ -824,6 +829,26 @@ ${archiveCards}
           img.alt = data.title || '';
         })
         .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
+    }
+  });
+
+  // Tag overflow: add +N when tags don't fit in one line
+  document.querySelectorAll('.card .tags').forEach(container => {
+    const tags = container.querySelectorAll('span');
+    if (tags.length === 0) return;
+    const containerRight = container.getBoundingClientRect().right;
+    let hiddenCount = 0;
+    tags.forEach(tag => {
+      if (tag.getBoundingClientRect().right > containerRight + 2) {
+        hiddenCount++;
+      }
+    });
+    if (hiddenCount > 0) {
+      const more = document.createElement('span');
+      more.textContent = '+' + hiddenCount;
+      more.style.cssText = 'opacity:0.5;font-size:10px;cursor:default;';
+      more.removeAttribute('data-tag');
+      container.appendChild(more);
     }
   });
 
