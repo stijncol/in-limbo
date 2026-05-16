@@ -220,6 +220,15 @@ app.get('/', async (req, res) => {
     gap: 10px;
     align-items: center;
   }
+  .filters-label {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: #aaa;
+    text-transform: lowercase;
+    margin-right: 4px;
+    white-space: nowrap;
+  }
   .filters-medium button {
     border-style: dashed;
   }
@@ -231,9 +240,9 @@ app.get('/', async (req, res) => {
   .filters.show-all .filters-extra { display: flex; }
   .filters button {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     letter-spacing: 0.02em;
-    padding: 8px 18px;
+    padding: 6px 15px;
     border: 1px solid #ccc;
     border-radius: 100px;
     background: transparent;
@@ -586,6 +595,7 @@ app.get('/', async (req, res) => {
 <div class="page">
   <div class="filters" id="filters">
     <div class="filters-row" id="filters-row">
+      <span class="filters-label">theme</span>
       <button class="active" data-filter="all">all</button>
       ${themeButtons}
       <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
@@ -595,6 +605,7 @@ app.get('/', async (req, res) => {
       </div>
     </div>
     <div class="filters-row filters-medium" style="margin-top:-2px;">
+      <span class="filters-label">medium</span>
       ${mediumButtons}
     </div>
     <div class="filters-extra" id="filters-extra"></div>
