@@ -212,13 +212,13 @@ app.get('/', async (req, res) => {
   .page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 48px 40px 120px;
+    padding: 40px 40px 120px;
   }
   .filters {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
   }
   .filters-row {
     display: flex;
@@ -598,23 +598,22 @@ app.get('/', async (req, res) => {
     padding: 80px 40px 40px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     gap: 40px;
   }
   .site-footer .footer-text {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 11px;
-    line-height: 1.6;
-    color: #bbb;
-    max-width: 500px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #aaa;
   }
   .site-footer .footer-logos {
     flex-shrink: 0;
   }
   .site-footer .footer-logos img {
-    height: 50px;
+    height: 90px;
     width: auto;
-    opacity: 0.6;
+    opacity: 0.5;
   }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 900px) {
