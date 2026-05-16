@@ -164,17 +164,17 @@ app.get('/', async (req, res) => {
     const mediumSpans = tm.map(t => `<span data-tag="${t}" class="tag-medium">${t}</span>`).join('\n            ');
     const videoId = v.video_id || v.vimeo_id;
     const videoType = v.video_type || 'vimeo';
-    return \`
-    <div class="card" data-featured="\${isFeatured}" data-tags="\${allTags.join(',')}" data-video-id="\${videoId}" data-video-type="\${videoType}" data-title="\${esc(v.title)}" data-authors="\${esc(v.students)}" data-year="\${v.year}" data-desc="\${esc(v.description)}">
+    return `
+    <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="thumb"><img alt=""></div>
       <div class="meta">
         <div class="tags">
-            \${themeSpans}
-            \${mediumSpans}
+            ${themeSpans}
+            ${mediumSpans}
         </div>
-        <div class="card-right"><div class="card-title">\${esc(v.title)}</div><span class="card-year" data-year="\${v.year}">\${v.year}</span></div>
+        <div class="card-right"><div class="card-title">${esc(v.title)}</div><span class="card-year" data-year="${v.year}">${v.year}</span></div>
       </div>
-    </div>\`;
+    </div>`;
   }
 
   function esc(s) {
