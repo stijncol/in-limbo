@@ -1041,6 +1041,8 @@ ${archiveCards}
       applyFilter(link.dataset.year, 'year');
       // Keep intro visible when filtering from text
       if (introBlock) introBlock.style.display = '';
+      // Keep medium tags hidden
+      document.querySelector('.filters-medium').classList.remove('visible');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
