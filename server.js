@@ -422,7 +422,7 @@ app.get('/', async (req, res) => {
   .card-logos .thumb:hover img { transform: none; }
   .intro-block {
     grid-column: 1;
-    grid-row: 1 / 3;
+    grid-row: 1 / 4;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
