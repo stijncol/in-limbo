@@ -25,26 +25,15 @@ async function initDB() {
     title TEXT NOT NULL,
     students TEXT NOT NULL,
     description TEXT NOT NULL,
-    video_id TEXT NOT NULL,
-    video_type TEXT DEFAULT 'vimeo',
+    vimeo_id TEXT NOT NULL,
     year INTEGER NOT NULL,
-    tags_theme TEXT DEFAULT '',
-    tags_medium TEXT DEFAULT '',
+    tags TEXT DEFAULT '',
     featured INTEGER DEFAULT 1,
     archived INTEGER DEFAULT 0,
     sort_order INTEGER DEFAULT 0,
     status TEXT DEFAULT 'approved',
     created_at TIMESTAMP DEFAULT NOW()
   )`);
-
-  // Migrate existing tables
-  try { await pool.query("ALTER TABLE videos ADD COLUMN tags_theme TEXT DEFAULT ''"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN tags_medium TEXT DEFAULT ''"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN video_type TEXT DEFAULT 'vimeo'"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN video_id TEXT"); } catch(e) {}
-  // Migrate old data: copy vimeo_id to video_id, tags to tags_theme
-  try { await pool.query("UPDATE videos SET video_id = vimeo_id WHERE video_id IS NULL"); } catch(e) {}
-  try { await pool.query("UPDATE videos SET tags_theme = tags WHERE tags_theme = '' AND tags != ''"); } catch(e) {}
 }
 
 async function getVideoRows() {
@@ -84,33 +73,27 @@ function requireStudent(req, res, next) {
 }
 
 // --- API ---
-function parseVideoUrl(url) {
-  const vimeoMatch = (url || '').match(/vimeo\.com\/(\d+)/);
-  if (vimeoMatch) return { id: vimeoMatch[1], type: 'vimeo' };
-  const ytMatch = (url || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-  if (ytMatch) return { id: ytMatch[1], type: 'youtube' };
-  return { id: url, type: 'vimeo' };
-}
-
 app.get('/api/videos', async (req, res) => {
   res.json(await getVideoRows());
 });
 
 app.post('/api/videos', requireAuth, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
+  const { title, students, description, vimeo_link, year, tags, featured, archived, sort_order } = req.body;
+  const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
+  const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
   await pool.query(
-    `INSERT INTO videos (title, students, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
+    `INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [title, students, description, vimeo_id, parseInt(year), tags || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
   res.json({ ok: true });
 });
 
 app.put('/api/videos/:id', requireAuth, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
+  const { title, students, description, vimeo_link, year, tags, featured, archived, sort_order } = req.body;
+  const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
+  const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
   await pool.query(
-    `UPDATE videos SET title=$1, students=$2, description=$3, video_id=$4, video_type=$5, year=$6, tags_theme=$7, tags_medium=$8, featured=$9, archived=$10, sort_order=$11 WHERE id=$12`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
+    `UPDATE videos SET title=$1, students=$2, description=$3, vimeo_id=$4, year=$5, tags=$6, featured=$7, archived=$8, sort_order=$9 WHERE id=$10`,
+    [title, students, description, vimeo_id, parseInt(year), tags || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
   res.json({ ok: true });
 });
 
@@ -121,11 +104,12 @@ app.delete('/api/videos/:id', requireAuth, async (req, res) => {
 
 // Student submit — always pending
 app.post('/api/submit', requireStudent, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
+  const { title, students, description, vimeo_link, year, tags } = req.body;
+  const vimeoMatch = (vimeo_link || '').match(/vimeo\.com\/(\d+)/);
+  const vimeo_id = vimeoMatch ? vimeoMatch[1] : vimeo_link;
   await pool.query(
-    `INSERT INTO videos (title, students, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0,0,999,'pending')`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '']);
+    `INSERT INTO videos (title, students, description, vimeo_id, year, tags, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,0,0,999,'pending')`,
+    [title, students, description, vimeo_id, parseInt(year), tags || '']);
   res.json({ ok: true });
 });
 
@@ -148,33 +132,23 @@ app.get('/', async (req, res) => {
   const featured = allVideos.filter(v => v.featured && !v.archived);
   const archive = allVideos.filter(v => v.archived || !v.featured);
 
-  // Collect tags by category
-  const themeTags = new Set();
-  const mediumTags = new Set();
-  allVideos.forEach(v => {
-    (v.tags_theme || v.tags || '').split(',').filter(Boolean).forEach(t => themeTags.add(t.trim()));
-    (v.tags_medium || '').split(',').filter(Boolean).forEach(t => mediumTags.add(t.trim()));
-  });
+  // Collect all tags
+  const allTags = new Set();
+  allVideos.forEach(v => (v.tags || '').split(',').filter(Boolean).forEach(t => allTags.add(t.trim())));
 
   function renderCard(v, isFeatured) {
-    const tt = (v.tags_theme || v.tags || '').split(',').filter(Boolean).map(t => t.trim());
-    const tm = (v.tags_medium || '').split(',').filter(Boolean).map(t => t.trim());
-    const allTags = [...tt, ...tm];
-    const themeSpans = tt.map(t => `<span data-tag="${t}">${t}</span>`).join('\n            ');
-    const mediumSpans = tm.map(t => `<span data-tag="${t}" class="tag-medium">${t}</span>`).join('\n            ');
-    const videoId = v.video_id || v.vimeo_id;
-    const videoType = v.video_type || 'vimeo';
-    return \`
-    <div class="card" data-featured="\${isFeatured}" data-tags="\${allTags.join(',')}" data-video-id="\${videoId}" data-video-type="\${videoType}" data-title="\${esc(v.title)}" data-authors="\${esc(v.students)}" data-year="\${v.year}" data-desc="\${esc(v.description)}">
+    const tags = (v.tags || '').split(',').filter(Boolean).map(t => t.trim());
+    const tagSpans = tags.map(t => `<span data-tag="${t}">${t}</span>`).join('\n            ');
+    return `
+    <div class="card" data-featured="${isFeatured}" data-tags="${tags.join(',')}" data-vimeo="${v.vimeo_id}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="thumb"><img alt=""></div>
       <div class="meta">
         <div class="tags">
-            \${themeSpans}
-            \${mediumSpans}
+            ${tagSpans}
         </div>
-        <div class="card-right"><div class="card-title">\${esc(v.title)}</div><span class="card-year" data-year="\${v.year}">\${v.year}</span></div>
+        <div class="card-right"><div class="card-title">${esc(v.title)}</div><span class="card-year" data-year="${v.year}">${v.year}</span></div>
       </div>
-    </div>\`;
+    </div>`;
   }
 
   function esc(s) {
@@ -184,8 +158,7 @@ app.get('/', async (req, res) => {
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
   const archiveCards = archive.map(v => renderCard(v, 'false')).join('\n');
 
-  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
-  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
+  const tagButtons = [...allTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
 
   res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -219,9 +192,6 @@ app.get('/', async (req, res) => {
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
-  }
-  .filters-medium button {
-    border-style: dashed;
   }
   .filters-extra {
     display: none;
@@ -374,7 +344,6 @@ app.get('/', async (req, res) => {
   }
   .card .tags span:hover { color: #111; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
-  .card .tags span.tag-medium { font-style: italic; }
   .card .card-right {
     display: flex;
     align-items: baseline;
@@ -549,7 +518,7 @@ app.get('/', async (req, res) => {
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
     column-count: 2;
-    column-gap: 32px;
+    column-gap: 20px;
     column-fill: auto;
     height: auto;
     max-height: 120px;
@@ -587,22 +556,19 @@ app.get('/', async (req, res) => {
   <div class="filters" id="filters">
     <div class="filters-row" id="filters-row">
       <button class="active" data-filter="all">all</button>
-      ${themeButtons}
+      ${tagButtons}
       <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
       <div class="search-wrap" id="search-wrap">
         <button class="search-toggle" id="search-toggle" title="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
         <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
       </div>
     </div>
-    <div class="filters-row filters-medium" style="margin-top:-2px;">
-      ${mediumButtons}
-    </div>
     <div class="filters-extra" id="filters-extra"></div>
   </div>
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory and the studio Positioneren 2: Stelling-Strategie. The archive includes works produced from 2021 to the present.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio <em>Positioneren 2: Stelling–Strategie</em>. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including Frame, Il n'y a pas de hors-architecture, The Gaze, and most recently (2026), In Limbo.</p>
       </div>
     </div>
@@ -785,9 +751,8 @@ ${archiveCards}
     });
   }
 
-  document.querySelectorAll('.card[data-video-id]').forEach(card => {
-    const id = card.dataset.videoId;
-    const type = card.dataset.videoType;
+  document.querySelectorAll('.card[data-vimeo]').forEach(card => {
+    const id = card.dataset.vimeo;
     const img = card.querySelector('img');
     img.crossOrigin = 'anonymous';
 
@@ -795,19 +760,15 @@ ${archiveCards}
       try { ditherImage(img, card.querySelector('.thumb')); } catch(e) {}
     });
 
-    if (type === 'youtube') {
-      img.src = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
-    } else {
-      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id+'&width=640')
-        .then(r => r.json())
-        .then(data => {
-          let u = data.thumbnail_url;
-          u = u.replace(/_\\d+x\\d+/, '_640');
-          img.src = u;
-          img.alt = data.title || '';
-        })
-        .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
-    }
+    fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id+'&width=640')
+      .then(r => r.json())
+      .then(data => {
+        let u = data.thumbnail_url;
+        u = u.replace(/_\\d+x\\d+/, '_640');
+        img.src = u;
+        img.alt = data.title || '';
+      })
+      .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
   });
 
   // Lightbox
@@ -821,15 +782,9 @@ ${archiveCards}
   const lbReadMore = document.getElementById('lb-read-more');
 
   document.querySelector('.grid').addEventListener('click', e => {
-    const card = e.target.closest('.card[data-video-id]');
+    const card = e.target.closest('.card[data-vimeo]');
     if (card && e.target.closest('.thumb')) {
-      const id = card.dataset.videoId;
-      const type = card.dataset.videoType;
-      if (type === 'youtube') {
-        lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
-      } else {
-        lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
-      }
+      lbIframe.src = 'https://player.vimeo.com/video/'+card.dataset.vimeo+'?autoplay=1&title=0&byline=0&portrait=0';
       lbTitle.textContent = card.dataset.title || '';
       lbAuthors.textContent = card.dataset.authors || '';
       lbYear.textContent = card.dataset.year || '';
@@ -920,7 +875,7 @@ ${archiveCards}
 
     const archiveOpen = grid.classList.contains('show-archive');
     document.querySelectorAll('.card').forEach(card => {
-      if (!card.dataset.videoId) return;
+      if (!card.dataset.vimeo) return;
       const isArchive = card.dataset.featured === 'false';
       const title = (card.dataset.title || '').toLowerCase();
       const authors = (card.dataset.authors || '').toLowerCase();
@@ -952,8 +907,8 @@ ${archiveCards}
     const archiveOpen = grid.classList.contains('show-archive');
     document.querySelectorAll('.card').forEach(card => {
       if (card.classList.contains('card-logos')) return;
-      if (!card.dataset.videoId && !card.classList.contains('intro-block')) return;
-      if (!card.dataset.videoId) return;
+      if (!card.dataset.vimeo && !card.classList.contains('intro-block')) return;
+      if (!card.dataset.vimeo) return;
       const isArchive = card.dataset.featured === 'false';
       if (value === 'all') {
         card.classList.toggle('hidden', isArchive && !archiveOpen);
@@ -1107,17 +1062,14 @@ app.get('/submit', requireStudent, (req, res) => {
         </div>
       </div>
 
-      <label>video link (Vimeo or YouTube)</label>
-      <input type="text" name="video_link" placeholder="https://vimeo.com/123456789 or https://youtu.be/..." required>
+      <label>vimeo link</label>
+      <input type="text" name="vimeo_link" placeholder="https://vimeo.com/123456789" required>
 
       <label>description (max. 150 words)</label>
       <textarea name="description" maxlength="1500" required></textarea>
 
-      <label>themes / positions (comma-separated)</label>
-      <input type="text" name="tags_theme" placeholder="decay, ecology, labor">
-
-      <label>medium / strategy (comma-separated)</label>
-      <input type="text" name="tags_medium" placeholder="interview, photogrammetry, documentary">
+      <label>tags (comma-separated)</label>
+      <input type="text" name="tags" placeholder="decay, textures, ecology">
 
       <button type="submit">submit for review</button>
       <div class="note">Your submission will be reviewed before appearing on the archive.</div>
@@ -1133,10 +1085,9 @@ app.get('/submit', requireStudent, (req, res) => {
       title: fd.get('title'),
       students: fd.get('students'),
       year: fd.get('year'),
-      video_link: fd.get('video_link'),
+      vimeo_link: fd.get('vimeo_link'),
       description: fd.get('description'),
-      tags_theme: fd.get('tags_theme'),
-      tags_medium: fd.get('tags_medium')
+      tags: fd.get('tags')
     };
     const res = await fetch('/api/submit', {
       method: 'POST',
@@ -1333,17 +1284,14 @@ app.get('/user', requireAuth, async (req, res) => {
         </div>
       </div>
 
-      <label>video link (Vimeo of YouTube)</label>
-      <input type="text" name="video_link" placeholder="https://vimeo.com/123456789 of https://youtu.be/..." required>
+      <label>vimeo link</label>
+      <input type="text" name="vimeo_link" placeholder="https://vimeo.com/123456789" required>
 
       <label>beschrijving (150 woorden)</label>
       <textarea name="description" maxlength="1500" required></textarea>
 
-      <label>themes / positions (kommagescheiden)</label>
-      <input type="text" name="tags_theme" placeholder="decay, ecology, labor">
-
-      <label>medium / strategy (kommagescheiden)</label>
-      <input type="text" name="tags_medium" placeholder="interview, photogrammetry, documentary">
+      <label>tags (kommagescheiden)</label>
+      <input type="text" name="tags" placeholder="decay, textures, ecology">
 
       <div class="row">
         <div>
@@ -1370,12 +1318,11 @@ app.get('/user', requireAuth, async (req, res) => {
         <div class="meta">
           <span>${esc(v.students)}</span>
           <span>${v.year}</span>
-          <span>${v.video_type || 'vimeo'}/${v.video_id || v.vimeo_id}</span>
+          <span>vimeo/${v.vimeo_id}</span>
         </div>
         <div style="font-size:12px;color:#666;margin-top:8px;line-height:1.5;max-width:500px;">${esc(v.description).substring(0, 200)}...</div>
         <div class="badges" style="margin-top:6px;">
-          ${(v.tags_theme||v.tags||'').split(',').filter(Boolean).map(t => '<span class="badge">'+t.trim()+'</span>').join('')}
-          ${(v.tags_medium||'').split(',').filter(Boolean).map(t => '<span class="badge" style="border-style:dashed">'+t.trim()+'</span>').join('')}
+          ${(v.tags||'').split(',').filter(Boolean).map(t => '<span class="badge">'+t.trim()+'</span>').join('')}
         </div>
       </div>
       <div class="actions" style="flex-direction:column;gap:6px;">
@@ -1391,20 +1338,19 @@ app.get('/user', requireAuth, async (req, res) => {
   <div class="video-list" style="margin-top:32px;">
     <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">alle video's (${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').length})</h2>
     ${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').map(v => `
-    <div class="video-item" data-id="${v.id}" data-title="${esc(v.title)}" data-students="${esc(v.students)}" data-year="${v.year}" data-video-id="${v.video_id || v.vimeo_id}" data-video-type="${v.video_type || 'vimeo'}" data-desc="${esc(v.description)}" data-tags-theme="${esc(v.tags_theme||v.tags||'')}" data-tags-medium="${esc(v.tags_medium||'')}" data-sort="${v.sort_order}" data-featured="${v.featured}" data-archived="${v.archived}">
+    <div class="video-item" data-id="${v.id}" data-title="${esc(v.title)}" data-students="${esc(v.students)}" data-year="${v.year}" data-vimeo="${v.vimeo_id}" data-desc="${esc(v.description)}" data-tags="${esc(v.tags||'')}" data-sort="${v.sort_order}" data-featured="${v.featured}" data-archived="${v.archived}">
       <div class="info">
         <h3>${esc(v.title)}</h3>
         <div class="meta">
           <span>${esc(v.students)}</span>
           <span>${v.year}</span>
-          <span>${v.video_type || 'vimeo'}/${v.video_id || v.vimeo_id}</span>
+          <span>vimeo/${v.vimeo_id}</span>
           <span>sort: ${v.sort_order}</span>
         </div>
         <div class="badges">
           ${v.featured ? '<span class="badge featured">highlight</span>' : ''}
           ${v.archived ? '<span class="badge archived">archief</span>' : ''}
-          ${(v.tags_theme||v.tags||'').split(',').filter(Boolean).map(t => '<span class="badge">'+t.trim()+'</span>').join('')}
-          ${(v.tags_medium||'').split(',').filter(Boolean).map(t => '<span class="badge" style="border-style:dashed">'+t.trim()+'</span>').join('')}
+          ${(v.tags||'').split(',').filter(Boolean).map(t => '<span class="badge">'+t.trim()+'</span>').join('')}
         </div>
       </div>
       <div class="actions">
@@ -1435,17 +1381,14 @@ app.get('/user', requireAuth, async (req, res) => {
           </div>
         </div>
 
-        <label>video link (Vimeo of YouTube)</label>
-        <input type="text" name="video_link" id="edit-video-link" required>
+        <label>vimeo link</label>
+        <input type="text" name="vimeo_link" id="edit-vimeo" required>
 
         <label>beschrijving (150 woorden)</label>
         <textarea name="description" id="edit-desc" maxlength="1500" required></textarea>
 
-        <label>themes / positions (kommagescheiden)</label>
-        <input type="text" name="tags_theme" id="edit-tags-theme">
-
-        <label>medium / strategy (kommagescheiden)</label>
-        <input type="text" name="tags_medium" id="edit-tags-medium">
+        <label>tags (kommagescheiden)</label>
+        <input type="text" name="tags" id="edit-tags">
 
         <div class="row">
           <div>
@@ -1477,10 +1420,9 @@ app.get('/user', requireAuth, async (req, res) => {
       title: fd.get('title'),
       students: fd.get('students'),
       year: fd.get('year'),
-      video_link: fd.get('video_link'),
+      vimeo_link: fd.get('vimeo_link'),
       description: fd.get('description'),
-      tags_theme: fd.get('tags_theme'),
-      tags_medium: fd.get('tags_medium'),
+      tags: fd.get('tags'),
       sort_order: fd.get('sort_order'),
       featured: fd.get('featured') === 'on',
       archived: fd.get('archived') === 'on'
@@ -1526,12 +1468,9 @@ app.get('/user', requireAuth, async (req, res) => {
     document.getElementById('edit-title').value = item.dataset.title;
     document.getElementById('edit-students').value = item.dataset.students;
     document.getElementById('edit-year').value = item.dataset.year;
-    const vtype = item.dataset.videoType || 'vimeo';
-    const vid = item.dataset.videoId;
-    document.getElementById('edit-video-link').value = vtype === 'youtube' ? 'https://youtu.be/' + vid : 'https://vimeo.com/' + vid;
+    document.getElementById('edit-vimeo').value = 'https://vimeo.com/' + item.dataset.vimeo;
     document.getElementById('edit-desc').value = item.dataset.desc;
-    document.getElementById('edit-tags-theme').value = item.dataset.tagsTheme || '';
-    document.getElementById('edit-tags-medium').value = item.dataset.tagsMedium || '';
+    document.getElementById('edit-tags').value = item.dataset.tags;
     document.getElementById('edit-sort').value = item.dataset.sort;
     document.getElementById('edit-featured').checked = item.dataset.featured === '1';
     document.getElementById('edit-archived').checked = item.dataset.archived === '1';
@@ -1559,10 +1498,9 @@ app.get('/user', requireAuth, async (req, res) => {
       title: fd.get('title'),
       students: fd.get('students'),
       year: fd.get('year'),
-      video_link: fd.get('video_link'),
+      vimeo_link: fd.get('vimeo_link'),
       description: fd.get('description'),
-      tags_theme: fd.get('tags_theme'),
-      tags_medium: fd.get('tags_medium'),
+      tags: fd.get('tags'),
       sort_order: fd.get('sort_order'),
       featured: fd.get('featured') === 'on',
       archived: fd.get('archived') === 'on'
