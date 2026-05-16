@@ -218,7 +218,7 @@ app.get('/', async (req, res) => {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
   }
   .filters-row {
     display: flex;
