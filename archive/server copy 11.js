@@ -212,13 +212,13 @@ app.get('/', async (req, res) => {
   .page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 48px 40px 120px;
+    padding: 40px 40px 120px;
   }
   .filters {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 48px;
+    margin-bottom: 40px;
   }
   .filters-row {
     display: flex;
@@ -443,11 +443,6 @@ app.get('/', async (req, res) => {
     text-decoration: underline;
     font-weight: 700;
   }
-  .intro-block .intro-text a.year-filter {
-    font-weight: 400;
-    text-decoration: underline;
-    cursor: pointer;
-  }
   .intro-block .intro-text strong {
     font-weight: 700;
   }
@@ -630,8 +625,8 @@ app.get('/', async (req, res) => {
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
-        <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio <em>Positioneren 2: Stelling–Strategie</em>. The archive includes works produced from 2021 to the present.</p>
+        <p>Each academic year is structured around a different thematic framework, including Frame, Il n'y a pas de hors-architecture, The Gaze, and most recently (2026), In Limbo.</p>
       </div>
     </div>
 ${featuredCards}
@@ -1032,15 +1027,6 @@ ${archiveCards}
       else applyFilter(year, 'year');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  });
-
-  // Year filter links in intro text
-  document.querySelectorAll('.year-filter').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      applyFilter(link.dataset.year, 'year');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
   });
 
   // Archive toggle
