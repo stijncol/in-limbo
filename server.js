@@ -371,18 +371,14 @@ app.get('/', async (req, res) => {
   .card .meta {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 6px 0 2px;
     gap: 12px;
-    height: 28px;
-    overflow: hidden;
   }
   .card .tags {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow: hidden;
-    min-width: 0;
   }
   .card .tags span {
     font-size: 11px;
@@ -390,8 +386,6 @@ app.get('/', async (req, res) => {
     color: #999;
     cursor: pointer;
     transition: color 0.2s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
   }
   .card .tags span:hover { color: #111; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
@@ -834,6 +828,30 @@ ${archiveCards}
   });
 
   // Lightbox
+
+  // Trim tags to single line
+  setTimeout(() => {
+    document.querySelectorAll('.card .tags').forEach(container => {
+      const tags = Array.from(container.querySelectorAll('span'));
+      if (tags.length < 2) return;
+      const firstTop = tags[0].offsetTop;
+      let hiddenCount = 0;
+      tags.forEach(tag => {
+        if (tag.offsetTop > firstTop) {
+          tag.style.display = 'none';
+          hiddenCount++;
+        }
+      });
+      if (hiddenCount > 0) {
+        const more = document.createElement('span');
+        more.textContent = '+' + hiddenCount;
+        more.style.opacity = '0.4';
+        more.style.cursor = 'default';
+        more.classList.add('tag-more');
+        container.appendChild(more);
+      }
+    });
+  }, 100);
   const lightbox = document.getElementById('lightbox');
   const lbIframe = document.getElementById('lb-iframe');
   const lbTitle = document.getElementById('lb-title');
