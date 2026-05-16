@@ -187,8 +187,7 @@ app.get('/', async (req, res) => {
     return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  const introVideos = featured.slice(0, 4).map(v => renderCard(v, 'true')).join('\n');
-  const remainingFeatured = featured.slice(4).map(v => renderCard(v, 'true')).join('\n');
+  const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
   const archiveCards = archive.map(v => renderCard(v, 'false')).join('\n');
 
   const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
@@ -321,6 +320,7 @@ app.get('/', async (req, res) => {
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: dense;
     column-gap: 25px;
     row-gap: 8px;
   }
@@ -377,11 +377,8 @@ app.get('/', async (req, res) => {
   }
   .card .tags {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow: hidden;
-    max-width: 65%;
-    position: relative;
   }
   .card .tags span {
     font-size: 11px;
@@ -389,8 +386,6 @@ app.get('/', async (req, res) => {
     color: #999;
     cursor: pointer;
     transition: color 0.2s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
   }
   .card .tags span:hover { color: #111; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
@@ -418,23 +413,15 @@ app.get('/', async (req, res) => {
     white-space: nowrap;
   }
   .card .card-year:hover { color: #111; }
-  .intro-row {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    column-gap: 25px;
-    margin-bottom: 8px;
-  }
-  .intro-row .intro-block {
+  .card-logos .thumb::after { display: none; }
+  .card-logos .thumb:hover img { transform: none; }
+  .intro-block {
+    grid-column: 1;
+    grid-row: 1 / 3;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     padding: 0 20px 0 0;
-  }
-  .intro-row .intro-videos {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 25px;
-    row-gap: 8px;
   }
   .intro-block .intro-text {
     font-family: Helvetica, Arial, sans-serif;
@@ -598,8 +585,7 @@ app.get('/', async (req, res) => {
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .intro-row { grid-template-columns: 1fr; }
-    .intro-row .intro-videos { grid-template-columns: repeat(2, 1fr); }
+    .intro-block { grid-column: 1 / -1; grid-row: auto; }
   }
   @media (max-width: 768px) {
     .lightbox .lb-inner { padding: 0 20px; }
@@ -630,19 +616,14 @@ app.get('/', async (req, res) => {
     </div>
     <div class="filters-extra" id="filters-extra"></div>
   </div>
-  <div class="intro-row" id="intro-row">
+  <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio <em>Positioneren 2: Stelling–Strategie</em>. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including Frame, Il n'y a pas de hors-architecture, The Gaze, and most recently (2026), In Limbo.</p>
       </div>
     </div>
-    <div class="intro-videos">
-${introVideos}
-    </div>
-  </div>
-  <div class="grid">
-${remainingFeatured}
+${featuredCards}
 ${archiveCards}
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
@@ -846,26 +827,6 @@ ${archiveCards}
     }
   });
 
-  // Tag overflow: add +N when tags don't fit in one line
-  document.querySelectorAll('.card .tags').forEach(container => {
-    const tags = container.querySelectorAll('span');
-    if (tags.length === 0) return;
-    const containerRight = container.getBoundingClientRect().right;
-    let hiddenCount = 0;
-    tags.forEach(tag => {
-      if (tag.getBoundingClientRect().right > containerRight + 2) {
-        hiddenCount++;
-      }
-    });
-    if (hiddenCount > 0) {
-      const more = document.createElement('span');
-      more.textContent = '+' + hiddenCount;
-      more.style.cssText = 'opacity:0.5;font-size:10px;cursor:default;';
-      more.removeAttribute('data-tag');
-      container.appendChild(more);
-    }
-  });
-
   // Lightbox
   const lightbox = document.getElementById('lightbox');
   const lbIframe = document.getElementById('lb-iframe');
@@ -916,7 +877,7 @@ ${archiveCards}
   // Filters
   const grid = document.querySelector('.grid');
   const filtersBar = document.querySelector('.filters');
-  const introBlock = document.getElementById('intro-row');
+  const introBlock = document.getElementById('intro-block');
   const logosCard = null;
   let activeFilter = 'all';
   let activeType = 'tag';
