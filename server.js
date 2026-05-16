@@ -212,13 +212,13 @@ app.get('/', async (req, res) => {
   .page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 40px 40px 120px;
+    padding: 48px 40px 120px;
   }
   .filters {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
   }
   .filters-row {
     display: flex;
@@ -592,6 +592,30 @@ app.get('/', async (req, res) => {
     transition: color 0.2s;
   }
   .lightbox .lb-close:hover { color: #fff; }
+  .site-footer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 40px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+  }
+  .site-footer .footer-text {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #bbb;
+    max-width: 500px;
+  }
+  .site-footer .footer-logos {
+    flex-shrink: 0;
+  }
+  .site-footer .footer-logos img {
+    height: 50px;
+    width: auto;
+    opacity: 0.6;
+  }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
@@ -640,6 +664,11 @@ ${archiveCards}
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
     <button>ontdek het volledige video-archief</button>
   </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">Students were taught by Lukas Claessens, Stijn Colon, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
+  <div class="footer-logos"><img src="/public/logos-outline.png" alt="lab-O & KU Leuven"></div>
 </div>
 
 <div class="lightbox" id="lightbox">
