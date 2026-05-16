@@ -97,21 +97,25 @@ app.get('/api/videos', async (req, res) => {
 });
 
 app.post('/api/videos', requireAuth, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
-  await pool.query(
-    `INSERT INTO videos (title, students, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
-  res.json({ ok: true });
+  try {
+    const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
+    const { id, type } = parseVideoUrl(video_link);
+    await pool.query(
+      `INSERT INTO videos (title, students, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
+    res.json({ ok: true });
+  } catch(e) { console.error('POST /api/videos error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/videos/:id', requireAuth, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
-  await pool.query(
-    `UPDATE videos SET title=$1, students=$2, description=$3, video_id=$4, video_type=$5, year=$6, tags_theme=$7, tags_medium=$8, featured=$9, archived=$10, sort_order=$11 WHERE id=$12`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
-  res.json({ ok: true });
+  try {
+    const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
+    const { id, type } = parseVideoUrl(video_link);
+    await pool.query(
+      `UPDATE videos SET title=$1, students=$2, description=$3, video_id=$4, video_type=$5, vimeo_id=$6, year=$7, tags_theme=$8, tags_medium=$9, featured=$10, archived=$11, sort_order=$12 WHERE id=$13`,
+      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { console.error('PUT /api/videos error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/api/videos/:id', requireAuth, async (req, res) => {
@@ -121,12 +125,14 @@ app.delete('/api/videos/:id', requireAuth, async (req, res) => {
 
 // Student submit — always pending
 app.post('/api/submit', requireStudent, async (req, res) => {
-  const { title, students, description, video_link, year, tags_theme, tags_medium } = req.body;
-  const { id, type } = parseVideoUrl(video_link);
-  await pool.query(
-    `INSERT INTO videos (title, students, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,0,0,999,'pending')`,
-    [title, students, description, id, type, parseInt(year), tags_theme || '', tags_medium || '']);
-  res.json({ ok: true });
+  try {
+    const { title, students, description, video_link, year, tags_theme, tags_medium } = req.body;
+    const { id, type } = parseVideoUrl(video_link);
+    await pool.query(
+      `INSERT INTO videos (title, students, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,0,0,999,'pending')`,
+      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '']);
+    res.json({ ok: true });
+  } catch(e) { console.error('POST /api/submit error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 // Admin approve/reject
