@@ -212,7 +212,7 @@ app.get('/', async (req, res) => {
   .page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 48px 40px 120px;
+    padding: 40px 40px 120px;
   }
   .filters {
     display: flex;
