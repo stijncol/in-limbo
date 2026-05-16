@@ -1039,6 +1039,8 @@ ${archiveCards}
     link.addEventListener('click', (e) => {
       e.preventDefault();
       applyFilter(link.dataset.year, 'year');
+      // Keep intro visible when filtering from text
+      if (introBlock) introBlock.style.display = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
