@@ -235,6 +235,12 @@ app.get('/', async (req, res) => {
     margin-right: 4px;
     white-space: nowrap;
   }
+  .filters-medium {
+    display: none;
+  }
+  .filters-medium.visible {
+    display: flex;
+  }
   .filters-medium button {
     border-style: dashed;
   }
@@ -989,6 +995,7 @@ ${archiveCards}
     const isFiltered = value !== 'all';
     if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
     if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
+    document.querySelector('.filters-medium').classList.toggle('visible', isFiltered);
 
     const archiveOpen = grid.classList.contains('show-archive');
     document.querySelectorAll('.card').forEach(card => {
