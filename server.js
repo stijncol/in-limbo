@@ -605,7 +605,7 @@ app.get('/', async (req, res) => {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     line-height: 1.5;
-    color: #aaa;
+    color: #111;
   }
   .site-footer .footer-logos {
     flex-shrink: 0;
@@ -613,7 +613,7 @@ app.get('/', async (req, res) => {
   .site-footer .footer-logos img {
     height: 90px;
     width: auto;
-    opacity: 0.5;
+    opacity: 1;
   }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 900px) {
@@ -666,7 +666,7 @@ ${archiveCards}
 </div>
 
 <div class="site-footer">
-  <div class="footer-text">Students were taught by Lukas Claessens, Stijn Colon, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
+  <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
   <div class="footer-logos"><img src="/public/logos-outline.png" alt="lab-O & KU Leuven"></div>
 </div>
 
