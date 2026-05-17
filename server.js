@@ -666,7 +666,7 @@ ${archiveCards}
 </div>
 
 <div class="site-footer">
-  <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Corneel Cannaerts, Lodewijk Heylen at KU Leuven.</div>
+  <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Jantje Engels, Lodewijk Heylen at KU Leuven.</div>
   <div class="footer-logos"><img src="/public/logos-outline.png" alt="lab-O & KU Leuven"></div>
 </div>
 
