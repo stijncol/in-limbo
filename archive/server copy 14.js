@@ -215,18 +215,12 @@ app.get('/', async (req, res) => {
     padding: 40px 40px 120px;
   }
   .filters {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    margin-bottom: 40px;
-  }
-  .filters-left {
-    flex: 1;
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0;
-    min-width: 0;
+    margin-bottom: 40px;
+    padding-right: 46px;
   }
   .filters-row {
     display: flex;
@@ -311,10 +305,16 @@ app.get('/', async (req, res) => {
   .tag-expand:hover { border-color: #111; color: #111; }
   .filters.show-all .tag-expand { display: none; }
   .search-wrap {
+    position: absolute;
+    right: 0;
+    top: 0;
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-shrink: 0;
+  }
+  .search-wrap.searching {
+    position: static;
+    margin-top: 10px;
   }
   .search-input {
     font-family: Helvetica, Arial, sans-serif;
@@ -684,22 +684,20 @@ app.get('/', async (req, res) => {
 <body>
 <div class="page">
   <div class="filters" id="filters">
-    <div class="filters-left">
-      <div class="filters-row" id="filters-row">
-        <span class="filters-label">theme</span>
-        <button class="active" data-filter="all">all</button>
-        ${themeButtons}
-        <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
-      </div>
-      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
-      <div class="filters-row filters-medium">
-        <span class="filters-label">medium</span>
-        ${mediumButtons}
-      </div>
-    </div>
     <div class="search-wrap" id="search-wrap">
       <button class="search-toggle" id="search-toggle" title="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
       <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
+    </div>
+    <div class="filters-row" id="filters-row">
+      <span class="filters-label">theme</span>
+      <button class="active" data-filter="all">all</button>
+      ${themeButtons}
+      <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+    </div>
+    <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
+    <div class="filters-row filters-medium">
+      <span class="filters-label">medium</span>
+      ${mediumButtons}
     </div>
   </div>
   <div class="grid">
@@ -1072,12 +1070,15 @@ ${archiveCards}
   const searchInput = document.getElementById('search-input');
   searchToggle.addEventListener('click', () => {
     const opening = !searchInput.classList.contains('open');
+    const searchWrap = document.getElementById('search-wrap');
     searchInput.classList.toggle('open');
     if (opening) {
       searchInput.focus();
+      searchWrap.classList.add('searching');
       filtersBar.classList.remove('show-all');
     } else {
       searchInput.value = '';
+      searchWrap.classList.remove('searching');
       applyFilter('all', 'tag');
     }
   });
