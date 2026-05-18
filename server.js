@@ -335,7 +335,7 @@ app.get('/', async (req, res) => {
     transform: translateY(30px);
     animation: fadeUp 0.6s ease forwards;
   }
-  .card.hidden { display: none; }
+  .card.hidden { display: none !important; }
   .card[data-featured="false"] { display: none; }
   .grid.show-archive .card[data-featured="false"] { display: block; }
   .card .thumb {
@@ -1059,10 +1059,12 @@ ${archiveCards}
       if (value === 'all') {
         card.classList.toggle('hidden', isArchive && !archiveOpen);
       } else if (type === 'year') {
-        card.classList.toggle('hidden', card.dataset.year !== value || (isArchive && !archiveOpen));
+        const matchesFilter = card.dataset.year === value;
+        card.classList.toggle('hidden', !matchesFilter || (isArchive && !archiveOpen));
       } else {
         const tags = card.dataset.tags;
-        card.classList.toggle('hidden', !tags.split(',').includes(value) || (isArchive && !archiveOpen));
+        const matchesFilter = tags.split(',').includes(value);
+        card.classList.toggle('hidden', !matchesFilter || (isArchive && !archiveOpen));
       }
     });
   }
