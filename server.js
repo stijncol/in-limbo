@@ -869,13 +869,18 @@ ${archiveCards}
   // Lightbox
 
   // Trim tags to single line
-  setTimeout(() => {
+  function trimTags() {
     document.querySelectorAll('.card .tags').forEach(container => {
       const tags = Array.from(container.querySelectorAll('span'));
       if (tags.length < 2) return;
-      const firstTop = tags[0].offsetTop;
+      // Reset: show all, remove old +N
+      tags.forEach(tag => { if (!tag.dataset.tag && !tag.classList.contains('tag-medium')) return; tag.style.display = ''; });
+      container.querySelectorAll('span:not([data-tag]):not(.tag-medium)').forEach(el => el.remove());
       
-      // First pass: hide all tags on second line
+      // Skip if container is hidden
+      if (container.offsetParent === null) return;
+      
+      const firstTop = tags[0].offsetTop;
       let hiddenCount = 0;
       tags.forEach(tag => {
         if (tag.offsetTop > firstTop) {
@@ -885,7 +890,6 @@ ${archiveCards}
       });
       
       if (hiddenCount > 0) {
-        // Add +N indicator
         const more = document.createElement('span');
         more.textContent = '+' + hiddenCount;
         more.style.opacity = '0.4';
@@ -893,10 +897,9 @@ ${archiveCards}
         more.style.whiteSpace = 'nowrap';
         container.appendChild(more);
         
-        // Second pass: if +N itself dropped to second line, hide one more tag
         while (more.offsetTop > firstTop && container.querySelectorAll('span:not([style*=\"display: none\"])').length > 2) {
           const visible = Array.from(container.querySelectorAll('span:not([style*=\"display: none\"])')); 
-          const lastVisible = visible[visible.length - 2]; // one before +N
+          const lastVisible = visible[visible.length - 2];
           if (lastVisible && lastVisible !== more) {
             lastVisible.style.display = 'none';
             hiddenCount++;
@@ -907,7 +910,8 @@ ${archiveCards}
         }
       }
     });
-  }, 100);
+  }
+  setTimeout(trimTags, 100);
   const lightbox = document.getElementById('lightbox');
   const lbIframe = document.getElementById('lb-iframe');
   const lbTitle = document.getElementById('lb-title');
@@ -1015,15 +1019,16 @@ ${archiveCards}
     activeType = 'search';
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
 
-    const archiveOpen = grid.classList.contains('show-archive');
+    // Show archive when searching
+    grid.classList.add('show-archive');
+
     document.querySelectorAll('.card').forEach(card => {
       if (!card.dataset.videoId) return;
-      const isArchive = card.dataset.featured === 'false';
       const title = (card.dataset.title || '').toLowerCase();
       const authors = (card.dataset.authors || '').toLowerCase();
       const tags = (card.dataset.tags || '').toLowerCase();
       const match = title.includes(q) || authors.includes(q) || tags.includes(q);
-      card.classList.toggle('hidden', !match || (isArchive && !archiveOpen));
+      card.classList.toggle('hidden', !match);
     });
     if (introBlock) introBlock.style.display = 'none';
   });
@@ -1098,6 +1103,7 @@ ${archiveCards}
     const isOpen = grid.classList.toggle('show-archive');
     archiveToggle.classList.toggle('is-open', isOpen);
     archiveToggle.querySelector('button').textContent = isOpen ? 'toon enkel selectie' : 'ontdek het volledige video-archief';
+    if (isOpen) setTimeout(trimTags, 50);
   });
 </script>
 </body>
