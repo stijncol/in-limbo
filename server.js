@@ -1016,25 +1016,39 @@ ${archiveCards}
   let activeFilter = 'all';
   let activeType = 'tag';
 
-  // Limit visible tags to 8, move rest to extra row
-  const MAX_VISIBLE_TAGS = 8;
+  // Dynamically limit visible tags to what fits on the first line
   const filtersRow = document.getElementById('filters-row');
   const filtersExtra = document.getElementById('filters-extra');
   const tagClose = document.getElementById('tag-close');
-  const tagBtns = filtersRow.querySelectorAll('button[data-filter]');
-  let count = 0;
-  tagBtns.forEach(btn => {
-    if (btn.dataset.filter === 'all') return;
-    count++;
-    if (count > MAX_VISIBLE_TAGS) {
-      filtersExtra.insertBefore(btn, tagClose);
+  const tagBtns = Array.from(filtersRow.querySelectorAll('button[data-filter]'));
+  const expandBtn = document.getElementById('tag-expand');
+  
+  // Wait for layout, then check which tags overflow to second line
+  setTimeout(() => {
+    if (tagBtns.length < 2) return;
+    const firstTop = tagBtns[0].offsetTop;
+    let hasOverflow = false;
+    tagBtns.forEach(btn => {
+      if (btn.dataset.filter === 'all') return;
+      if (btn.offsetTop > firstTop) {
+        filtersExtra.insertBefore(btn, tagClose);
+        hasOverflow = true;
+      }
+    });
+    if (!hasOverflow) {
+      expandBtn.style.display = 'none';
+      tagClose.style.display = 'none';
     }
-  });
-  // Hide + button if no extra tags
-  if (count <= MAX_VISIBLE_TAGS) {
-    document.getElementById('tag-expand').style.display = 'none';
-    tagClose.style.display = 'none';
-  }
+    // Check if expand button itself overflowed
+    if (expandBtn.offsetTop > firstTop) {
+      // Move last visible tag to extra to make room for +
+      const visibleTags = Array.from(filtersRow.querySelectorAll('button[data-filter]')).filter(b => b.dataset.filter !== 'all');
+      if (visibleTags.length > 0) {
+        const last = visibleTags[visibleTags.length - 1];
+        filtersExtra.insertBefore(last, filtersExtra.firstChild);
+      }
+    }
+  }, 50);
 
   // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
