@@ -337,8 +337,8 @@ app.get('/', async (req, res) => {
   }
   .search-input:focus { border-color: #111; }
   .search-toggle {
-    width: 46px;
-    height: 46px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border: 1px solid #ccc;
     border-radius: 100px;
@@ -698,7 +698,7 @@ app.get('/', async (req, res) => {
       </div>
     </div>
     <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
+      <button class="search-toggle" id="search-toggle" title="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
       <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
     </div>
   </div>
