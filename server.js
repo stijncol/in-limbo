@@ -307,6 +307,10 @@ app.get('/', async (req, res) => {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
+  }
+  .search-wrap.searching {
+    margin-left: 0;
   }
   .search-input {
     font-family: Helvetica, Arial, sans-serif;
@@ -1048,12 +1052,15 @@ ${archiveCards}
   const searchInput = document.getElementById('search-input');
   searchToggle.addEventListener('click', () => {
     const opening = !searchInput.classList.contains('open');
+    const searchWrap = document.getElementById('search-wrap');
     searchInput.classList.toggle('open');
     if (opening) {
       searchInput.focus();
+      searchWrap.classList.add('searching');
       filtersBar.classList.remove('show-all');
     } else {
       searchInput.value = '';
+      searchWrap.classList.remove('searching');
       applyFilter('all', 'tag');
     }
   });
