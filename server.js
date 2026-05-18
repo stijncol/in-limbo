@@ -474,22 +474,24 @@ app.get('/', async (req, res) => {
   .archive-toggle {
     display: flex;
     justify-content: center;
-    margin-top: 48px;
+    margin-top: 32px;
   }
   .archive-toggle button {
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.03em;
-    padding: 12px 28px;
+    width: 46px;
+    height: 46px;
+    padding: 0;
     border: 1px solid #ccc;
-    border-radius: 0;
+    border-radius: 50%;
     background: transparent;
     color: #555;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .archive-toggle button:hover { border-color: #111; color: #111; }
-  .archive-toggle.is-open button { background: #111; border-color: #111; color: #fff; }
+  .archive-toggle button svg { stroke: currentColor; }
   .lightbox {
     display: none;
     position: fixed;
@@ -661,7 +663,7 @@ ${featuredCards}
 ${archiveCards}
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
-    <button>ontdek het volledige video-archief</button>
+    <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
   </div>
 </div>
 
@@ -1104,8 +1106,13 @@ ${archiveCards}
   archiveToggle.addEventListener('click', () => {
     const isOpen = grid.classList.toggle('show-archive');
     archiveToggle.classList.toggle('is-open', isOpen);
-    archiveToggle.querySelector('button').textContent = isOpen ? 'toon enkel selectie' : 'ontdek het volledige video-archief';
-    if (isOpen) setTimeout(trimTags, 50);
+    const btn = document.getElementById('archive-btn');
+    if (isOpen) {
+      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      setTimeout(trimTags, 50);
+    } else {
+      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+    }
   });
 </script>
 </body>
