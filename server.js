@@ -646,11 +646,11 @@ app.get('/', async (req, res) => {
         <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
       </div>
     </div>
+    <div class="filters-extra" id="filters-extra"></div>
     <div class="filters-row filters-medium" style="margin-top:-2px;">
       <span class="filters-label">medium</span>
       ${mediumButtons}
     </div>
-    <div class="filters-extra" id="filters-extra"></div>
   </div>
   <div class="grid">
     <div class="intro-block" id="intro-block">
