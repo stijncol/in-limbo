@@ -158,8 +158,8 @@ app.get('/', async (req, res) => {
   const themeTags = new Set();
   const mediumTags = new Set();
   allVideos.forEach(v => {
-    (v.tags_theme || v.tags || '').split(',').filter(Boolean).forEach(t => themeTags.add(t.trim()));
-    (v.tags_medium || '').split(',').filter(Boolean).forEach(t => mediumTags.add(t.trim()));
+    (v.tags_theme || v.tags || '').split(',').map(t => t.trim()).filter(t => t.length > 0).forEach(t => themeTags.add(t));
+    (v.tags_medium || '').split(',').map(t => t.trim()).filter(t => t.length > 0).forEach(t => mediumTags.add(t));
   });
 
   function renderCard(v, isFeatured) {
@@ -250,6 +250,9 @@ app.get('/', async (req, res) => {
   }
   .filters-medium.visible {
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
   }
   .filters-medium button {
     border-style: dashed;
@@ -698,7 +701,7 @@ app.get('/', async (req, res) => {
       </div>
     </div>
     <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
+      <button class="search-toggle" id="search-toggle" title="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
       <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
     </div>
   </div>
