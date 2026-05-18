@@ -247,12 +247,19 @@ app.get('/', async (req, res) => {
   .filters-medium {
     display: none;
     margin-top: 20px;
+    padding-left: 60px;
+    position: relative;
   }
   .filters-medium.visible {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+  }
+  .filters-medium .filters-label {
+    position: absolute;
+    left: 0;
+    width: 52px;
   }
   .filters-medium button {
     border-style: dashed;
@@ -701,7 +708,7 @@ app.get('/', async (req, res) => {
       </div>
     </div>
     <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
+      <button class="search-toggle" id="search-toggle" title="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
       <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
     </div>
   </div>
