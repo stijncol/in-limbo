@@ -220,7 +220,6 @@ app.get('/', async (req, res) => {
     flex-direction: column;
     gap: 0;
     margin-bottom: 40px;
-    padding-right: 60px;
   }
   .filters-row {
     display: flex;
@@ -305,18 +304,30 @@ app.get('/', async (req, res) => {
   .tag-expand:hover { border-color: #111; color: #111; }
   .filters.show-all .tag-expand { display: none; }
   .search-wrap {
-    position: absolute;
-    right: 0;
-    top: 0;
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .search-wrap.searching {
-    position: static;
-    width: 100%;
-    margin-top: 12px;
+  .search-input {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 100px;
+    background: transparent;
+    color: #111;
+    outline: none;
+    width: 0;
+    opacity: 0;
+    transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
   }
+  .search-input.open {
+    width: 220px;
+    opacity: 1;
+    padding: 8px 16px;
+  }
+  .search-input:focus { border-color: #111; }
   .search-toggle {
     width: 46px;
     height: 46px;
@@ -670,15 +681,15 @@ app.get('/', async (req, res) => {
       <button class="active" data-filter="all">all</button>
       ${themeButtons}
       <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+      <div class="search-wrap" id="search-wrap">
+        <button class="search-toggle" id="search-toggle" title="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
+        <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
+      </div>
     </div>
     <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
     <div class="filters-row filters-medium">
       <span class="filters-label">medium</span>
       ${mediumButtons}
-    </div>
-    <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
-      <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
     </div>
   </div>
   <div class="grid">
@@ -1036,16 +1047,13 @@ ${archiveCards}
   const searchToggle = document.getElementById('search-toggle');
   const searchInput = document.getElementById('search-input');
   searchToggle.addEventListener('click', () => {
-    const searchWrap = document.getElementById('search-wrap');
     const opening = !searchInput.classList.contains('open');
     searchInput.classList.toggle('open');
     if (opening) {
       searchInput.focus();
       filtersBar.classList.remove('show-all');
-      searchWrap.classList.add('searching');
     } else {
       searchInput.value = '';
-      searchWrap.classList.remove('searching');
       applyFilter('all', 'tag');
     }
   });
