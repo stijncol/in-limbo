@@ -229,6 +229,15 @@ app.get('/', async (req, res) => {
     min-width: 0;
   }
   .filters-row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+  .filters-row .filters-label {
+    padding-top: 7px;
+  }
+  .filters-row .theme-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -247,19 +256,20 @@ app.get('/', async (req, res) => {
   .filters-medium {
     display: none;
     margin-top: 20px;
-    padding-left: 60px;
-    position: relative;
   }
   .filters-medium.visible {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+  .filters-medium .filters-label {
+    padding-top: 7px;
+  }
+  .filters-medium .medium-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    align-items: center;
-  }
-  .filters-medium .filters-label {
-    position: absolute;
-    left: 0;
-    width: 52px;
   }
   .filters-medium button {
     border-style: dashed;
@@ -359,6 +369,8 @@ app.get('/', async (req, res) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 18px;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .search-toggle:hover { border-color: #111; color: #111; }
   .search-input {
@@ -697,18 +709,20 @@ app.get('/', async (req, res) => {
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
         <span class="filters-label">theme</span>
-        <button class="active" data-filter="all">all</button>
-        ${themeButtons}
-        <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+        <div class="theme-tags">
+          <button class="active" data-filter="all">all</button>
+          ${themeButtons}
+          <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+        </div>
       </div>
       <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
       <div class="filters-row filters-medium">
         <span class="filters-label">medium</span>
-        ${mediumButtons}
+        <div class="medium-tags">${mediumButtons}</div>
       </div>
     </div>
     <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5"><circle cx="10.5" cy="10.5" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></button>
+      <button class="search-toggle" id="search-toggle" title="search">&#x2315;</button>
       <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
     </div>
   </div>
@@ -1030,9 +1044,10 @@ ${archiveCards}
 
   // Dynamically limit visible tags to what fits on the first line
   const filtersRow = document.getElementById('filters-row');
+  const themeTags = filtersRow.querySelector('.theme-tags');
   const filtersExtra = document.getElementById('filters-extra');
   const tagClose = document.getElementById('tag-close');
-  const tagBtns = Array.from(filtersRow.querySelectorAll('button[data-filter]'));
+  const tagBtns = Array.from(themeTags.querySelectorAll('button[data-filter]'));
   const expandBtn = document.getElementById('tag-expand');
   
   // Wait for layout, then check which tags overflow to second line
