@@ -653,7 +653,7 @@ app.get('/', async (req, res) => {
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio <em>Positioneren 2: Stelling–Strategie</em>. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
       </div>
     </div>
@@ -666,7 +666,7 @@ ${archiveCards}
 </div>
 
 <div class="site-footer">
-  <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
+  <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Jantje Engels, Lodewijk Heylen at KU Leuven.</div>
   <div class="footer-logos"><img src="/public/logos-outline.png" alt="lab-O & KU Leuven"></div>
 </div>
 
@@ -874,8 +874,6 @@ ${archiveCards}
       const tags = Array.from(container.querySelectorAll('span'));
       if (tags.length < 2) return;
       const firstTop = tags[0].offsetTop;
-      
-      // First pass: hide all tags on second line
       let hiddenCount = 0;
       tags.forEach(tag => {
         if (tag.offsetTop > firstTop) {
@@ -883,28 +881,13 @@ ${archiveCards}
           hiddenCount++;
         }
       });
-      
       if (hiddenCount > 0) {
-        // Add +N indicator
         const more = document.createElement('span');
         more.textContent = '+' + hiddenCount;
         more.style.opacity = '0.4';
         more.style.cursor = 'default';
-        more.style.whiteSpace = 'nowrap';
+        more.classList.add('tag-more');
         container.appendChild(more);
-        
-        // Second pass: if +N itself dropped to second line, hide one more tag
-        while (more.offsetTop > firstTop && container.querySelectorAll('span:not([style*=\"display: none\"])').length > 2) {
-          const visible = Array.from(container.querySelectorAll('span:not([style*=\"display: none\"])')); 
-          const lastVisible = visible[visible.length - 2]; // one before +N
-          if (lastVisible && lastVisible !== more) {
-            lastVisible.style.display = 'none';
-            hiddenCount++;
-            more.textContent = '+' + hiddenCount;
-          } else {
-            break;
-          }
-        }
       }
     });
   }, 100);
