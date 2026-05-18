@@ -217,13 +217,13 @@ app.get('/', async (req, res) => {
   .filters {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0;
     margin-bottom: 40px;
   }
   .filters-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
   }
   .filters-label {
@@ -232,11 +232,13 @@ app.get('/', async (req, res) => {
     letter-spacing: 0.05em;
     color: #aaa;
     text-transform: lowercase;
-    margin-right: 4px;
+    width: 52px;
+    flex-shrink: 0;
     white-space: nowrap;
   }
   .filters-medium {
     display: none;
+    margin-top: 14px;
   }
   .filters-medium.visible {
     display: flex;
@@ -247,9 +249,27 @@ app.get('/', async (req, res) => {
   .filters-extra {
     display: none;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
+    padding-left: 52px;
+    margin-top: 6px;
   }
   .filters.show-all .filters-extra { display: flex; }
+  .filters-extra .tag-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 100px;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .filters-extra .tag-close:hover { border-color: #111; color: #111; }
   .filters button {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
@@ -266,9 +286,9 @@ app.get('/', async (req, res) => {
   .filters button.active { background: #111; border-color: #111; color: #fff; }
   .tag-expand {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 18px;
-    width: 38px;
-    height: 38px;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border: 1px solid #ccc;
     border-radius: 100px;
@@ -281,7 +301,7 @@ app.get('/', async (req, res) => {
     justify-content: center;
   }
   .tag-expand:hover { border-color: #111; color: #111; }
-  .filters.show-all .tag-expand { transform: rotate(45deg); }
+  .filters.show-all .tag-expand { display: none; }
   .search-wrap {
     display: flex;
     align-items: center;
@@ -646,7 +666,7 @@ app.get('/', async (req, res) => {
         <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
       </div>
     </div>
-    <div class="filters-extra" id="filters-extra"></div>
+    <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
     <div class="filters-row filters-medium" style="margin-top:-2px;">
       <span class="filters-label">medium</span>
       ${mediumButtons}
@@ -972,27 +992,35 @@ ${archiveCards}
   const MAX_VISIBLE_TAGS = 8;
   const filtersRow = document.getElementById('filters-row');
   const filtersExtra = document.getElementById('filters-extra');
+  const tagClose = document.getElementById('tag-close');
   const tagBtns = filtersRow.querySelectorAll('button[data-filter]');
   let count = 0;
   tagBtns.forEach(btn => {
     if (btn.dataset.filter === 'all') return;
     count++;
     if (count > MAX_VISIBLE_TAGS) {
-      filtersExtra.appendChild(btn);
+      filtersExtra.insertBefore(btn, tagClose);
     }
   });
   // Hide + button if no extra tags
-  if (count <= MAX_VISIBLE_TAGS) document.getElementById('tag-expand').style.display = 'none';
+  if (count <= MAX_VISIBLE_TAGS) {
+    document.getElementById('tag-expand').style.display = 'none';
+    tagClose.style.display = 'none';
+  }
 
-  // Tag expand toggle — just show/hide extra row, don't filter
+  // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
-    // Close search if open
     if (searchInput.classList.contains('open')) {
       searchInput.classList.remove('open');
       searchInput.value = '';
       if (activeType === 'search') applyFilter('all', 'tag');
     }
-    filtersBar.classList.toggle('show-all');
+    filtersBar.classList.add('show-all');
+  });
+
+  // Tag close
+  tagClose.addEventListener('click', () => {
+    filtersBar.classList.remove('show-all');
   });
 
   // Search toggle
