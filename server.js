@@ -206,7 +206,7 @@ app.get('/', async (req, res) => {
   body {
     background: #fff;
     font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
-    font-weight: 100;
+    font-weight: 300;
     color: #111;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -513,15 +513,15 @@ app.get('/', async (req, res) => {
   .intro-block .intro-text a {
     color: #111;
     text-decoration: underline;
-    font-weight: 700;
+    font-weight: 300;
   }
   .intro-block .intro-text a.year-filter {
-    font-weight: 400;
+    font-weight: 300;
     text-decoration: underline;
     cursor: pointer;
   }
   .intro-block .intro-text strong {
-    font-weight: 700;
+    font-weight: 500;
   }
   .labo-hover {
     position: relative;
@@ -597,7 +597,7 @@ app.get('/', async (req, res) => {
   }
   .lightbox .lb-meta h2 {
     font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
-    font-weight: 700;
+    font-weight: 500;
     font-size: 16px;
     line-height: 1.3;
     color: #fff;
@@ -731,7 +731,7 @@ app.get('/', async (req, res) => {
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/"><strong>KU Leuven</strong></a> within the <span class="labo-hover"><a href="https://www.lab-o.club/"><strong>lab-O</strong></a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
       </div>
     </div>
