@@ -199,14 +199,12 @@ app.get('/', async (req, res) => {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>in limbo</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     background: #fff;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
-    font-weight: 100;
+    font-family: Helvetica, Arial, sans-serif;
     color: #111;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -246,7 +244,7 @@ app.get('/', async (req, res) => {
     align-items: center;
   }
   .filters-label {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 11px;
     letter-spacing: 0.05em;
     color: #aaa;
@@ -301,7 +299,7 @@ app.get('/', async (req, res) => {
   }
   .filters-extra .tag-close:hover { border-color: #111; color: #111; }
   .filters button {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     letter-spacing: 0.02em;
     padding: 6px 15px;
@@ -315,7 +313,7 @@ app.get('/', async (req, res) => {
   .filters button:hover { border-color: #111; color: #111; }
   .filters button.active { background: #111; border-color: #111; color: #fff; }
   .tag-expand {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 16px;
     width: 32px;
     height: 32px;
@@ -339,7 +337,7 @@ app.get('/', async (req, res) => {
     flex-shrink: 0;
   }
   .search-input {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 15px;
     padding: 0;
     border: 1px solid #ccc;
@@ -372,11 +370,11 @@ app.get('/', async (req, res) => {
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .search-toggle:hover { border-color: #111; color: #111; }
   .search-input {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 15px;
     padding: 8px 16px;
     border: 1px solid #ccc;
@@ -502,7 +500,7 @@ app.get('/', async (req, res) => {
     padding: 0 20px 0 0;
   }
   .intro-block .intro-text {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 22px;
     line-height: 1.55;
     color: #111;
@@ -596,7 +594,7 @@ app.get('/', async (req, res) => {
     padding: 20px 0 0;
   }
   .lightbox .lb-meta h2 {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-weight: 700;
     font-size: 16px;
     line-height: 1.3;
@@ -605,21 +603,21 @@ app.get('/', async (req, res) => {
     text-align: left;
   }
   .lightbox .lb-meta .lb-authors {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     color: rgba(255,255,255,0.6);
     text-align: left;
     margin-bottom: 2px;
   }
   .lightbox .lb-meta .lb-year {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     color: rgba(255,255,255,0.6);
     text-align: left;
     margin-bottom: 14px;
   }
   .lightbox .lb-read-more {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     color: rgba(255,255,255,0.4);
     cursor: pointer;
@@ -644,7 +642,7 @@ app.get('/', async (req, res) => {
     margin-top: 12px;
   }
   .lightbox .lb-desc-wrap p {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 12px;
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
@@ -661,7 +659,7 @@ app.get('/', async (req, res) => {
     font-size: 14px;
     color: rgba(255,255,255,0.4);
     cursor: pointer;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     letter-spacing: 0.05em;
     transition: color 0.2s;
   }
@@ -676,7 +674,7 @@ app.get('/', async (req, res) => {
     gap: 40px;
   }
   .site-footer .footer-text {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     line-height: 1.5;
     color: #111;
@@ -1228,7 +1226,7 @@ app.get('/submit', requireStudent, (req, res) => {
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     background: #fff;
     color: #111;
     padding: 40px;
@@ -1259,7 +1257,7 @@ app.get('/submit', requireStudent, (req, res) => {
   label:first-of-type { margin-top: 0; }
   input[type="text"], input[type="number"], textarea {
     width: 100%;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     padding: 10px 12px;
     border: 1px solid #ddd;
@@ -1273,7 +1271,7 @@ app.get('/submit', requireStudent, (req, res) => {
   .row { display: flex; gap: 16px; }
   .row > div { flex: 1; }
   button[type="submit"] {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
@@ -1393,7 +1391,7 @@ app.get('/user', requireAuth, async (req, res) => {
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     background: #fafafa;
     color: #111;
     padding: 40px;
@@ -1425,7 +1423,7 @@ app.get('/user', requireAuth, async (req, res) => {
   label:first-of-type { margin-top: 0; }
   input[type="text"], input[type="number"], textarea {
     width: 100%;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
     padding: 10px 12px;
     border: 1px solid #ddd;
@@ -1454,7 +1452,7 @@ app.get('/user', requireAuth, async (req, res) => {
   }
   .check-row input[type="checkbox"] { width: 16px; height: 16px; }
   button[type="submit"], .btn {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
