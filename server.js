@@ -862,26 +862,29 @@ ${archiveCards}
     d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
     // Combo palettes
     c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
-      { dot: [40,90,70],   bg: [240,250,245], hue: 150 },
-      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [140,75,45],  bg: [255,250,245], hue: 25 }
     ]},
     c2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
-      { dot: [40,90,70],   bg: [240,250,245], hue: 90 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [120,45,55],  bg: [255,248,248], hue: 350 }
     ]},
     c3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
-      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [150,90,95],  bg: [255,248,248], hue: 355 }
     ]},
     c4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [40,90,70],   bg: [240,250,245], hue: 150 },
-      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [160,120,40], bg: [255,252,242], hue: 45 }
     ]},
     c5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [40,40,90],   bg: [240,240,250], hue: 225 },
-      { dot: [25,70,50],   bg: [240,250,245], hue: 150 },
-      { dot: [50,50,50],   bg: [255,255,255], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [90,60,110],  bg: [252,248,255], hue: 280 }
     ]},
     c6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
@@ -889,24 +892,24 @@ ${archiveCards}
       { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
     ]},
     c7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [255,255,255], hue: 225 },
-      { dot: [40,90,70],   bg: [255,255,255], hue: 150 },
-      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [110,80,50],  bg: [255,252,248], hue: 30 }
     ]},
     c8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [252,250,245], hue: 225 },
-      { dot: [40,90,70],   bg: [252,250,245], hue: 150 },
-      { dot: [80,80,80],   bg: [252,250,245], hue: 0 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [150,60,40],  bg: [255,248,245], hue: 10 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 }
     ]},
-    c9:  { w: 500, threshold: 170, contrast: 0.9, combo: [
-      { dot: [80,80,130],  bg: [245,245,252], hue: 225 },
-      { dot: [60,110,85],  bg: [245,252,248], hue: 150 },
-      { dot: [100,100,100],bg: [252,252,252], hue: 0 }
+    c9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [100,50,80],  bg: [255,248,252], hue: 320 }
     ]},
-    c10: { w: 500, threshold: 140, contrast: 1.2, combo: [
-      { dot: [40,40,110],  bg: [235,235,250], hue: 225 },
-      { dot: [20,80,55],   bg: [235,250,240], hue: 150 },
-      { dot: [50,50,50],   bg: [255,255,255], hue: 0 }
+    c10: { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [140,75,45],  bg: [255,250,245], hue: 25 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 }
     ]}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
@@ -1471,16 +1474,16 @@ app.get('/d19', async (req, res) => { await renderPublic(req, res, { ...baseCfg,
 app.get('/d20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd20', label: 'd20 — black on yellow background' }); });
 
 // Combo tests: c1-c10, mix of d6 (navy/lavender), d8 (forest/mint), d9 (dark grey/white)
-app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — navy + forest + grey (3 colors, hue-based)' }); });
-app.get('/c2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c2', label: 'c2 — navy + forest (2 colors)' }); });
-app.get('/c3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c3', label: 'c3 — navy + grey (2 colors)' }); });
-app.get('/c4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c4', label: 'c4 — forest + grey (2 colors)' }); });
-app.get('/c5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c5', label: 'c5 — navy + forest + grey, darker dots' }); });
-app.get('/c6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c6', label: 'c6 — navy + forest + grey, lighter bg' }); });
-app.get('/c7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c7', label: 'c7 — all same bg (white), 3 dot colors' }); });
-app.get('/c8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c8', label: 'c8 — all same bg (warm white), 3 dot colors' }); });
-app.get('/c9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c9', label: 'c9 — muted tones, softer contrast' }); });
-app.get('/c10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c10', label: 'c10 — high contrast, vivid combos' }); });
+app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — c6 base + warm terracotta' }); });
+app.get('/c2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c2', label: 'c2 — c6 base + muted burgundy' }); });
+app.get('/c3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c3', label: 'c3 — c6 base + dusty rose' }); });
+app.get('/c4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c4', label: 'c4 — c6 base + warm ochre' }); });
+app.get('/c5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c5', label: 'c5 — c6 base + soft purple' }); });
+app.get('/c6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c6', label: 'c6 — original (navy + forest + grey)' }); });
+app.get('/c7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c7', label: 'c7 — c6 base + warm brown' }); });
+app.get('/c8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c8', label: 'c8 — navy + forest + rust' }); });
+app.get('/c9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c9', label: 'c9 — navy + forest + plum' }); });
+app.get('/c10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c10', label: 'c10 — navy + terracotta + forest' }); });
 
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
