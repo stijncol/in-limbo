@@ -770,6 +770,7 @@ ${archiveCards}
 </div>
 
 <script>
+  window.__ditherMode = '${cfg.ditherMode || 'default'}';
   // Thumbnails + dithering
   function getDominantColor(ctx, w, h) {
     const d = ctx.getImageData(0, 0, w, h).data;
@@ -815,14 +816,40 @@ ${archiveCards}
     return best;
   }
 
+  // Dither configurations for test routes
+  const ditherConfigs = {
+    default: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
+    t1:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'bw' },           // pure black & white
+    t2:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_yellow' },   // only yellow tint
+    t3:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_cyan' },     // only cyan tint
+    t4:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_red' },      // only red/blush tint
+    t5:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted' },      // inverted (white dots on black)
+    t6:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted_tint' }, // inverted with color tint
+    t7:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'sepia' },         // warm sepia
+    t8:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'cool' },          // cool blue-grey
+    t9:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'green' },         // dark green on cream
+    t10: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'newspaper' },     // newsprint grey
+    t11: { w: 200, threshold: 160, contrast: 1.0, colorMode: 'tinted' },        // very low res
+    t12: { w: 700, threshold: 160, contrast: 1.0, colorMode: 'tinted' },        // very high res
+    t13: { w: 500, threshold: 80,  contrast: 1.0, colorMode: 'tinted' },        // very dark
+    t14: { w: 500, threshold: 200, contrast: 1.0, colorMode: 'tinted' },        // very light/airy
+    t15: { w: 500, threshold: 160, contrast: 1.8, colorMode: 'tinted' },        // extreme contrast
+    t16: { w: 500, threshold: 160, contrast: 0.6, colorMode: 'tinted' },        // very soft/flat
+    t17: { w: 300, threshold: 100, contrast: 1.3, colorMode: 'bw' },            // chunky high contrast b&w
+    t18: { w: 700, threshold: 180, contrast: 0.8, colorMode: 'tinted' },        // hires, soft, airy
+    t19: { w: 400, threshold: 140, contrast: 1.2, colorMode: 'inverted' },      // mid-res inverted
+    t20: { w: 500, threshold: 150, contrast: 1.1, colorMode: 'mono_yellow' },   // slightly contrasty yellow
+  };
+  const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
+
   function ditherImage(img, thumb, variation) {
+    const cfg = activeDitherConfig;
     const canvas = document.createElement('canvas');
-    const w = 500;
+    const w = cfg.w;
     const h = Math.round(w * (9/16));
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
-    // Cover-fit: fill canvas without letterboxing
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = w / h;
     let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
@@ -835,17 +862,54 @@ ${archiveCards}
     }
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 
-    // Get dominant color before converting
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // Store original grayscale for re-dithering
     const origData = ctx.getImageData(0, 0, w, h);
     const gray = new Float32Array(w * h);
     for (let i = 0; i < origData.data.length; i += 4) {
       let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+      lum = ((lum / 255 - 0.5) * cfg.contrast + 0.5) * 255;
+      lum = Math.max(0, Math.min(255, lum));
       gray[i/4] = lum;
     }
-    const threshold = 160;
+    const threshold = cfg.threshold;
+
+    // Color modes
+    function applyColor(out, imageData) {
+      for (let i = 0; i < out.length; i++) {
+        const v = out[i] / 255;
+        let r, g, b;
+        switch(cfg.colorMode) {
+          case 'bw':
+            r = g = b = out[i]; break;
+          case 'mono_yellow':
+            r = Math.round(v * 245); g = Math.round(v * 240); b = Math.round(v * 220); break;
+          case 'mono_cyan':
+            r = Math.round(v * 220); g = Math.round(v * 242); b = Math.round(v * 242); break;
+          case 'mono_red':
+            r = Math.round(v * 245); g = Math.round(v * 225); b = Math.round(v * 225); break;
+          case 'inverted':
+            r = g = b = 255 - out[i]; break;
+          case 'inverted_tint':
+            const iv = (255 - out[i]) / 255;
+            r = Math.round(iv * cr); g = Math.round(iv * cg); b = Math.round(iv * cb); break;
+          case 'sepia':
+            r = Math.round(v * 240); g = Math.round(v * 220); b = Math.round(v * 190); break;
+          case 'cool':
+            r = Math.round(v * 210); g = Math.round(v * 220); b = Math.round(v * 235); break;
+          case 'green':
+            r = Math.round(v * 200); g = Math.round(v * 230); b = Math.round(v * 200); break;
+          case 'newspaper':
+            r = Math.round(v * 230); g = Math.round(v * 228); b = Math.round(v * 225); break;
+          case 'tinted': default:
+            r = Math.round(v * cr); g = Math.round(v * cg); b = Math.round(v * cb); break;
+        }
+        imageData.data[i*4] = r;
+        imageData.data[i*4+1] = g;
+        imageData.data[i*4+2] = b;
+        imageData.data[i*4+3] = 255;
+      }
+    }
 
     function dither(noiseX, noiseY, noiseRadius) {
       const d = new Float32Array(gray);
@@ -885,13 +949,7 @@ ${archiveCards}
 
       // Apply to canvas
       const imageData = ctx.createImageData(w, h);
-      for (let i = 0; i < out.length; i++) {
-        const v = out[i] / 255;
-        imageData.data[i*4]   = Math.round(v * cr);
-        imageData.data[i*4+1] = Math.round(v * cg);
-        imageData.data[i*4+2] = Math.round(v * cb);
-        imageData.data[i*4+3] = 255;
-      }
+      applyColor(out, imageData);
       ctx.putImageData(imageData, 0, 0);
     }
 
@@ -1243,6 +1301,33 @@ app.get('/v2', async (req, res) => {
 app.get('/v3', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — Helvetica', font: "Helvetica, 'Helvetica Neue', Arial", fontImport: '', introSize: '22px' });
 });
+
+// === DITHER TEST ROUTES ===
+// Color variations (t1-t10)
+const baseCfg = { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '22px' };
+
+app.get('/t1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't1', label: 't1 — pure black & white' }); });
+app.get('/t2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't2', label: 't2 — mono yellow' }); });
+app.get('/t3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't3', label: 't3 — mono cyan' }); });
+app.get('/t4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't4', label: 't4 — mono blush/red' }); });
+app.get('/t5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't5', label: 't5 — inverted (white on black)' }); });
+app.get('/t6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't6', label: 't6 — inverted with color tint' }); });
+app.get('/t7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't7', label: 't7 — warm sepia' }); });
+app.get('/t8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't8', label: 't8 — cool blue-grey' }); });
+app.get('/t9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't9', label: 't9 — dark green on cream' }); });
+app.get('/t10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't10', label: 't10 — newspaper grey' }); });
+
+// Resolution + contrast variations (t11-t20)
+app.get('/t11', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't11', label: 't11 — very low res (200px), tinted' }); });
+app.get('/t12', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't12', label: 't12 — very high res (700px), tinted' }); });
+app.get('/t13', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't13', label: 't13 — very dark (threshold 80)' }); });
+app.get('/t14', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't14', label: 't14 — very light/airy (threshold 200)' }); });
+app.get('/t15', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't15', label: 't15 — extreme contrast (1.8)' }); });
+app.get('/t16', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't16', label: 't16 — very soft/flat (contrast 0.6)' }); });
+app.get('/t17', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't17', label: 't17 — chunky b&w (300px, contrast 1.3)' }); });
+app.get('/t18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't18', label: 't18 — hires soft airy (700px, 0.8)' }); });
+app.get('/t19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't19', label: 't19 — mid-res inverted (400px)' }); });
+app.get('/t20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't20', label: 't20 — contrasty yellow mono' }); });
 
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
