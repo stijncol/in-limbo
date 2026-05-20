@@ -149,7 +149,8 @@ app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
 });
 
 // --- Public frontend ---
-app.get('/', async (req, res) => {
+async function renderPublic(req, res, config) {
+  const cfg = config || { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' };
   const allVideos = (await getVideoRows()).filter(v => v.status === 'approved' || !v.status);
   const featured = allVideos.filter(v => v.featured && !v.archived);
   const archive = allVideos.filter(v => v.archived || !v.featured);
@@ -206,7 +207,7 @@ app.get('/', async (req, res) => {
   body {
     background: #fff;
     font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
-    font-weight: 300;
+    font-weight: ${cfg.bodyWeight};
     color: #111;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -461,7 +462,7 @@ app.get('/', async (req, res) => {
   .card .tags span {
     font-size: 11px;
     letter-spacing: 0.03em;
-    color: #777;
+    color: ${cfg.tagColor};
     cursor: pointer;
     transition: color 0.2s ease;
   }
@@ -478,7 +479,7 @@ app.get('/', async (req, res) => {
     font-size: 11px;
     letter-spacing: 0.03em;
     color: #111;
-    font-weight: 500;
+    font-weight: ${cfg.titleWeight};
     text-align: right;
     white-space: nowrap;
     flex-shrink: 0;
@@ -708,6 +709,7 @@ app.get('/', async (req, res) => {
 </head>
 <body>
 <div class="page">
+  ${cfg.label ? '<div style="position:fixed;top:10px;right:10px;font-size:11px;color:#aaa;z-index:999;">' + cfg.label + '</div>' : ''}
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
@@ -1220,6 +1222,26 @@ ${archiveCards}
 </script>
 </body>
 </html>`);
+}
+
+// Default: current style
+app.get('/', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' });
+});
+
+// V1: alles licht (300)
+app.get('/v1', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 300, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#999', label: 'v1 — all light (300)' });
+});
+
+// V2: alles medium (400)
+app.get('/v2', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 400, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#777', label: 'v2 — all medium (400)' });
+});
+
+// V3: intro licht, rest medium
+app.get('/v3', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — intro light, titles medium' });
 });
 
 // --- Student submit page ---
