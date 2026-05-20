@@ -814,25 +814,8 @@ ${archiveCards}
   }
 
   function ditherImage(img, thumb, variation) {
-    // Different settings per variation for testing
-    const variations = [
-      { w: 340, threshold: 120, contrast: 1.0 },   // 0: standard
-      { w: 200, threshold: 120, contrast: 1.0 },   // 1: very low res
-      { w: 500, threshold: 120, contrast: 1.0 },   // 2: high res
-      { w: 340, threshold: 80, contrast: 1.0 },    // 3: dark, more black
-      { w: 340, threshold: 160, contrast: 1.0 },   // 4: light, more white
-      { w: 280, threshold: 100, contrast: 1.4 },   // 5: high contrast, mid res
-      { w: 160, threshold: 120, contrast: 1.0 },   // 6: very pixelated
-      { w: 420, threshold: 140, contrast: 0.8 },   // 7: soft, high res
-      { w: 340, threshold: 120, contrast: 1.8 },   // 8: extreme contrast
-      { w: 240, threshold: 90, contrast: 1.2 },    // 9: dark, chunky
-      { w: 380, threshold: 130, contrast: 1.1 },   // 10: slightly light, crisp
-      { w: 300, threshold: 110, contrast: 0.9 },   // 11: soft, medium
-    ];
-    const vi = variation % variations.length;
-    const v = variations[vi];
     const canvas = document.createElement('canvas');
-    const w = v.w;
+    const w = 500;
     const h = Math.round(w * (9/16));
     canvas.width = w;
     canvas.height = h;
@@ -853,16 +836,14 @@ ${archiveCards}
     // Get dominant color before converting
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // Store original grayscale for re-dithering with contrast
+    // Store original grayscale for re-dithering
     const origData = ctx.getImageData(0, 0, w, h);
     const gray = new Float32Array(w * h);
     for (let i = 0; i < origData.data.length; i += 4) {
       let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
-      lum = ((lum / 255 - 0.5) * v.contrast + 0.5) * 255;
-      lum = Math.max(0, Math.min(255, lum));
       gray[i/4] = lum;
     }
-    const threshold = v.threshold;
+    const threshold = 160;
 
     function dither(noiseX, noiseY, noiseRadius) {
       const d = new Float32Array(gray);
