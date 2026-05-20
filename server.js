@@ -505,7 +505,7 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text {
     font-family: inherit;
-    font-size: 22px;
+    font-size: ${cfg.introSize || '22px'};
     line-height: 1.55;
     color: #111;
   }
@@ -515,10 +515,10 @@ async function renderPublic(req, res, config) {
   .intro-block .intro-text a {
     color: #111;
     text-decoration: underline;
-    font-weight: 300;
+    font-weight: 400;
   }
   .intro-block .intro-text a.year-filter {
-    font-weight: 300;
+    font-weight: 400;
     text-decoration: underline;
     cursor: pointer;
   }
@@ -1226,72 +1226,22 @@ ${archiveCards}
 
 // Default: current style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: '', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap', introSize: '17px' });
 });
 
-// V1: alles licht (300)
+// V1: IBM Plex Sans, intro light + titles medium (was v3)
 app.get('/v1', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 300, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#999', label: 'v1 — IBM Plex Sans, all light (300)', font: "'IBM Plex Sans'" });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — IBM Plex Sans', font: "'IBM Plex Sans'", introSize: '22px' });
 });
 
-// V2: alles medium (400)
+// V2: IBM Plex Mono, intro smaller
 app.get('/v2', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 400, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#777', label: 'v2 — IBM Plex Sans, all medium (400)', font: "'IBM Plex Sans'" });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v2 — IBM Plex Mono', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap', introSize: '17px' });
 });
 
-// V3: intro licht, rest medium
+// V3: Helvetica, the original
 app.get('/v3', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — IBM Plex Sans, intro light + titles medium', font: "'IBM Plex Sans'" });
-});
-
-// V4: Helvetica Neue
-app.get('/v4', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v4 — Helvetica Neue, v3 weights', font: "'Helvetica Neue', Helvetica, Arial", fontImport: '' });
-});
-
-// V5: Inter
-app.get('/v5', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v5 — Inter, light body + medium titles', font: "'Inter'", fontImport: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap' });
-});
-
-// V6: Space Grotesk
-app.get('/v6', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v6 — Space Grotesk, light + medium', font: "'Space Grotesk'", fontImport: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap' });
-});
-
-// V7: IBM Plex Mono
-app.get('/v7', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v7 — IBM Plex Mono, monospace vibe', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap' });
-});
-
-// V8: DM Sans
-app.get('/v8', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v8 — DM Sans, geometric clean', font: "'DM Sans'", fontImport: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap' });
-});
-
-// V9: Archivo
-app.get('/v9', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v9 — Archivo, tight industrial', font: "'Archivo'", fontImport: 'https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500&display=swap' });
-});
-
-// V10: Suisse Int'l style (Switzer)
-app.get('/v10', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v10 — Syne, expressive Swiss', font: "'Syne'", fontImport: 'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&display=swap' });
-});
-
-// V11: Work Sans
-app.get('/v11', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v11 — Work Sans, humanist', font: "'Work Sans'", fontImport: 'https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap' });
-});
-
-// V12: Libre Franklin
-app.get('/v12', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v12 — Libre Franklin, neo-grotesque', font: "'Libre Franklin'", fontImport: 'https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500&display=swap' });
-});
-
-// V13: IBM Plex Sans but heavier
-app.get('/v13', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 500, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#666', label: 'v13 — IBM Plex Sans, heavier overall', font: "'IBM Plex Sans'" });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — Helvetica', font: "Helvetica, 'Helvetica Neue', Arial", fontImport: '', introSize: '22px' });
 });
 
 // --- Student submit page ---
