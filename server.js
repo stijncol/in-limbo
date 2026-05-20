@@ -1226,7 +1226,7 @@ ${archiveCards}
 
 // Default: current style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: '', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap', introSize: '17px' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px' });
 });
 
 // V1: IBM Plex Sans, intro light + titles medium (was v3)
