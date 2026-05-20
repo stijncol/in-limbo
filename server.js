@@ -859,7 +859,55 @@ ${archiveCards}
     d17: { w: 500, threshold: 160, contrast: 1.0, dotColor: [100,60,120],  bgColor: [250,245,255] },  // purple dots on lilac
     d18: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [220,242,242] },  // black on cyan bg
     d19: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,225,225] },  // black on blush bg
-    d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },  // black on yellow bg (=current default basically)
+    d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
+    // Combo palettes
+    c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
+      { dot: [40,90,70],   bg: [240,250,245], hue: 150 },
+      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+    ]},
+    c2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
+      { dot: [40,90,70],   bg: [240,250,245], hue: 90 }
+    ]},
+    c3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [240,240,250], hue: 225 },
+      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+    ]},
+    c4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [40,90,70],   bg: [240,250,245], hue: 150 },
+      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+    ]},
+    c5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [40,40,90],   bg: [240,240,250], hue: 225 },
+      { dot: [25,70,50],   bg: [240,250,245], hue: 150 },
+      { dot: [50,50,50],   bg: [255,255,255], hue: 0 }
+    ]},
+    c6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+    ]},
+    c7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [255,255,255], hue: 225 },
+      { dot: [40,90,70],   bg: [255,255,255], hue: 150 },
+      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
+    ]},
+    c8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [252,250,245], hue: 225 },
+      { dot: [40,90,70],   bg: [252,250,245], hue: 150 },
+      { dot: [80,80,80],   bg: [252,250,245], hue: 0 }
+    ]},
+    c9:  { w: 500, threshold: 170, contrast: 0.9, combo: [
+      { dot: [80,80,130],  bg: [245,245,252], hue: 225 },
+      { dot: [60,110,85],  bg: [245,252,248], hue: 150 },
+      { dot: [100,100,100],bg: [252,252,252], hue: 0 }
+    ]},
+    c10: { w: 500, threshold: 140, contrast: 1.2, combo: [
+      { dot: [40,40,110],  bg: [235,235,250], hue: 225 },
+      { dot: [20,80,55],   bg: [235,250,240], hue: 150 },
+      { dot: [50,50,50],   bg: [255,255,255], hue: 0 }
+    ]}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
 
@@ -885,6 +933,45 @@ ${archiveCards}
 
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
+    // If combo palette, pick dot+bg colors based on dominant hue
+    let finalDotColor = cfg.dotColor || null;
+    let finalBgColor = cfg.bgColor || null;
+    if (cfg.combo) {
+      // Get dominant hue for this specific image
+      const imgData = ctx.getImageData(0, 0, w, h).data;
+      const hBuckets = new Array(360).fill(0);
+      for (let i = 0; i < imgData.length; i += 16) {
+        const rv = imgData[i]/255, gv = imgData[i+1]/255, bv = imgData[i+2]/255;
+        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+        if (mx - mn < 0.08) continue;
+        const l = (mx + mn) / 2;
+        if (l < 0.1 || l > 0.9) continue;
+        let hu = 0;
+        if (mx === rv) hu = ((gv - bv) / (mx - mn)) % 6;
+        else if (mx === gv) hu = (bv - rv) / (mx - mn) + 2;
+        else hu = (rv - gv) / (mx - mn) + 4;
+        hu = Math.round(hu * 60);
+        if (hu < 0) hu += 360;
+        hBuckets[hu]++;
+      }
+      let maxC = 0, domH = 0;
+      for (let hh = 0; hh < 360; hh++) {
+        let s = 0;
+        for (let j = -15; j <= 15; j++) s += hBuckets[(hh + j + 360) % 360];
+        if (s > maxC) { maxC = s; domH = hh; }
+      }
+      let bestCombo = cfg.combo[0], bestDist = Infinity;
+      for (const c of cfg.combo) {
+        let dist = Math.abs(domH - c.hue);
+        if (dist > 180) dist = 360 - dist;
+        if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+      }
+      finalDotColor = bestCombo.dot;
+      finalBgColor = bestCombo.bg;
+    }
+    // Override cfg for applyColor
+    const applyCfg = { ...cfg, dotColor: finalDotColor, bgColor: finalBgColor };
+
     const origData = ctx.getImageData(0, 0, w, h);
     const gray = new Float32Array(w * h);
     for (let i = 0; i < origData.data.length; i += 4) {
@@ -897,8 +984,8 @@ ${archiveCards}
 
     // Color modes
     function applyColor(out, imageData) {
-      const dc = cfg.dotColor || null;  // [r,g,b] for dark pixels
-      const bc = cfg.bgColor || null;   // [r,g,b] for light pixels
+      const dc = applyCfg.dotColor || null;
+      const bc = applyCfg.bgColor || null;
       
       for (let i = 0; i < out.length; i++) {
         const v = out[i] / 255;
@@ -910,7 +997,7 @@ ${archiveCards}
           g = Math.round(dc[1] + v * (bc[1] - dc[1]));
           b = Math.round(dc[2] + v * (bc[2] - dc[2]));
         } else {
-          switch(cfg.colorMode) {
+          switch(applyCfg.colorMode) {
             case 'bw':
               r = g = b = out[i]; break;
             case 'mono_yellow':
@@ -1382,6 +1469,18 @@ app.get('/d17', async (req, res) => { await renderPublic(req, res, { ...baseCfg,
 app.get('/d18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd18', label: 'd18 — black on cyan background' }); });
 app.get('/d19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd19', label: 'd19 — black on blush background' }); });
 app.get('/d20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd20', label: 'd20 — black on yellow background' }); });
+
+// Combo tests: c1-c10, mix of d6 (navy/lavender), d8 (forest/mint), d9 (dark grey/white)
+app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — navy + forest + grey (3 colors, hue-based)' }); });
+app.get('/c2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c2', label: 'c2 — navy + forest (2 colors)' }); });
+app.get('/c3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c3', label: 'c3 — navy + grey (2 colors)' }); });
+app.get('/c4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c4', label: 'c4 — forest + grey (2 colors)' }); });
+app.get('/c5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c5', label: 'c5 — navy + forest + grey, darker dots' }); });
+app.get('/c6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c6', label: 'c6 — navy + forest + grey, lighter bg' }); });
+app.get('/c7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c7', label: 'c7 — all same bg (white), 3 dot colors' }); });
+app.get('/c8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c8', label: 'c8 — all same bg (warm white), 3 dot colors' }); });
+app.get('/c9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c9', label: 'c9 — muted tones, softer contrast' }); });
+app.get('/c10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c10', label: 'c10 — high contrast, vivid combos' }); });
 
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
