@@ -200,13 +200,13 @@ async function renderPublic(req, res, config) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>in limbo</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="${cfg.fontImport || 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap'}" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     background: #fff;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
     min-height: 100vh;
@@ -247,7 +247,7 @@ async function renderPublic(req, res, config) {
     align-items: center;
   }
   .filters-label {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 11px;
     letter-spacing: 0.05em;
     color: #aaa;
@@ -302,7 +302,7 @@ async function renderPublic(req, res, config) {
   }
   .filters-extra .tag-close:hover { border-color: #111; color: #111; }
   .filters button {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     letter-spacing: 0.02em;
     padding: 6px 15px;
@@ -316,7 +316,7 @@ async function renderPublic(req, res, config) {
   .filters button:hover { border-color: #111; color: #111; }
   .filters button.active { background: #111; border-color: #111; color: #fff; }
   .tag-expand {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 16px;
     width: 32px;
     height: 32px;
@@ -340,7 +340,7 @@ async function renderPublic(req, res, config) {
     flex-shrink: 0;
   }
   .search-input {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 15px;
     padding: 0;
     border: 1px solid #ccc;
@@ -373,11 +373,11 @@ async function renderPublic(req, res, config) {
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
   }
   .search-toggle:hover { border-color: #111; color: #111; }
   .search-input {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 15px;
     padding: 8px 16px;
     border: 1px solid #ccc;
@@ -504,7 +504,7 @@ async function renderPublic(req, res, config) {
     padding: 0 20px 0 0;
   }
   .intro-block .intro-text {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 22px;
     line-height: 1.55;
     color: #111;
@@ -598,7 +598,7 @@ async function renderPublic(req, res, config) {
     padding: 20px 0 0;
   }
   .lightbox .lb-meta h2 {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-weight: 500;
     font-size: 16px;
     line-height: 1.3;
@@ -607,21 +607,21 @@ async function renderPublic(req, res, config) {
     text-align: left;
   }
   .lightbox .lb-meta .lb-authors {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 14px;
     color: rgba(255,255,255,0.6);
     text-align: left;
     margin-bottom: 2px;
   }
   .lightbox .lb-meta .lb-year {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 14px;
     color: rgba(255,255,255,0.6);
     text-align: left;
     margin-bottom: 14px;
   }
   .lightbox .lb-read-more {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     color: rgba(255,255,255,0.4);
     cursor: pointer;
@@ -646,7 +646,7 @@ async function renderPublic(req, res, config) {
     margin-top: 12px;
   }
   .lightbox .lb-desc-wrap p {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 12px;
     line-height: 1.6;
     color: rgba(255,255,255,0.55);
@@ -663,7 +663,7 @@ async function renderPublic(req, res, config) {
     font-size: 14px;
     color: rgba(255,255,255,0.4);
     cursor: pointer;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     letter-spacing: 0.05em;
     transition: color 0.2s;
   }
@@ -678,7 +678,7 @@ async function renderPublic(req, res, config) {
     gap: 40px;
   }
   .site-footer .footer-text {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     line-height: 1.5;
     color: #111;
@@ -1231,17 +1231,67 @@ app.get('/', async (req, res) => {
 
 // V1: alles licht (300)
 app.get('/v1', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 300, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#999', label: 'v1 — all light (300)' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 300, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#999', label: 'v1 — IBM Plex Sans, all light (300)', font: "'IBM Plex Sans'" });
 });
 
 // V2: alles medium (400)
 app.get('/v2', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 400, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#777', label: 'v2 — all medium (400)' });
+  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 400, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#777', label: 'v2 — IBM Plex Sans, all medium (400)', font: "'IBM Plex Sans'" });
 });
 
 // V3: intro licht, rest medium
 app.get('/v3', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — intro light, titles medium' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — IBM Plex Sans, intro light + titles medium', font: "'IBM Plex Sans'" });
+});
+
+// V4: Helvetica Neue
+app.get('/v4', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v4 — Helvetica Neue, v3 weights', font: "'Helvetica Neue', Helvetica, Arial", fontImport: '' });
+});
+
+// V5: Inter
+app.get('/v5', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v5 — Inter, light body + medium titles', font: "'Inter'", fontImport: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap' });
+});
+
+// V6: Space Grotesk
+app.get('/v6', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v6 — Space Grotesk, light + medium', font: "'Space Grotesk'", fontImport: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap' });
+});
+
+// V7: IBM Plex Mono
+app.get('/v7', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v7 — IBM Plex Mono, monospace vibe', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap' });
+});
+
+// V8: DM Sans
+app.get('/v8', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v8 — DM Sans, geometric clean', font: "'DM Sans'", fontImport: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap' });
+});
+
+// V9: Archivo
+app.get('/v9', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v9 — Archivo, tight industrial', font: "'Archivo'", fontImport: 'https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500&display=swap' });
+});
+
+// V10: Suisse Int'l style (Switzer)
+app.get('/v10', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v10 — Syne, expressive Swiss', font: "'Syne'", fontImport: 'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&display=swap' });
+});
+
+// V11: Work Sans
+app.get('/v11', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v11 — Work Sans, humanist', font: "'Work Sans'", fontImport: 'https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap' });
+});
+
+// V12: Libre Franklin
+app.get('/v12', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v12 — Libre Franklin, neo-grotesque', font: "'Libre Franklin'", fontImport: 'https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500&display=swap' });
+});
+
+// V13: IBM Plex Sans but heavier
+app.get('/v13', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 400, titleWeight: 500, tagWeight: 300, filterWeight: 400, introWeight: 400, tagColor: '#666', label: 'v13 — IBM Plex Sans, heavier overall', font: "'IBM Plex Sans'" });
 });
 
 // --- Student submit page ---
@@ -1255,7 +1305,7 @@ app.get('/submit', requireStudent, (req, res) => {
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     background: #fff;
     color: #111;
     padding: 40px;
@@ -1286,7 +1336,7 @@ app.get('/submit', requireStudent, (req, res) => {
   label:first-of-type { margin-top: 0; }
   input[type="text"], input[type="number"], textarea {
     width: 100%;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 14px;
     padding: 10px 12px;
     border: 1px solid #ddd;
@@ -1300,7 +1350,7 @@ app.get('/submit', requireStudent, (req, res) => {
   .row { display: flex; gap: 16px; }
   .row > div { flex: 1; }
   button[type="submit"] {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
@@ -1420,7 +1470,7 @@ app.get('/user', requireAuth, async (req, res) => {
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     background: #fafafa;
     color: #111;
     padding: 40px;
@@ -1452,7 +1502,7 @@ app.get('/user', requireAuth, async (req, res) => {
   label:first-of-type { margin-top: 0; }
   input[type="text"], input[type="number"], textarea {
     width: 100%;
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 14px;
     padding: 10px 12px;
     border: 1px solid #ddd;
@@ -1481,7 +1531,7 @@ app.get('/user', requireAuth, async (req, res) => {
   }
   .check-row input[type="checkbox"] { width: 16px; height: 16px; }
   button[type="submit"], .btn {
-    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
