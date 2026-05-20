@@ -461,7 +461,7 @@ app.get('/', async (req, res) => {
   .card .tags span {
     font-size: 11px;
     letter-spacing: 0.03em;
-    color: #999;
+    color: #777;
     cursor: pointer;
     transition: color 0.2s ease;
   }
@@ -478,6 +478,7 @@ app.get('/', async (req, res) => {
     font-size: 11px;
     letter-spacing: 0.03em;
     color: #111;
+    font-weight: 500;
     text-align: right;
     white-space: nowrap;
     flex-shrink: 0;
@@ -485,7 +486,7 @@ app.get('/', async (req, res) => {
   .card .card-year {
     font-size: 11px;
     letter-spacing: 0.03em;
-    color: #999;
+    color: #777;
     cursor: pointer;
     transition: color 0.2s ease;
     white-space: nowrap;
@@ -812,9 +813,26 @@ ${archiveCards}
     return best;
   }
 
-  function ditherImage(img, thumb) {
+  function ditherImage(img, thumb, variation) {
+    // Different settings per variation for testing
+    const variations = [
+      { w: 340, threshold: 120, contrast: 1.0 },   // 0: standard
+      { w: 200, threshold: 120, contrast: 1.0 },   // 1: very low res
+      { w: 500, threshold: 120, contrast: 1.0 },   // 2: high res
+      { w: 340, threshold: 80, contrast: 1.0 },    // 3: dark, more black
+      { w: 340, threshold: 160, contrast: 1.0 },   // 4: light, more white
+      { w: 280, threshold: 100, contrast: 1.4 },   // 5: high contrast, mid res
+      { w: 160, threshold: 120, contrast: 1.0 },   // 6: very pixelated
+      { w: 420, threshold: 140, contrast: 0.8 },   // 7: soft, high res
+      { w: 340, threshold: 120, contrast: 1.8 },   // 8: extreme contrast
+      { w: 240, threshold: 90, contrast: 1.2 },    // 9: dark, chunky
+      { w: 380, threshold: 130, contrast: 1.1 },   // 10: slightly light, crisp
+      { w: 300, threshold: 110, contrast: 0.9 },   // 11: soft, medium
+    ];
+    const vi = variation % variations.length;
+    const v = variations[vi];
     const canvas = document.createElement('canvas');
-    const w = 340;
+    const w = v.w;
     const h = Math.round(w * (9/16));
     canvas.width = w;
     canvas.height = h;
@@ -835,12 +853,16 @@ ${archiveCards}
     // Get dominant color before converting
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // Store original grayscale for re-dithering
+    // Store original grayscale for re-dithering with contrast
     const origData = ctx.getImageData(0, 0, w, h);
     const gray = new Float32Array(w * h);
     for (let i = 0; i < origData.data.length; i += 4) {
-      gray[i/4] = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+      let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+      lum = ((lum / 255 - 0.5) * v.contrast + 0.5) * 255;
+      lum = Math.max(0, Math.min(255, lum));
+      gray[i/4] = lum;
     }
+    const threshold = v.threshold;
 
     function dither(noiseX, noiseY, noiseRadius) {
       const d = new Float32Array(gray);
@@ -868,7 +890,7 @@ ${archiveCards}
         for (let x = 0; x < w; x++) {
           const i = y * w + x;
           const old = d[i];
-          const nw = old > 120 ? 255 : 0;
+          const nw = old > threshold ? 255 : 0;
           out[i] = nw;
           const err = old - nw;
           if (x + 1 < w) d[i+1] += err * 7/16;
@@ -919,14 +941,16 @@ ${archiveCards}
     });
   }
 
+  let videoIndex = 0;
   document.querySelectorAll('.card[data-video-id]').forEach(card => {
     const id = card.dataset.videoId;
     const type = card.dataset.videoType;
     const img = card.querySelector('img');
     img.crossOrigin = 'anonymous';
+    const myIndex = videoIndex++;
 
     img.addEventListener('load', () => {
-      try { ditherImage(img, card.querySelector('.thumb')); } catch(e) {}
+      try { ditherImage(img, card.querySelector('.thumb'), myIndex); } catch(e) {}
     });
 
     if (type === 'youtube') {
