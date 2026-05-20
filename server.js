@@ -819,26 +819,47 @@ ${archiveCards}
   // Dither configurations for test routes
   const ditherConfigs = {
     default: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
-    t1:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'bw' },           // pure black & white
-    t2:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_yellow' },   // only yellow tint
-    t3:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_cyan' },     // only cyan tint
-    t4:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_red' },      // only red/blush tint
-    t5:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted' },      // inverted (white dots on black)
-    t6:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted_tint' }, // inverted with color tint
-    t7:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'sepia' },         // warm sepia
-    t8:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'cool' },          // cool blue-grey
-    t9:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'green' },         // dark green on cream
-    t10: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'newspaper' },     // newsprint grey
-    t11: { w: 200, threshold: 160, contrast: 1.0, colorMode: 'tinted' },        // very low res
-    t12: { w: 700, threshold: 160, contrast: 1.0, colorMode: 'tinted' },        // very high res
-    t13: { w: 500, threshold: 80,  contrast: 1.0, colorMode: 'tinted' },        // very dark
-    t14: { w: 500, threshold: 200, contrast: 1.0, colorMode: 'tinted' },        // very light/airy
-    t15: { w: 500, threshold: 160, contrast: 1.8, colorMode: 'tinted' },        // extreme contrast
-    t16: { w: 500, threshold: 160, contrast: 0.6, colorMode: 'tinted' },        // very soft/flat
-    t17: { w: 300, threshold: 100, contrast: 1.3, colorMode: 'bw' },            // chunky high contrast b&w
-    t18: { w: 700, threshold: 180, contrast: 0.8, colorMode: 'tinted' },        // hires, soft, airy
-    t19: { w: 400, threshold: 140, contrast: 1.2, colorMode: 'inverted' },      // mid-res inverted
-    t20: { w: 500, threshold: 150, contrast: 1.1, colorMode: 'mono_yellow' },   // slightly contrasty yellow
+    t1:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'bw' },
+    t2:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_yellow' },
+    t3:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_cyan' },
+    t4:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_red' },
+    t5:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted' },
+    t6:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted_tint' },
+    t7:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'sepia' },
+    t8:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'cool' },
+    t9:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'green' },
+    t10: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'newspaper' },
+    t11: { w: 200, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
+    t12: { w: 700, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
+    t13: { w: 500, threshold: 80,  contrast: 1.0, colorMode: 'tinted' },
+    t14: { w: 500, threshold: 200, contrast: 1.0, colorMode: 'tinted' },
+    t15: { w: 500, threshold: 160, contrast: 1.8, colorMode: 'tinted' },
+    t16: { w: 500, threshold: 160, contrast: 0.6, colorMode: 'tinted' },
+    t17: { w: 300, threshold: 100, contrast: 1.3, colorMode: 'bw' },
+    t18: { w: 700, threshold: 180, contrast: 0.8, colorMode: 'tinted' },
+    t19: { w: 400, threshold: 140, contrast: 1.2, colorMode: 'inverted' },
+    t20: { w: 500, threshold: 150, contrast: 1.1, colorMode: 'mono_yellow' },
+    // Colored dots series
+    d1:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [180,50,50],   bgColor: [255,255,255] },  // red dots on white
+    d2:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,50,180],   bgColor: [255,255,255] },  // blue dots on white
+    d3:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,130,80],   bgColor: [255,255,255] },  // green dots on white
+    d4:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [180,120,50],  bgColor: [255,255,255] },  // orange dots on white
+    d5:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [100,100,100], bgColor: [245,242,235] },  // grey dots on cream
+    d6:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [60,60,120],   bgColor: [240,240,250] },  // navy dots on lavender
+    d7:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [120,40,40],   bgColor: [250,240,235] },  // burgundy dots on blush
+    d8:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [40,90,70],    bgColor: [240,250,245] },  // forest dots on mint
+    d9:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [80,80,80],    bgColor: [255,255,255] },  // dark grey dots on white
+    d10: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },  // black dots on warm cream
+    d11: { w: 300, threshold: 140, contrast: 1.2, dotColor: [180,50,50],   bgColor: [255,255,255] },  // chunky red dots
+    d12: { w: 700, threshold: 170, contrast: 0.9, dotColor: [50,50,180],   bgColor: [250,250,255] },  // hires soft blue
+    d13: { w: 500, threshold: 120, contrast: 1.0, dotColor: [50,130,80],   bgColor: [255,255,255] },  // dark green, more dots
+    d14: { w: 500, threshold: 190, contrast: 0.8, dotColor: [100,100,100], bgColor: [255,255,255] },  // very light grey, airy
+    d15: { w: 500, threshold: 160, contrast: 1.4, dotColor: [0,0,0],       bgColor: [255,255,255] },  // high contrast pure b&w
+    d16: { w: 400, threshold: 150, contrast: 1.0, dotColor: [140,80,30],   bgColor: [255,250,240] },  // brown/terracotta on warm white
+    d17: { w: 500, threshold: 160, contrast: 1.0, dotColor: [100,60,120],  bgColor: [250,245,255] },  // purple dots on lilac
+    d18: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [220,242,242] },  // black on cyan bg
+    d19: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,225,225] },  // black on blush bg
+    d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },  // black on yellow bg (=current default basically)
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
 
@@ -876,33 +897,44 @@ ${archiveCards}
 
     // Color modes
     function applyColor(out, imageData) {
+      const dc = cfg.dotColor || null;  // [r,g,b] for dark pixels
+      const bc = cfg.bgColor || null;   // [r,g,b] for light pixels
+      
       for (let i = 0; i < out.length; i++) {
         const v = out[i] / 255;
         let r, g, b;
-        switch(cfg.colorMode) {
-          case 'bw':
-            r = g = b = out[i]; break;
-          case 'mono_yellow':
-            r = Math.round(v * 245); g = Math.round(v * 240); b = Math.round(v * 220); break;
-          case 'mono_cyan':
-            r = Math.round(v * 220); g = Math.round(v * 242); b = Math.round(v * 242); break;
-          case 'mono_red':
-            r = Math.round(v * 245); g = Math.round(v * 225); b = Math.round(v * 225); break;
-          case 'inverted':
-            r = g = b = 255 - out[i]; break;
-          case 'inverted_tint':
-            const iv = (255 - out[i]) / 255;
-            r = Math.round(iv * cr); g = Math.round(iv * cg); b = Math.round(iv * cb); break;
-          case 'sepia':
-            r = Math.round(v * 240); g = Math.round(v * 220); b = Math.round(v * 190); break;
-          case 'cool':
-            r = Math.round(v * 210); g = Math.round(v * 220); b = Math.round(v * 235); break;
-          case 'green':
-            r = Math.round(v * 200); g = Math.round(v * 230); b = Math.round(v * 200); break;
-          case 'newspaper':
-            r = Math.round(v * 230); g = Math.round(v * 228); b = Math.round(v * 225); break;
-          case 'tinted': default:
-            r = Math.round(v * cr); g = Math.round(v * cg); b = Math.round(v * cb); break;
+        
+        if (dc && bc) {
+          // Custom dot + background colors
+          r = Math.round(dc[0] + v * (bc[0] - dc[0]));
+          g = Math.round(dc[1] + v * (bc[1] - dc[1]));
+          b = Math.round(dc[2] + v * (bc[2] - dc[2]));
+        } else {
+          switch(cfg.colorMode) {
+            case 'bw':
+              r = g = b = out[i]; break;
+            case 'mono_yellow':
+              r = Math.round(v * 245); g = Math.round(v * 240); b = Math.round(v * 220); break;
+            case 'mono_cyan':
+              r = Math.round(v * 220); g = Math.round(v * 242); b = Math.round(v * 242); break;
+            case 'mono_red':
+              r = Math.round(v * 245); g = Math.round(v * 225); b = Math.round(v * 225); break;
+            case 'inverted':
+              r = g = b = 255 - out[i]; break;
+            case 'inverted_tint':
+              const iv = (255 - out[i]) / 255;
+              r = Math.round(iv * cr); g = Math.round(iv * cg); b = Math.round(iv * cb); break;
+            case 'sepia':
+              r = Math.round(v * 240); g = Math.round(v * 220); b = Math.round(v * 190); break;
+            case 'cool':
+              r = Math.round(v * 210); g = Math.round(v * 220); b = Math.round(v * 235); break;
+            case 'green':
+              r = Math.round(v * 200); g = Math.round(v * 230); b = Math.round(v * 200); break;
+            case 'newspaper':
+              r = Math.round(v * 230); g = Math.round(v * 228); b = Math.round(v * 225); break;
+            case 'tinted': default:
+              r = Math.round(v * cr); g = Math.round(v * cg); b = Math.round(v * cb); break;
+          }
         }
         imageData.data[i*4] = r;
         imageData.data[i*4+1] = g;
@@ -1328,6 +1360,28 @@ app.get('/t17', async (req, res) => { await renderPublic(req, res, { ...baseCfg,
 app.get('/t18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't18', label: 't18 — hires soft airy (700px, 0.8)' }); });
 app.get('/t19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't19', label: 't19 — mid-res inverted (400px)' }); });
 app.get('/t20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't20', label: 't20 — contrasty yellow mono' }); });
+
+// Colored dots series (d1-d20)
+app.get('/d1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd1', label: 'd1 — red dots on white' }); });
+app.get('/d2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd2', label: 'd2 — blue dots on white' }); });
+app.get('/d3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd3', label: 'd3 — green dots on white' }); });
+app.get('/d4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd4', label: 'd4 — orange dots on white' }); });
+app.get('/d5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd5', label: 'd5 — grey dots on cream' }); });
+app.get('/d6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd6', label: 'd6 — navy dots on lavender' }); });
+app.get('/d7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd7', label: 'd7 — burgundy dots on blush' }); });
+app.get('/d8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd8', label: 'd8 — forest dots on mint' }); });
+app.get('/d9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd9', label: 'd9 — dark grey dots on white' }); });
+app.get('/d10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd10', label: 'd10 — black dots on warm cream' }); });
+app.get('/d11', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd11', label: 'd11 — chunky red dots' }); });
+app.get('/d12', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd12', label: 'd12 — hires soft blue dots' }); });
+app.get('/d13', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd13', label: 'd13 — dark green, more dots' }); });
+app.get('/d14', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd14', label: 'd14 — very light grey, airy' }); });
+app.get('/d15', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd15', label: 'd15 — high contrast pure b&w' }); });
+app.get('/d16', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd16', label: 'd16 — terracotta on warm white' }); });
+app.get('/d17', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd17', label: 'd17 — purple dots on lilac' }); });
+app.get('/d18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd18', label: 'd18 — black on cyan background' }); });
+app.get('/d19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd19', label: 'd19 — black on blush background' }); });
+app.get('/d20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd20', label: 'd20 — black on yellow background' }); });
 
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
