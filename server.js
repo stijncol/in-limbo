@@ -862,53 +862,53 @@ ${archiveCards}
     d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
     // Combo palettes
     c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
     ]},
     c2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [120,45,55],  bg: [255,248,248], hue: 0 }
     ]},
     c3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [150,90,95],  bg: [255,248,248], hue: 0 }
     ]},
     c4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [160,120,40], bg: [255,252,242], hue: 0 }
     ]},
     c5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [90,60,110],  bg: [252,248,255], hue: 0 }
     ]},
     c6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
     ]},
     c7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [110,80,50],  bg: [255,252,248], hue: 0 }
     ]},
     c8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [150,60,40],  bg: [255,248,245], hue: 0 }
     ]},
     c9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [100,50,80],  bg: [255,248,252], hue: 0 }
     ]},
     c10: { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
     ]}
   };
@@ -936,34 +936,44 @@ ${archiveCards}
 
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // If combo palette, pick dot+bg colors based on dominant hue using getDominantColor
+    // If combo palette, pick dot+bg colors using same hue detection as main page
     let finalDotColor = cfg.dotColor || null;
     let finalBgColor = cfg.bgColor || null;
     if (cfg.combo) {
-      // Reuse the same hue detection as the main page
-      const [dr, dg, db] = getDominantColor(ctx, w, h);
-      // Convert the dominant RGB to hue
-      const rv = dr/255, gv = dg/255, bv = db/255;
-      const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-      let domH = 0;
-      if (mx - mn > 0.01) {
-        if (mx === rv) domH = ((gv - bv) / (mx - mn)) % 6;
-        else if (mx === gv) domH = (bv - rv) / (mx - mn) + 2;
-        else domH = (rv - gv) / (mx - mn) + 4;
-        domH = Math.round(domH * 60);
-        if (domH < 0) domH += 360;
+      // getDominantColor already computes domHue internally - let's just replicate its palette matching
+      // but with combo colors instead of tinted whites
+      const d = ctx.getImageData(0, 0, w, h).data;
+      const hueBuckets = new Array(360).fill(0);
+      for (let i = 0; i < d.length; i += 16) {
+        const rv = d[i]/255, gv = d[i+1]/255, bv = d[i+2]/255;
+        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+        const delta = mx - mn;
+        if (delta < 0.08) continue;
+        const lum = (mx + mn) / 2;
+        if (lum < 0.1 || lum > 0.9) continue;
+        let hue = 0;
+        if (mx === rv) hue = ((gv - bv) / delta) % 6;
+        else if (mx === gv) hue = (bv - rv) / delta + 2;
+        else hue = (rv - gv) / delta + 4;
+        hue = Math.round(hue * 60);
+        if (hue < 0) hue += 360;
+        hueBuckets[hue]++;
       }
-      let bestCombo = cfg.combo[0];
-      let bestDist = Infinity;
+      let maxCount = 0, domHue = 0;
+      for (let hh = 0; hh < 360; hh++) {
+        let sum = 0;
+        for (let j = -15; j <= 15; j++) sum += hueBuckets[(hh + j + 360) % 360];
+        if (sum > maxCount) { maxCount = sum; domHue = hh; }
+      }
+      let bestCombo = cfg.combo[0], bestDist = Infinity;
       for (const c of cfg.combo) {
-        let dist = Math.abs(domH - c.hue);
+        let dist = Math.abs(domHue - c.hue);
         if (dist > 180) dist = 360 - dist;
         if (dist < bestDist) { bestDist = dist; bestCombo = c; }
       }
       finalDotColor = bestCombo.dot;
       finalBgColor = bestCombo.bg;
     }
-    // Override cfg for applyColor
     const applyCfg = { ...cfg, dotColor: finalDotColor, bgColor: finalBgColor };
 
     const origData = ctx.getImageData(0, 0, w, h);
