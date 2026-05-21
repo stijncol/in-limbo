@@ -1036,8 +1036,26 @@ ${archiveCards}
 
     const origData = ctx.getImageData(0, 0, w, h);
     const gray = new Float32Array(w * h);
+    
+    // First pass: compute average luminance
+    let totalLum = 0;
+    for (let i = 0; i < origData.data.length; i += 4) {
+      totalLum += origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+    }
+    const avgLum = totalLum / (w * h);
+    
+    // Auto-normalize: target average of ~150 (airy feel)
+    // Only brighten dark images, don't darken light ones
+    const targetLum = 150;
+    let brightnessBoost = 0;
+    if (avgLum < targetLum) {
+      brightnessBoost = targetLum - avgLum;
+    }
+    
+    // Second pass: apply normalization + contrast
     for (let i = 0; i < origData.data.length; i += 4) {
       let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+      lum = lum + brightnessBoost;
       lum = ((lum / 255 - 0.5) * cfg.contrast + 0.5) * 255;
       lum = Math.max(0, Math.min(255, lum));
       gray[i/4] = lum;
