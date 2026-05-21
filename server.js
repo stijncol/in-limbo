@@ -1098,7 +1098,7 @@ ${archiveCards}
     const targetLum = cfg.targetLum || 150;
     let brightnessBoost = 0;
     if (avgLum < targetLum) {
-      brightnessBoost = targetLum - avgLum;
+      brightnessBoost = (targetLum - avgLum) * 0.6;
     }
     
     // Second pass: apply normalization + contrast
