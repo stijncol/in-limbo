@@ -917,6 +917,57 @@ ${archiveCards}
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
+    ]},
+    // Red/warm variations — navy + forest fixed, third color varies
+    r1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [180,100,100],bg: [255,248,248], hue: 0 }
+    ]},
+    r2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [150,55,45],  bg: [255,248,245], hue: 0 }
+    ]},
+    r3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [180,120,105],bg: [255,250,248], hue: 0 }
+    ]},
+    r4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [140,85,90],  bg: [252,248,248], hue: 0 }
+    ]},
+    r5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [160,80,50],  bg: [255,250,245], hue: 0 }
+    ]},
+    r6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [170,110,70], bg: [255,252,248], hue: 0 }
+    ]},
+    r7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    r8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [160,100,80], bg: [255,252,250], hue: 0 }
+    ]},
+    r9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,80,100], bg: [252,248,252], hue: 0 }
+    ]},
+    r10: { w: 500, threshold: 160, contrast: 1.0, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [170,130,50], bg: [255,253,245], hue: 0 }
     ]}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
@@ -1486,6 +1537,18 @@ app.get('/d17', async (req, res) => { await renderPublic(req, res, { ...baseCfg,
 app.get('/d18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd18', label: 'd18 — black on cyan background' }); });
 app.get('/d19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd19', label: 'd19 — black on blush background' }); });
 app.get('/d20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd20', label: 'd20 — black on yellow background' }); });
+
+// Red/warm third color tests (r1-r10) — navy + forest stay the same, only third color changes
+app.get('/r1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r1', label: 'r1 — coral pink dots' }); });
+app.get('/r2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r2', label: 'r2 — brick red dots' }); });
+app.get('/r3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r3', label: 'r3 — salmon dots' }); });
+app.get('/r4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r4', label: 'r4 — muted rose dots' }); });
+app.get('/r5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r5', label: 'r5 — burnt sienna dots' }); });
+app.get('/r6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r6', label: 'r6 — copper dots' }); });
+app.get('/r7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r7', label: 'r7 — deep clay dots' }); });
+app.get('/r8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r8', label: 'r8 — soft terracotta dots' }); });
+app.get('/r9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r9', label: 'r9 — warm mauve dots' }); });
+app.get('/r10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r10', label: 'r10 — ochre/amber dots' }); });
 
 // Combo tests: c1-c10, mix of d6 (navy/lavender), d8 (forest/mint), d9 (dark grey/white)
 app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — c6 base + warm terracotta' }); });
