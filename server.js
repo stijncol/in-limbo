@@ -202,6 +202,13 @@ async function renderPublic(req, res, config) {
 <title>in limbo</title>
 <link href="${cfg.fontImport || 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap'}" rel="stylesheet">
 <style>
+  @font-face {
+    font-family: 'Univers';
+    src: url('/public/fonts/Univers.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -1406,8 +1413,14 @@ ${archiveCards}
 }
 
 // Default: current style
+// Old default (tinted whites)
+app.get('/old', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'old — tinted whites', font: "'IBM Plex Sans'", introSize: '22px' });
+});
+
+// Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'Univers', 'Helvetica Neue', Helvetica, Arial", fontImport: '', introSize: '22px', ditherMode: 'c7' });
 });
 
 // V1: IBM Plex Sans, intro light + titles medium (was v3)
