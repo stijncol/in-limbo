@@ -964,22 +964,16 @@ ${archiveCards}
         if (s > maxC) { maxC = s; domH = hh; }
       }
       let bestCombo = cfg.combo[0];
-      if (cfg.combo.length >= 3) {
-        // Same approach as main page getDominantColor - simple nearest hue
-        const palette = cfg.combo.map(c => ({ ...c }));
-        let bestDist = Infinity;
-        for (const c of palette) {
-          let dist = Math.abs(domH - c.hue);
-          if (dist > 180) dist = 360 - dist;
-          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
-        }
-      } else {
-        let bestDist = Infinity;
-        for (const c of cfg.combo) {
-          let dist = Math.abs(domH - c.hue);
-          if (dist > 180) dist = 360 - dist;
-          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
-        }
+      // Hybrid: try hue-based first
+      let bestDist = Infinity;
+      for (const c of cfg.combo) {
+        let dist = Math.abs(domH - c.hue);
+        if (dist > 180) dist = 360 - dist;
+        if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+      }
+      // But if the hue detection is weak (low saturation), use index rotation
+      if (maxC < 50) {
+        bestCombo = cfg.combo[variation % cfg.combo.length];
       }
       finalDotColor = bestCombo.dot;
       finalBgColor = bestCombo.bg;
