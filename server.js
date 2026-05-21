@@ -862,54 +862,54 @@ ${archiveCards}
     d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
     // Combo palettes
     c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [140,75,45],  bg: [255,250,245], hue: 25 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
     ]},
     c2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [120,45,55],  bg: [255,248,248], hue: 350 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [120,45,55],  bg: [255,248,248], hue: 0 }
     ]},
     c3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [150,90,95],  bg: [255,248,248], hue: 355 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [150,90,95],  bg: [255,248,248], hue: 0 }
     ]},
     c4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [160,120,40], bg: [255,252,242], hue: 45 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [160,120,40], bg: [255,252,242], hue: 0 }
     ]},
     c5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [90,60,110],  bg: [252,248,255], hue: 280 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [90,60,110],  bg: [252,248,255], hue: 0 }
     ]},
     c6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
       { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
     ]},
     c7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [110,80,50],  bg: [255,252,248], hue: 30 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [110,80,50],  bg: [255,252,248], hue: 0 }
     ]},
     c8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [150,60,40],  bg: [255,248,245], hue: 10 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [150,60,40],  bg: [255,248,245], hue: 0 }
     ]},
     c9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 },
-      { dot: [100,50,80],  bg: [255,248,252], hue: 320 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [100,50,80],  bg: [255,248,252], hue: 0 }
     ]},
     c10: { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 225 },
-      { dot: [140,75,45],  bg: [255,250,245], hue: 25 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 150 }
+      { dot: [60,60,120],  bg: [248,248,255], hue: 240 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 120 },
+      { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
     ]}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
@@ -965,11 +965,15 @@ ${archiveCards}
       }
       let bestCombo = cfg.combo[0];
       if (cfg.combo.length >= 3) {
-        // Force distribution: use video index to guarantee all 3 colors appear
-        const colorIndex = variation % cfg.combo.length;
-        bestCombo = cfg.combo[colorIndex];
+        // Same approach as main page getDominantColor - simple nearest hue
+        const palette = cfg.combo.map(c => ({ ...c }));
+        let bestDist = Infinity;
+        for (const c of palette) {
+          let dist = Math.abs(domH - c.hue);
+          if (dist > 180) dist = 360 - dist;
+          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+        }
       } else {
-        // Fallback to nearest for 2-color combos
         let bestDist = Infinity;
         for (const c of cfg.combo) {
           let dist = Math.abs(domH - c.hue);
