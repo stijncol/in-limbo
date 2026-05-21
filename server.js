@@ -968,6 +968,56 @@ ${archiveCards}
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [170,130,50], bg: [255,253,245], hue: 0 }
+    ]},
+    b1:  { w: 500, threshold: 140, contrast: 1.0, targetLum: 130, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b2:  { w: 500, threshold: 180, contrast: 1.0, targetLum: 170, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b3:  { w: 500, threshold: 160, contrast: 1.2, targetLum: 150, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b4:  { w: 500, threshold: 160, contrast: 0.8, targetLum: 150, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b5:  { w: 500, threshold: 170, contrast: 1.0, targetLum: 160, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b6:  { w: 500, threshold: 150, contrast: 1.0, targetLum: 140, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b7:  { w: 500, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b8:  { w: 500, threshold: 180, contrast: 0.9, targetLum: 160, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b9:  { w: 500, threshold: 165, contrast: 1.05, targetLum: 155, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b10: { w: 500, threshold: 155, contrast: 0.95, targetLum: 145, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
@@ -1044,9 +1094,8 @@ ${archiveCards}
     }
     const avgLum = totalLum / (w * h);
     
-    // Auto-normalize: target average of ~150 (airy feel)
-    // Only brighten dark images, don't darken light ones
-    const targetLum = 150;
+    // Auto-normalize: target configurable (default 150)
+    const targetLum = cfg.targetLum || 150;
     let brightnessBoost = 0;
     if (avgLum < targetLum) {
       brightnessBoost = targetLum - avgLum;
@@ -1567,6 +1616,18 @@ app.get('/r7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, 
 app.get('/r8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r8', label: 'r8 — soft terracotta dots' }); });
 app.get('/r9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r9', label: 'r9 — warm mauve dots' }); });
 app.get('/r10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r10', label: 'r10 — ochre/amber dots' }); });
+
+// Brightness/contrast variations (b1-b10) — same r7 colors, different balance
+app.get('/b1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b1', label: 'b1 — target 130, threshold 140 (slightly denser)' }); });
+app.get('/b2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b2', label: 'b2 — target 170, threshold 180 (very airy)' }); });
+app.get('/b3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b3', label: 'b3 — target 150, threshold 160, contrast 1.2 (crisp)' }); });
+app.get('/b4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b4', label: 'b4 — target 150, threshold 160, contrast 0.8 (soft)' }); });
+app.get('/b5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b5', label: 'b5 — target 160, threshold 170 (light + airy)' }); });
+app.get('/b6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b6', label: 'b6 — target 140, threshold 150 (balanced)' }); });
+app.get('/b7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b7', label: 'b7 — target 150, threshold 140, contrast 1.1 (punchy)' }); });
+app.get('/b8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b8', label: 'b8 — target 160, threshold 180, contrast 0.9 (ethereal)' }); });
+app.get('/b9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b9', label: 'b9 — target 155, threshold 165, contrast 1.05 (sweet spot?)' }); });
+app.get('/b10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b10', label: 'b10 — target 145, threshold 155, contrast 0.95 (neutral)' }); });
 
 // Combo tests: c1-c10, mix of d6 (navy/lavender), d8 (forest/mint), d9 (dark grey/white)
 app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — c6 base + warm terracotta' }); });
