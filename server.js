@@ -1471,7 +1471,7 @@ app.get('/old', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'Univers', 'Helvetica Neue', Helvetica, Arial", fontImport: '', introSize: '22px', ditherMode: 'r7' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'r7' });
 });
 
 // V1: IBM Plex Sans, intro light + titles medium (was v3)
