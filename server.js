@@ -936,44 +936,29 @@ ${archiveCards}
 
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
-    // If combo palette, pick dot+bg colors based on dominant hue
+    // If combo palette, pick dot+bg colors based on dominant hue using getDominantColor
     let finalDotColor = cfg.dotColor || null;
     let finalBgColor = cfg.bgColor || null;
     if (cfg.combo) {
-      // Get dominant hue for this specific image
-      const imgData = ctx.getImageData(0, 0, w, h).data;
-      const hBuckets = new Array(360).fill(0);
-      for (let i = 0; i < imgData.length; i += 16) {
-        const rv = imgData[i]/255, gv = imgData[i+1]/255, bv = imgData[i+2]/255;
-        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-        if (mx - mn < 0.08) continue;
-        const l = (mx + mn) / 2;
-        if (l < 0.1 || l > 0.9) continue;
-        let hu = 0;
-        if (mx === rv) hu = ((gv - bv) / (mx - mn)) % 6;
-        else if (mx === gv) hu = (bv - rv) / (mx - mn) + 2;
-        else hu = (rv - gv) / (mx - mn) + 4;
-        hu = Math.round(hu * 60);
-        if (hu < 0) hu += 360;
-        hBuckets[hu]++;
-      }
-      let maxC = 0, domH = 0;
-      for (let hh = 0; hh < 360; hh++) {
-        let s = 0;
-        for (let j = -15; j <= 15; j++) s += hBuckets[(hh + j + 360) % 360];
-        if (s > maxC) { maxC = s; domH = hh; }
+      // Reuse the same hue detection as the main page
+      const [dr, dg, db] = getDominantColor(ctx, w, h);
+      // Convert the dominant RGB to hue
+      const rv = dr/255, gv = dg/255, bv = db/255;
+      const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+      let domH = 0;
+      if (mx - mn > 0.01) {
+        if (mx === rv) domH = ((gv - bv) / (mx - mn)) % 6;
+        else if (mx === gv) domH = (bv - rv) / (mx - mn) + 2;
+        else domH = (rv - gv) / (mx - mn) + 4;
+        domH = Math.round(domH * 60);
+        if (domH < 0) domH += 360;
       }
       let bestCombo = cfg.combo[0];
-      // Hybrid: try hue-based first
       let bestDist = Infinity;
       for (const c of cfg.combo) {
         let dist = Math.abs(domH - c.hue);
         if (dist > 180) dist = 360 - dist;
         if (dist < bestDist) { bestDist = dist; bestCombo = c; }
-      }
-      // But if the hue detection is weak (low saturation), use index rotation
-      if (maxC < 50) {
-        bestCombo = cfg.combo[variation % cfg.combo.length];
       }
       finalDotColor = bestCombo.dot;
       finalBgColor = bestCombo.bg;
