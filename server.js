@@ -1098,7 +1098,7 @@ ${archiveCards}
     const targetLum = cfg.targetLum || 150;
     let brightnessBoost = 0;
     if (avgLum < targetLum) {
-      brightnessBoost = (targetLum - avgLum) * 0.6;
+      brightnessBoost = (targetLum - avgLum) * 0.3;
     }
     
     // Second pass: apply normalization + contrast
@@ -1538,7 +1538,7 @@ app.get('/old', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'r7' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'b7' });
 });
 
 // V1: IBM Plex Sans, intro light + titles medium (was v3)
