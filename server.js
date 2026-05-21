@@ -963,11 +963,20 @@ ${archiveCards}
         for (let j = -15; j <= 15; j++) s += hBuckets[(hh + j + 360) % 360];
         if (s > maxC) { maxC = s; domH = hh; }
       }
-      let bestCombo = cfg.combo[0], bestDist = Infinity;
-      for (const c of cfg.combo) {
-        let dist = Math.abs(domH - c.hue);
-        if (dist > 180) dist = 360 - dist;
-        if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+      let bestCombo = cfg.combo[cfg.combo.length - 1]; // default to last (third color)
+      // Range-based: navy only for strict blue, forest only for strict green, everything else = third color
+      if (cfg.combo.length >= 3) {
+        if (domH >= 190 && domH <= 260) bestCombo = cfg.combo[0];       // strict blue → navy
+        else if (domH >= 100 && domH <= 170) bestCombo = cfg.combo[1];  // strict green → forest
+        else bestCombo = cfg.combo[2];                                   // everything else → third color
+      } else {
+        // Fallback to nearest for 2-color combos
+        let bestDist = Infinity;
+        for (const c of cfg.combo) {
+          let dist = Math.abs(domH - c.hue);
+          if (dist > 180) dist = 360 - dist;
+          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+        }
       }
       finalDotColor = bestCombo.dot;
       finalBgColor = bestCombo.bg;
