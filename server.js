@@ -1383,31 +1383,63 @@ function getClientScript() {
       });
     });
     
-    function applyFilter(value, type) {
-      activeFilter = value;
-      activeType = type;
-      document.querySelectorAll('button[data-filter]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === value);
-      });
-      
-      const isFiltered = value !== 'all';
-      const introBlock = document.getElementById('intro-block');
-      if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
-      
-      const archiveOpen = grid.classList.contains('show-archive');
-      document.querySelectorAll('.card').forEach(card => {
-        if (!card.dataset.videoId) return;
-        const isArchive = card.dataset.featured === 'false';
-        if (value === 'all') {
-          card.classList.toggle('hidden', isArchive && !archiveOpen);
-        } else if (type === 'year') {
-          card.classList.toggle('hidden', card.dataset.year !== value || (isArchive && !archiveOpen));
-        } else {
-          const tags = card.dataset.tags || '';
-          card.classList.toggle('hidden', !tags.split(',').includes(value) || (isArchive && !archiveOpen));
-        }
-      });
+   function applyFilter(value, type) {
+  activeFilter = value;
+  activeType = type;
+  
+  // Visuele feedback popup
+  const filterStatus = document.getElementById('filter-status') || (() => {
+    const div = document.createElement('div');
+    div.id = 'filter-status';
+    div.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#111; color:#fff; padding:8px 16px; border-radius:100px; font-size:12px; z-index:1000; transition:opacity 0.3s;';
+    document.body.appendChild(div);
+    return div;
+  })();
+  
+  filterStatus.textContent = value === 'all' ? 'showing all videos 📁' : `filtering: ${value} 🔍`;
+  filterStatus.style.opacity = '1';
+  setTimeout(() => { filterStatus.style.opacity = '0'; }, 1500);
+  
+  // Update active buttons
+  document.querySelectorAll('button[data-filter]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === value);
+  });
+  
+  const isFiltered = value !== 'all';
+  const introBlock = document.getElementById('intro-block');
+  if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
+  
+  // FIX: Open archive automatisch tijdens filteren
+  if (isFiltered && !grid.classList.contains('show-archive')) {
+    grid.classList.add('show-archive');
+    const archiveBtn = document.getElementById('archive-btn');
+    if (archiveBtn) {
+      archiveBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
+  }
+  
+  let visibleCount = 0;
+  
+  document.querySelectorAll('.card').forEach(card => {
+    if (!card.dataset.videoId) return;
+    let shouldHide = false;
+    
+    if (value === 'all') {
+      const isArchive = card.dataset.featured === 'false';
+      shouldHide = isArchive && !grid.classList.contains('show-archive');
+    } else if (type === 'year') {
+      shouldHide = card.dataset.year !== value;
+    } else if (type === 'tag') {
+      const tags = card.dataset.tags || '';
+      shouldHide = !tags.split(',').includes(value);
+    }
+    
+    card.classList.toggle('hidden', shouldHide);
+    if (!shouldHide) visibleCount++;
+  });
+  
+  console.log(`Filter "${value}" (${type}): ${visibleCount} videos visible`);
+}
     
     filters.addEventListener('click', e => {
       if (e.target.tagName === 'BUTTON' && e.target.dataset.filter) {
