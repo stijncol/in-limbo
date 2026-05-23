@@ -1481,11 +1481,11 @@ ${archiveCards}
         card.classList.toggle('hidden', isArchive && !archiveOpen);
       } else if (type === 'year') {
         const matchesFilter = card.dataset.year === value;
-        card.classList.toggle('hidden', !matchesFilter || (isArchive && !archiveOpen));
+        card.classList.toggle('hidden', !matchesFilter);
       } else {
         const tags = card.dataset.tags;
         const matchesFilter = tags.split(',').includes(value);
-        card.classList.toggle('hidden', !matchesFilter || (isArchive && !archiveOpen));
+        card.classList.toggle('hidden', !matchesFilter);
       }
     });
   }
