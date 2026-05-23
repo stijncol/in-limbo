@@ -747,7 +747,7 @@ async function renderPublic(req, res, config) {
           <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
         </div>
       </div>
-      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close">✕</button></div>
+      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close"><span style="display:inline-block;transform:rotate(45deg)">+</span></button></div>
       <div class="filters-row filters-medium">
         <span class="filters-label">medium</span>
         <div class="medium-tags">${mediumButtons}</div>
