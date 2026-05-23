@@ -152,8 +152,15 @@ app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
 async function renderPublic(req, res, config) {
   const cfg = config || { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' };
   const allVideos = (await getVideoRows()).filter(v => v.status === 'approved' || !v.status);
-  const featured = allVideos.filter(v => v.featured && !v.archived);
-  const archive = allVideos.filter(v => v.archived || !v.featured);
+  let featured = allVideos.filter(v => v.featured && !v.archived);
+  let archive = allVideos.filter(v => v.archived || !v.featured);
+
+  // Force featured to a multiple of 3 so the grid always fills complete rows
+  const remainder = featured.length % 3;
+  if (remainder !== 0) {
+    const overflow = featured.splice(featured.length - remainder, remainder);
+    archive = [...overflow, ...archive];
+  }
 
   // Collect tags by category
   const themeTags = new Set();
