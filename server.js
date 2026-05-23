@@ -99,7 +99,7 @@ function createBasicAuthMiddleware(expectedUser, expectedPass, realm) {
   return (req, res, next) => {
     const auth = req.headers.authorization;
     
-    if (!auth?.startsWith('Basic ')) {
+    if (!auth || !auth.startsWith('Basic ')) {
       res.set('WWW-Authenticate', `Basic realm="${realm}"`);
       return res.status(401).send('Authentication required');
     }
@@ -119,7 +119,7 @@ function createBasicAuthMiddleware(expectedUser, expectedPass, realm) {
 const requireAdmin = createBasicAuthMiddleware(config.adminUser, config.adminPass, 'in limbo admin');
 const requireStudent = (req, res, next) => {
   const auth = req.headers.authorization;
-  if (!auth?.startsWith('Basic ')) {
+  if (!auth || !auth.startsWith('Basic ')) {
     res.set('WWW-Authenticate', 'Basic realm="in limbo submit"');
     return res.status(401).send('Authentication required');
   }
@@ -300,25 +300,6 @@ app.get('/user', requireAdmin, async (req, res) => {
   res.send(renderAdminPage(videos));
 });
 
-app.get('/old', async (req, res) => {
-  const videos = await VideoModel.findPublic();
-  res.send(renderPublicPage(videos, { 
-    theme: 'old',
-    label: 'old — tinted whites',
-    ditherMode: 'default'
-  }));
-});
-
-app.get('/paper', async (req, res) => {
-  const videos = await VideoModel.findPublic();
-  res.send(renderPublicPage(videos, { 
-    theme: 'paper',
-    label: 'paper — newspaper tint',
-    ditherMode: 'b7',
-    paperTint: true
-  }));
-});
-
 app.get('/', async (req, res) => {
   const videos = await VideoModel.findPublic();
   res.send(renderPublicPage(videos, { 
@@ -330,7 +311,7 @@ app.get('/', async (req, res) => {
 
 // ==================== RENDER FUNCTIONS ====================
 function renderPublicPage(videos, options = {}) {
-  const { label = '', ditherMode = 'b7', paperTint = false, theme = 'default' } = options;
+  const { label = '', ditherMode = 'b7', paperTint = false } = options;
   
   const featured = videos.filter(v => v.featured && !v.archived);
   const archive = videos.filter(v => v.archived || !v.featured);
@@ -373,6 +354,9 @@ function renderPublicPage(videos, options = {}) {
     </div>`;
   };
   
+  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${escapeHtml(t)}</button>`).join('');
+  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${escapeHtml(t)}</button>`).join('');
+  
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -381,37 +365,6 @@ function renderPublicPage(videos, options = {}) {
   <title>in limbo — video archive</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    ${getPublicStyles(theme, paperTint)}
-  </style>
-</head>
-<body class="${paperTint ? 'paper-tint-active' : ''}">
-  ${label ? `<div class="version-label">${escapeHtml(label)}</div>` : ''}
-  
-  <div class="page">
-    ${renderFilters(themeTags, mediumTags)}
-    
-    <div class="grid" id="grid">
-      ${renderIntroBlock()}
-      ${featured.map(v => renderCard(v, true)).join('\n')}
-      ${archive.map(v => renderCard(v, false)).join('\n')}
-    </div>
-    
-    ${renderArchiveToggle(archive.length)}
-  </div>
-  
-  ${renderFooter()}
-  ${renderLightbox()}
-  
-  <script>
-    window.__ditherMode = '${ditherMode}';
-    ${getClientScript()}
-  </script>
-</body>
-</html>`;
-}
-
-function getPublicStyles(theme, paperTint) {
-  return `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #fff;
@@ -601,72 +554,67 @@ function getPublicStyles(theme, paperTint) {
       .page { padding: 24px 16px 60px; }
       .grid { grid-template-columns: 1fr; }
     }
-  `;
-}
-
-function renderFilters(themeTags, mediumTags) {
-  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${escapeHtml(t)}</button>`).join('');
+  </style>
+</head>
+<body class="${paperTint ? 'paper-tint-active' : ''}">
+  ${label ? `<div class="version-label">${escapeHtml(label)}</div>` : '<div class="version-label" style="background:#111; color:#0f0; padding:4px 12px; border-radius:100px; font-family:monospace;">✅ v2.0 - Archive filtering ACTIVE</div>'}
   
-  return `
-  <div class="filters" id="filters">
-    <div class="filters-left">
-      <div class="filters-row">
-        <span class="filters-label">theme</span>
-        <div class="theme-tags">
-          <button class="active" data-filter="all">all</button>
-          ${themeButtons}
-          <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+  <div class="page">
+    <div class="filters" id="filters">
+      <div class="filters-left">
+        <div class="filters-row">
+          <span class="filters-label">theme</span>
+          <div class="theme-tags">
+            <button class="active" data-filter="all">all</button>
+            ${themeButtons}
+            <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
+          </div>
+        </div>
+        <div class="filters-row">
+          <span class="filters-label">medium</span>
+          <div class="medium-tags" id="medium-tags">
+            ${mediumButtons}
+          </div>
         </div>
       </div>
-      <div class="filters-row">
-        <span class="filters-label">medium</span>
-        <div class="medium-tags" id="medium-tags">
-          ${[...mediumTags].sort().map(t => `<button data-filter="${t}">${escapeHtml(t)}</button>`).join('')}
-        </div>
+      <div class="search-wrap">
+        <button class="search-toggle" id="search-toggle" title="search">⌕</button>
+        <input type="text" id="search-input" class="search-input" placeholder="search...">
       </div>
     </div>
-    <div class="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search">⌕</button>
-      <input type="text" id="search-input" class="search-input" placeholder="search...">
+    
+    <div class="grid" id="grid">
+      <div class="intro-block" id="intro-block">
+        <div class="intro-text">
+          <p>This video archive brings together films produced by architecture students at 
+            <a href="https://arch.kuleuven.be/">KU Leuven</a> within the 
+            <span class="labo-hover">
+              <a href="https://www.lab-o.club/">lab-O</a>
+              <img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O">
+            </span> trajectory for the third-year bachelor studio.</p>
+          <p>Each academic year is structured around a different theme: 
+            <a href="#" class="year-filter" data-year="2022">Frame</a>, 
+            <a href="#" class="year-filter" data-year="2023">The Gaze</a>, 
+            <a href="#" class="year-filter" data-year="2024">Werk</a>, 
+            <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, 
+            and most recently <a href="#" class="year-filter" data-year="2026">In Limbo</a>.
+          </p>
+        </div>
+      </div>
+      ${featured.map(v => renderCard(v, true)).join('\n')}
+      ${archive.map(v => renderCard(v, false)).join('\n')}
     </div>
-  </div>`;
-}
-
-function renderIntroBlock() {
-  return `
-  <div class="intro-block" id="intro-block">
-    <div class="intro-text">
-      <p>This video archive brings together films produced by architecture students at 
-        <a href="https://arch.kuleuven.be/">KU Leuven</a> within the 
-        <span class="labo-hover">
-          <a href="https://www.lab-o.club/">lab-O</a>
-          <img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O">
-        </span> trajectory for the third-year bachelor studio.</p>
-      <p>Each academic year is structured around a different theme: 
-        <a href="#" class="year-filter" data-year="2022">Frame</a>, 
-        <a href="#" class="year-filter" data-year="2023">The Gaze</a>, 
-        <a href="#" class="year-filter" data-year="2024">Werk</a>, 
-        <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, 
-        and most recently <a href="#" class="year-filter" data-year="2026">In Limbo</a>.
-      </p>
-    </div>
-  </div>`;
-}
-
-function renderArchiveToggle(archiveCount) {
-  if (archiveCount === 0) return '';
-  return `
-  <div class="archive-toggle" id="archive-toggle">
-    <button id="archive-btn">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
-  </div>`;
-}
-
-function renderFooter() {
-  return `
+    
+    ${archive.length === 0 ? '' : `
+    <div class="archive-toggle" id="archive-toggle">
+      <button id="archive-btn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>`}
+  </div>
+  
   <div class="site-footer">
     <div class="footer-text">
       Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, 
@@ -676,11 +624,8 @@ function renderFooter() {
     <div class="footer-logos">
       <img src="/public/logos-outline.png" alt="lab-O & KU Leuven">
     </div>
-  </div>`;
-}
-
-function renderLightbox() {
-  return `
+  </div>
+  
   <div class="lightbox" id="lightbox">
     <div class="lb-inner">
       <div class="lb-close">close ✕</div>
@@ -697,7 +642,351 @@ function renderLightbox() {
         </div>
       </div>
     </div>
-  </div>`;
+  </div>
+
+  <script>
+    window.__ditherMode = '${ditherMode}';
+    
+    const ditherConfigs = {
+      default: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
+      b7: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+        { dot: [60,60,120], bg: [248,248,255], hue: 50 },
+        { dot: [40,90,70], bg: [248,255,250], hue: 180 },
+        { dot: [130,65,45], bg: [255,250,248], hue: 0 }
+      ]}
+    };
+    
+    const activeConfig = ditherConfigs[window.__ditherMode] || ditherConfigs.default;
+    
+    function getDominantColor(ctx, w, h) {
+      const d = ctx.getImageData(0, 0, w, h).data;
+      const hueBuckets = new Array(360).fill(0);
+      for (let i = 0; i < d.length; i += 16) {
+        const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const delta = max - min;
+        if (delta < 0.08) continue;
+        const lum = (max + min) / 2;
+        if (lum < 0.1 || lum > 0.9) continue;
+        let hue = 0;
+        if (max === r) hue = ((g - b) / delta) % 6;
+        else if (max === g) hue = (b - r) / delta + 2;
+        else hue = (r - g) / delta + 4;
+        hue = Math.round(hue * 60);
+        if (hue < 0) hue += 360;
+        hueBuckets[hue]++;
+      }
+      let maxCount = 0, domHue = 0;
+      for (let h = 0; h < 360; h++) {
+        let sum = 0;
+        for (let j = -15; j <= 15; j++) sum += hueBuckets[(h + j + 360) % 360];
+        if (sum > maxCount) { maxCount = sum; domHue = h; }
+      }
+      const palette = [
+        { color: [245, 240, 220], hue: 50 },
+        { color: [220, 242, 242], hue: 180 },
+        { color: [245, 225, 225], hue: 0 },
+      ];
+      let best = palette[0].color, bestDist = Infinity;
+      for (const p of palette) {
+        let dist = Math.abs(domHue - p.hue);
+        if (dist > 180) dist = 360 - dist;
+        if (dist < bestDist) { bestDist = dist; best = p.color; }
+      }
+      return best;
+    }
+    
+    function ditherImage(img, thumb) {
+      const cfg = activeConfig;
+      const canvas = document.createElement('canvas');
+      const w = cfg.w;
+      const h = Math.round(w * (9/16));
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const canvasRatio = w / h;
+      let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+      if (imgRatio > canvasRatio) {
+        sw = img.naturalHeight * canvasRatio;
+        sx = (img.naturalWidth - sw) / 2;
+      } else {
+        sh = img.naturalWidth / canvasRatio;
+        sy = (img.naturalHeight - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+      
+      const [cr, cg, cb] = getDominantColor(ctx, w, h);
+      
+      let finalDotColor = null, finalBgColor = null;
+      if (cfg.combo) {
+        const d = ctx.getImageData(0, 0, w, h).data;
+        const hueBuckets = new Array(360).fill(0);
+        for (let i = 0; i < d.length; i += 16) {
+          const rv = d[i]/255, gv = d[i+1]/255, bv = d[i+2]/255;
+          const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+          const delta = mx - mn;
+          if (delta < 0.08) continue;
+          const lum = (mx + mn) / 2;
+          if (lum < 0.1 || lum > 0.9) continue;
+          let hue = 0;
+          if (mx === rv) hue = ((gv - bv) / delta) % 6;
+          else if (mx === gv) hue = (bv - rv) / delta + 2;
+          else hue = (rv - gv) / delta + 4;
+          hue = Math.round(hue * 60);
+          if (hue < 0) hue += 360;
+          hueBuckets[hue]++;
+        }
+        let maxCount = 0, domHue = 0;
+        for (let hh = 0; hh < 360; hh++) {
+          let sum = 0;
+          for (let j = -15; j <= 15; j++) sum += hueBuckets[(hh + j + 360) % 360];
+          if (sum > maxCount) { maxCount = sum; domHue = hh; }
+        }
+        let bestCombo = cfg.combo[0], bestDist = Infinity;
+        for (const c of cfg.combo) {
+          let dist = Math.abs(domHue - c.hue);
+          if (dist > 180) dist = 360 - dist;
+          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
+        }
+        finalDotColor = bestCombo.dot;
+        finalBgColor = bestCombo.bg;
+      }
+      
+      const origData = ctx.getImageData(0, 0, w, h);
+      const gray = new Float32Array(w * h);
+      for (let i = 0; i < origData.data.length; i += 4) {
+        let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
+        lum = ((lum / 255 - 0.5) * cfg.contrast + 0.5) * 255;
+        gray[i/4] = Math.max(0, Math.min(255, lum));
+      }
+      const threshold = cfg.threshold;
+      
+      const out = new Uint8Array(w * h);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x;
+          const old = gray[i];
+          const nw = old > threshold ? 255 : 0;
+          out[i] = nw;
+          const err = old - nw;
+          if (x + 1 < w) gray[i+1] += err * 7/16;
+          if (y + 1 < h && x > 0) gray[i+w-1] += err * 3/16;
+          if (y + 1 < h) gray[i+w] += err * 5/16;
+          if (y + 1 < h && x + 1 < w) gray[i+w+1] += err * 1/16;
+        }
+      }
+      
+      const imageData = ctx.createImageData(w, h);
+      for (let i = 0; i < out.length; i++) {
+        const v = out[i] / 255;
+        let r, g, b;
+        if (finalDotColor && finalBgColor) {
+          r = Math.round(finalDotColor[0] + v * (finalBgColor[0] - finalDotColor[0]));
+          g = Math.round(finalDotColor[1] + v * (finalBgColor[1] - finalDotColor[1]));
+          b = Math.round(finalDotColor[2] + v * (finalBgColor[2] - finalDotColor[2]));
+        } else {
+          r = Math.round(v * cr);
+          g = Math.round(v * cg);
+          b = Math.round(v * cb);
+        }
+        imageData.data[i*4] = r;
+        imageData.data[i*4+1] = g;
+        imageData.data[i*4+2] = b;
+        imageData.data[i*4+3] = 255;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      canvas.style.imageRendering = 'pixelated';
+      thumb.appendChild(canvas);
+    }
+    
+    // Load thumbnails
+    document.querySelectorAll('.card[data-video-id]').forEach(card => {
+      const id = card.dataset.videoId;
+      const type = card.dataset.videoType;
+      const img = card.querySelector('img');
+      img.crossOrigin = 'Anonymous';
+      
+      img.addEventListener('load', function() {
+        try { ditherImage(img, card.querySelector('.thumb')); } catch(e) {}
+      });
+      
+      if (type === 'youtube') {
+        img.src = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+      } else {
+        fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/' + id + '&width=640')
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            let u = data.thumbnail_url;
+            u = u.replace(/_\\d+x\\d+/, '_640');
+            img.src = u;
+          })
+          .catch(function() { img.src = 'https://vumbnail.com/' + id + '.jpg'; });
+      }
+    });
+    
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const lbIframe = document.getElementById('lb-iframe');
+    const lbTitle = document.getElementById('lb-title');
+    const lbAuthors = document.getElementById('lb-authors');
+    const lbYear = document.getElementById('lb-year');
+    const lbDesc = document.getElementById('lb-desc');
+    const lbDescWrap = document.getElementById('lb-desc-wrap');
+    const lbReadMore = document.getElementById('lb-read-more');
+    
+    document.getElementById('grid').addEventListener('click', function(e) {
+      const card = e.target.closest('.card[data-video-id]');
+      if (card && e.target.closest('.thumb')) {
+        const id = card.dataset.videoId;
+        const type = card.dataset.videoType;
+        if (type === 'youtube') {
+          lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+        } else {
+          lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
+        }
+        lbTitle.textContent = card.dataset.title || '';
+        lbAuthors.textContent = card.dataset.authors || '';
+        lbYear.textContent = card.dataset.year || '';
+        lbDesc.textContent = card.dataset.desc || '';
+        lbDescWrap.classList.remove('open');
+        lbReadMore.textContent = 'read synopsis ↓';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+    
+    lbReadMore.addEventListener('click', function() {
+      const isOpen = lbDescWrap.classList.toggle('open');
+      lbReadMore.textContent = isOpen ? 'close synopsis ↑' : 'read synopsis ↓';
+    });
+    
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lbIframe.src = '';
+      document.body.style.overflow = '';
+    }
+    lightbox.addEventListener('click', function(e) {
+      if (e.target === lightbox || e.target.closest('.lb-close')) closeLightbox();
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+    
+    // Filters - IMPROVED VERSION with archive support
+    let activeFilter = 'all';
+    let activeType = 'tag';
+    const grid = document.getElementById('grid');
+    const filters = document.getElementById('filters');
+    const searchToggle = document.getElementById('search-toggle');
+    const searchInput = document.getElementById('search-input');
+    
+    searchToggle.addEventListener('click', function() {
+      searchInput.classList.toggle('open');
+      if (searchInput.classList.contains('open')) {
+        searchInput.focus();
+      } else {
+        searchInput.value = '';
+        applyFilter('all', 'tag');
+      }
+    });
+    
+    searchInput.addEventListener('input', function() {
+      const q = searchInput.value.toLowerCase().trim();
+      if (!q) { applyFilter('all', 'tag'); return; }
+      activeFilter = 'search';
+      activeType = 'search';
+      document.querySelectorAll('.card').forEach(function(card) {
+        if (!card.dataset.videoId) return;
+        const title = (card.dataset.title || '').toLowerCase();
+        const authors = (card.dataset.authors || '').toLowerCase();
+        const tags = (card.dataset.tags || '').toLowerCase();
+        const match = title.indexOf(q) !== -1 || authors.indexOf(q) !== -1 || tags.indexOf(q) !== -1;
+        card.classList.toggle('hidden', !match);
+      });
+    });
+    
+    // THE FIXED applyFilter function - archive items are now included in filters
+    function applyFilter(value, type) {
+      activeFilter = value;
+      activeType = type;
+      
+      document.querySelectorAll('button[data-filter]').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.filter === value);
+      });
+      
+      const isFiltered = value !== 'all';
+      const introBlock = document.getElementById('intro-block');
+      if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
+      
+      // FIX: Automatically open archive when filtering so archive items appear
+      if (isFiltered && !grid.classList.contains('show-archive')) {
+        grid.classList.add('show-archive');
+        const archiveBtn = document.getElementById('archive-btn');
+        if (archiveBtn) {
+          archiveBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        }
+      }
+      
+      document.querySelectorAll('.card').forEach(function(card) {
+        if (!card.dataset.videoId) return;
+        const isArchive = card.dataset.featured === 'false';
+        
+        if (value === 'all') {
+          card.classList.toggle('hidden', isArchive && !grid.classList.contains('show-archive'));
+        } else if (type === 'year') {
+          card.classList.toggle('hidden', card.dataset.year !== value);
+        } else if (type === 'tag') {
+          const tags = card.dataset.tags || '';
+          card.classList.toggle('hidden', tags.split(',').indexOf(value) === -1);
+        }
+      });
+    }
+    
+    filters.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON' && e.target.dataset.filter) {
+        applyFilter(e.target.dataset.filter, 'tag');
+      }
+    });
+    
+    document.getElementById('grid').addEventListener('click', function(e) {
+      if (e.target.matches('.tags span[data-tag]')) {
+        applyFilter(e.target.dataset.tag, 'tag');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (e.target.matches('.card-year[data-year]')) {
+        const year = e.target.dataset.year;
+        if (activeType === 'year' && activeFilter === year) {
+          applyFilter('all', 'tag');
+        } else {
+          applyFilter(year, 'year');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    
+    document.querySelectorAll('.year-filter').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        applyFilter(link.dataset.year, 'year');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+    
+    // Archive toggle
+    const archiveToggle = document.getElementById('archive-toggle');
+    if (archiveToggle) {
+      archiveToggle.addEventListener('click', function() {
+        const isOpen = grid.classList.toggle('show-archive');
+        const btn = document.getElementById('archive-btn');
+        if (isOpen) {
+          btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        } else {
+          btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        }
+      });
+    }
+  </script>
+</body>
+</html>`;
 }
 
 function renderSubmitPage() {
@@ -1120,371 +1409,6 @@ function renderAdminPage(videos) {
   </script>
 </body>
 </html>`;
-}
-
-// Client-side JavaScript (simplified version - the dithering logic is preserved)
-function getClientScript() {
-  return `
-    // Thumbnail loading and dithering
-    const ditherConfigs = {
-      default: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
-      b7: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
-        { dot: [60,60,120], bg: [248,248,255], hue: 50 },
-        { dot: [40,90,70], bg: [248,255,250], hue: 180 },
-        { dot: [130,65,45], bg: [255,250,248], hue: 0 }
-      ]}
-    };
-    
-    const activeConfig = ditherConfigs[window.__ditherMode] || ditherConfigs.default;
-    
-    function getDominantColor(ctx, w, h) {
-      const d = ctx.getImageData(0, 0, w, h).data;
-      const hueBuckets = new Array(360).fill(0);
-      for (let i = 0; i < d.length; i += 16) {
-        const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        const delta = max - min;
-        if (delta < 0.08) continue;
-        const lum = (max + min) / 2;
-        if (lum < 0.1 || lum > 0.9) continue;
-        let hue = 0;
-        if (max === r) hue = ((g - b) / delta) % 6;
-        else if (max === g) hue = (b - r) / delta + 2;
-        else hue = (r - g) / delta + 4;
-        hue = Math.round(hue * 60);
-        if (hue < 0) hue += 360;
-        hueBuckets[hue]++;
-      }
-      let maxCount = 0, domHue = 0;
-      for (let h = 0; h < 360; h++) {
-        let sum = 0;
-        for (let j = -15; j <= 15; j++) sum += hueBuckets[(h + j + 360) % 360];
-        if (sum > maxCount) { maxCount = sum; domHue = h; }
-      }
-      const palette = [
-        { color: [245, 240, 220], hue: 50 },
-        { color: [220, 242, 242], hue: 180 },
-        { color: [245, 225, 225], hue: 0 },
-      ];
-      let best = palette[0].color, bestDist = Infinity;
-      for (const p of palette) {
-        let dist = Math.abs(domHue - p.hue);
-        if (dist > 180) dist = 360 - dist;
-        if (dist < bestDist) { bestDist = dist; best = p.color; }
-      }
-      return best;
-    }
-    
-    function ditherImage(img, thumb) {
-      const cfg = activeConfig;
-      const canvas = document.createElement('canvas');
-      const w = cfg.w;
-      const h = Math.round(w * (9/16));
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      const imgRatio = img.naturalWidth / img.naturalHeight;
-      const canvasRatio = w / h;
-      let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-      if (imgRatio > canvasRatio) {
-        sw = img.naturalHeight * canvasRatio;
-        sx = (img.naturalWidth - sw) / 2;
-      } else {
-        sh = img.naturalWidth / canvasRatio;
-        sy = (img.naturalHeight - sh) / 2;
-      }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
-      
-      const [cr, cg, cb] = getDominantColor(ctx, w, h);
-      
-      let finalDotColor = null, finalBgColor = null;
-      if (cfg.combo) {
-        const d = ctx.getImageData(0, 0, w, h).data;
-        const hueBuckets = new Array(360).fill(0);
-        for (let i = 0; i < d.length; i += 16) {
-          const rv = d[i]/255, gv = d[i+1]/255, bv = d[i+2]/255;
-          const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-          const delta = mx - mn;
-          if (delta < 0.08) continue;
-          const lum = (mx + mn) / 2;
-          if (lum < 0.1 || lum > 0.9) continue;
-          let hue = 0;
-          if (mx === rv) hue = ((gv - bv) / delta) % 6;
-          else if (mx === gv) hue = (bv - rv) / delta + 2;
-          else hue = (rv - gv) / delta + 4;
-          hue = Math.round(hue * 60);
-          if (hue < 0) hue += 360;
-          hueBuckets[hue]++;
-        }
-        let maxCount = 0, domHue = 0;
-        for (let hh = 0; hh < 360; hh++) {
-          let sum = 0;
-          for (let j = -15; j <= 15; j++) sum += hueBuckets[(hh + j + 360) % 360];
-          if (sum > maxCount) { maxCount = sum; domHue = hh; }
-        }
-        let bestCombo = cfg.combo[0], bestDist = Infinity;
-        for (const c of cfg.combo) {
-          let dist = Math.abs(domHue - c.hue);
-          if (dist > 180) dist = 360 - dist;
-          if (dist < bestDist) { bestDist = dist; bestCombo = c; }
-        }
-        finalDotColor = bestCombo.dot;
-        finalBgColor = bestCombo.bg;
-      }
-      
-      const origData = ctx.getImageData(0, 0, w, h);
-      const gray = new Float32Array(w * h);
-      for (let i = 0; i < origData.data.length; i += 4) {
-        let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
-        lum = ((lum / 255 - 0.5) * cfg.contrast + 0.5) * 255;
-        gray[i/4] = Math.max(0, Math.min(255, lum));
-      }
-      const threshold = cfg.threshold;
-      
-      const out = new Uint8Array(w * h);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const i = y * w + x;
-          const old = gray[i];
-          const nw = old > threshold ? 255 : 0;
-          out[i] = nw;
-          const err = old - nw;
-          if (x + 1 < w) gray[i+1] += err * 7/16;
-          if (y + 1 < h && x > 0) gray[i+w-1] += err * 3/16;
-          if (y + 1 < h) gray[i+w] += err * 5/16;
-          if (y + 1 < h && x + 1 < w) gray[i+w+1] += err * 1/16;
-        }
-      }
-      
-      const imageData = ctx.createImageData(w, h);
-      for (let i = 0; i < out.length; i++) {
-        const v = out[i] / 255;
-        let r, g, b;
-        if (finalDotColor && finalBgColor) {
-          r = Math.round(finalDotColor[0] + v * (finalBgColor[0] - finalDotColor[0]));
-          g = Math.round(finalDotColor[1] + v * (finalBgColor[1] - finalDotColor[1]));
-          b = Math.round(finalDotColor[2] + v * (finalBgColor[2] - finalDotColor[2]));
-        } else {
-          r = Math.round(v * cr);
-          g = Math.round(v * cg);
-          b = Math.round(v * cb);
-        }
-        imageData.data[i*4] = r;
-        imageData.data[i*4+1] = g;
-        imageData.data[i*4+2] = b;
-        imageData.data[i*4+3] = 255;
-      }
-      ctx.putImageData(imageData, 0, 0);
-      canvas.style.imageRendering = 'pixelated';
-      thumb.appendChild(canvas);
-    }
-    
-    // Load thumbnails
-    document.querySelectorAll('.card[data-video-id]').forEach(card => {
-      const id = card.dataset.videoId;
-      const type = card.dataset.videoType;
-      const img = card.querySelector('img');
-      img.crossOrigin = 'Anonymous';
-      
-      img.addEventListener('load', () => {
-        try { ditherImage(img, card.querySelector('.thumb')); } catch(e) {}
-      });
-      
-      if (type === 'youtube') {
-        img.src = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
-      } else {
-        fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/' + id + '&width=640')
-          .then(r => r.json())
-          .then(data => {
-            let u = data.thumbnail_url;
-            u = u.replace(/_\\d+x\\d+/, '_640');
-            img.src = u;
-          })
-          .catch(() => { img.src = 'https://vumbnail.com/' + id + '.jpg'; });
-      }
-    });
-    
-    // Lightbox
-    const lightbox = document.getElementById('lightbox');
-    const lbIframe = document.getElementById('lb-iframe');
-    const lbTitle = document.getElementById('lb-title');
-    const lbAuthors = document.getElementById('lb-authors');
-    const lbYear = document.getElementById('lb-year');
-    const lbDesc = document.getElementById('lb-desc');
-    const lbDescWrap = document.getElementById('lb-desc-wrap');
-    const lbReadMore = document.getElementById('lb-read-more');
-    
-    document.getElementById('grid').addEventListener('click', e => {
-      const card = e.target.closest('.card[data-video-id]');
-      if (card && e.target.closest('.thumb')) {
-        const id = card.dataset.videoId;
-        const type = card.dataset.videoType;
-        if (type === 'youtube') {
-          lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
-        } else {
-          lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
-        }
-        lbTitle.textContent = card.dataset.title || '';
-        lbAuthors.textContent = card.dataset.authors || '';
-        lbYear.textContent = card.dataset.year || '';
-        lbDesc.textContent = card.dataset.desc || '';
-        lbDescWrap.classList.remove('open');
-        lbReadMore.textContent = 'read synopsis ↓';
-        lightbox.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-    });
-    
-    lbReadMore.addEventListener('click', () => {
-      const isOpen = lbDescWrap.classList.toggle('open');
-      lbReadMore.textContent = isOpen ? 'close synopsis ↑' : 'read synopsis ↓';
-    });
-    
-    function closeLightbox() {
-      lightbox.classList.remove('open');
-      lbIframe.src = '';
-      document.body.style.overflow = '';
-    }
-    lightbox.addEventListener('click', e => {
-      if (e.target === lightbox || e.target.closest('.lb-close')) closeLightbox();
-    });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-    
-    // Filters
-    let activeFilter = 'all';
-    let activeType = 'tag';
-    const grid = document.getElementById('grid');
-    const filters = document.getElementById('filters');
-    const searchToggle = document.getElementById('search-toggle');
-    const searchInput = document.getElementById('search-input');
-    
-    searchToggle.addEventListener('click', () => {
-      searchInput.classList.toggle('open');
-      if (searchInput.classList.contains('open')) {
-        searchInput.focus();
-      } else {
-        searchInput.value = '';
-        applyFilter('all', 'tag');
-      }
-    });
-    
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.toLowerCase().trim();
-      if (!q) { applyFilter('all', 'tag'); return; }
-      activeFilter = 'search';
-      activeType = 'search';
-      document.querySelectorAll('.card').forEach(card => {
-        if (!card.dataset.videoId) return;
-        const title = (card.dataset.title || '').toLowerCase();
-        const authors = (card.dataset.authors || '').toLowerCase();
-        const tags = (card.dataset.tags || '').toLowerCase();
-        const match = title.includes(q) || authors.includes(q) || tags.includes(q);
-        card.classList.toggle('hidden', !match);
-      });
-    });
-    
-   function applyFilter(value, type) {
-  activeFilter = value;
-  activeType = type;
-  
-  // Visuele feedback popup
-  const filterStatus = document.getElementById('filter-status') || (() => {
-    const div = document.createElement('div');
-    div.id = 'filter-status';
-    div.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#111; color:#fff; padding:8px 16px; border-radius:100px; font-size:12px; z-index:1000; transition:opacity 0.3s;';
-    document.body.appendChild(div);
-    return div;
-  })();
-  
-  filterStatus.textContent = value === 'all' ? 'showing all videos 📁' : `filtering: ${value} 🔍`;
-  filterStatus.style.opacity = '1';
-  setTimeout(() => { filterStatus.style.opacity = '0'; }, 1500);
-  
-  // Update active buttons
-  document.querySelectorAll('button[data-filter]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.filter === value);
-  });
-  
-  const isFiltered = value !== 'all';
-  const introBlock = document.getElementById('intro-block');
-  if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
-  
-  // FIX: Open archive automatisch tijdens filteren
-  if (isFiltered && !grid.classList.contains('show-archive')) {
-    grid.classList.add('show-archive');
-    const archiveBtn = document.getElementById('archive-btn');
-    if (archiveBtn) {
-      archiveBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-    }
-  }
-  
-  let visibleCount = 0;
-  
-  document.querySelectorAll('.card').forEach(card => {
-    if (!card.dataset.videoId) return;
-    let shouldHide = false;
-    
-    if (value === 'all') {
-      const isArchive = card.dataset.featured === 'false';
-      shouldHide = isArchive && !grid.classList.contains('show-archive');
-    } else if (type === 'year') {
-      shouldHide = card.dataset.year !== value;
-    } else if (type === 'tag') {
-      const tags = card.dataset.tags || '';
-      shouldHide = !tags.split(',').includes(value);
-    }
-    
-    card.classList.toggle('hidden', shouldHide);
-    if (!shouldHide) visibleCount++;
-  });
-  
-  console.log(`Filter "${value}" (${type}): ${visibleCount} videos visible`);
-}
-    
-    filters.addEventListener('click', e => {
-      if (e.target.tagName === 'BUTTON' && e.target.dataset.filter) {
-        applyFilter(e.target.dataset.filter, 'tag');
-      }
-    });
-    
-    document.getElementById('grid').addEventListener('click', e => {
-      if (e.target.matches('.tags span[data-tag]')) {
-        applyFilter(e.target.dataset.tag, 'tag');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      if (e.target.matches('.card-year[data-year]')) {
-        const year = e.target.dataset.year;
-        if (activeType === 'year' && activeFilter === year) {
-          applyFilter('all', 'tag');
-        } else {
-          applyFilter(year, 'year');
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-    
-    document.querySelectorAll('.year-filter').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        applyFilter(link.dataset.year, 'year');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-    
-    // Archive toggle
-    const archiveToggle = document.getElementById('archive-toggle');
-    if (archiveToggle) {
-      archiveToggle.addEventListener('click', () => {
-        const isOpen = grid.classList.toggle('show-archive');
-        const btn = document.getElementById('archive-btn');
-        if (isOpen) {
-          btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-        } else {
-          btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-        }
-      });
-    }
-  `;
 }
 
 // ==================== START SERVER ====================
