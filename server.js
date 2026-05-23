@@ -1364,6 +1364,7 @@ ${archiveCards}
   const logosCard = null;
   let activeFilter = 'all';
   let activeType = 'tag';
+  let userArchiveOpen = false;
 
   // Dynamically limit visible tags to what fits on the first line
   const filtersRow = document.getElementById('filters-row');
@@ -1473,19 +1474,21 @@ ${archiveCards}
     if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
     document.querySelector('.filters-medium').classList.toggle('visible', isFiltered);
 
-    const archiveOpen = grid.classList.contains('show-archive');
+    if (value === 'all') {
+      grid.classList.toggle('show-archive', userArchiveOpen);
+    } else {
+      grid.classList.add('show-archive');
+    }
     document.querySelectorAll('.card').forEach(card => {
       if (!card.dataset.videoId) return;
       const isArchive = card.dataset.featured === 'false';
       if (value === 'all') {
-        card.classList.toggle('hidden', isArchive && !archiveOpen);
+        card.classList.toggle('hidden', isArchive && !userArchiveOpen);
       } else if (type === 'year') {
-        const matchesFilter = card.dataset.year === value;
-        card.classList.toggle('hidden', !matchesFilter);
+        card.classList.toggle('hidden', card.dataset.year !== value);
       } else {
         const tags = card.dataset.tags;
-        const matchesFilter = tags.split(',').includes(value);
-        card.classList.toggle('hidden', !matchesFilter);
+        card.classList.toggle('hidden', !tags.split(',').includes(value));
       }
     });
   }
@@ -1524,6 +1527,7 @@ ${archiveCards}
   const archiveToggle = document.getElementById('archive-toggle');
   archiveToggle.addEventListener('click', () => {
     const isOpen = grid.classList.toggle('show-archive');
+    userArchiveOpen = isOpen;
     archiveToggle.classList.toggle('is-open', isOpen);
     const btn = document.getElementById('archive-btn');
     if (isOpen) {
