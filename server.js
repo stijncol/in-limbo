@@ -1539,6 +1539,9 @@ ${archiveCards}
     const isOpen = grid.classList.toggle('show-archive');
     userArchiveOpen = isOpen;
     archiveToggle.classList.toggle('is-open', isOpen);
+    document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
+      card.classList.toggle('hidden', !isOpen);
+    });
     const btn = document.getElementById('archive-btn');
     if (isOpen) {
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
