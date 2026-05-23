@@ -438,7 +438,7 @@ async function renderPublic(req, res, config) {
   .card .thumb .paper-tint {
     position: absolute;
     inset: 0;
-    background: rgb(248, 243, 220);
+    background: rgb(255, 253, 244);
     mix-blend-mode: multiply;
     pointer-events: none;
     z-index: 2;
