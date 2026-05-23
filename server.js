@@ -1553,15 +1553,6 @@ app.get('/', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'b7' });
 });
 
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — IBM Plex Sans', font: "'IBM Plex Sans'", introSize: '22px' });
-});
-
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v2 — IBM Plex Mono', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap', introSize: '17px' });
-});
-
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — Helvetica', font: "Helvetica, 'Helvetica Neue', Arial", fontImport: '', introSize: '22px' });
-});
-
 
 
 
