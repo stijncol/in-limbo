@@ -155,8 +155,9 @@ async function renderPublic(req, res, config) {
   let featured = allVideos.filter(v => v.featured && !v.archived);
   let archive = allVideos.filter(v => v.archived || !v.featured);
 
-  // Force featured to a multiple of 3 so the grid always fills complete rows
-  const remainder = featured.length % 3;
+  // Force featured to fill complete rows, accounting for the intro block occupying
+  // column 1 of rows 1-2. Valid counts are 4, 7, 10, 13… → remainder = (n-1) % 3
+  const remainder = featured.length > 0 ? (featured.length - 1) % 3 : 0;
   if (remainder !== 0) {
     const overflow = featured.splice(featured.length - remainder, remainder);
     archive = [...overflow, ...archive];
@@ -697,7 +698,7 @@ async function renderPublic(req, res, config) {
   .site-footer {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 80px 40px 40px;
+    padding: 32px 40px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
