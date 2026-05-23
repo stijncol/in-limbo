@@ -173,7 +173,7 @@ async function renderPublic(req, res, config) {
     const videoType = v.video_type || 'vimeo';
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
-      <div class="thumb"><img alt=""></div>
+      <div class="thumb"><img alt=""><div class="paper-tint"></div></div>
       <div class="meta">
         <div class="tags">
             ${themeSpans}
@@ -434,6 +434,18 @@ async function renderPublic(req, res, config) {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
+  }
+  .card .thumb .paper-tint {
+    position: absolute;
+    inset: 0;
+    background: rgb(248, 243, 220);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 2;
+    display: none;
+  }
+  .paper-tint-active .card .thumb .paper-tint {
+    display: block;
   }
   .card .thumb::after {
     content: "";
@@ -714,7 +726,7 @@ async function renderPublic(req, res, config) {
   }
 </style>
 </head>
-<body>
+<body class="${cfg.paperTint ? 'paper-tint-active' : ''}">
 <div class="page">
   ${cfg.label ? '<div style="position:fixed;top:10px;right:10px;font-size:11px;color:#aaa;z-index:999;">' + cfg.label + '</div>' : ''}
   <div class="filters" id="filters">
@@ -846,7 +858,6 @@ ${archiveCards}
     t18: { w: 700, threshold: 180, contrast: 0.8, colorMode: 'tinted' },
     t19: { w: 400, threshold: 140, contrast: 1.2, colorMode: 'inverted' },
     t20: { w: 500, threshold: 150, contrast: 1.1, colorMode: 'mono_yellow' },
-    // Colored dots series
     d1:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [180,50,50],   bgColor: [255,255,255] },  // red dots on white
     d2:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,50,180],   bgColor: [255,255,255] },  // blue dots on white
     d3:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,130,80],   bgColor: [255,255,255] },  // green dots on white
@@ -867,7 +878,6 @@ ${archiveCards}
     d18: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [220,242,242] },  // black on cyan bg
     d19: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,225,225] },  // black on blush bg
     d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
-    // Combo palettes
     c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
@@ -918,7 +928,6 @@ ${archiveCards}
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
     ]},
-    // Red/warm variations — navy + forest fixed, third color varies
     r1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
@@ -1111,7 +1120,6 @@ ${archiveCards}
     }
     const threshold = cfg.threshold;
 
-    // Color modes
     function applyColor(out, imageData) {
       const dc = applyCfg.dotColor || null;
       const bc = applyCfg.bgColor || null;
@@ -1536,110 +1544,30 @@ app.get('/old', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'old — tinted whites', font: "'IBM Plex Sans'", introSize: '22px' });
 });
 
+app.get('/paper', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'paper — newspaper tint', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'b7', paperTint: true });
+});
+
 // Default: c7 style
 app.get('/', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '22px', ditherMode: 'b7' });
 });
 
-// V1: IBM Plex Sans, intro light + titles medium (was v3)
-app.get('/v1', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — IBM Plex Sans', font: "'IBM Plex Sans'", introSize: '22px' });
 });
 
-// V2: IBM Plex Mono, intro smaller
-app.get('/v2', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#888', label: 'v2 — IBM Plex Mono', font: "'IBM Plex Mono'", fontImport: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap', introSize: '17px' });
 });
 
-// V3: Helvetica, the original
-app.get('/v3', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — Helvetica', font: "Helvetica, 'Helvetica Neue', Arial", fontImport: '', introSize: '22px' });
 });
 
-// === DITHER TEST ROUTES ===
-// Color variations (t1-t10)
-const baseCfg = { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '22px' };
 
-app.get('/t1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't1', label: 't1 — pure black & white' }); });
-app.get('/t2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't2', label: 't2 — mono yellow' }); });
-app.get('/t3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't3', label: 't3 — mono cyan' }); });
-app.get('/t4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't4', label: 't4 — mono blush/red' }); });
-app.get('/t5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't5', label: 't5 — inverted (white on black)' }); });
-app.get('/t6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't6', label: 't6 — inverted with color tint' }); });
-app.get('/t7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't7', label: 't7 — warm sepia' }); });
-app.get('/t8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't8', label: 't8 — cool blue-grey' }); });
-app.get('/t9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't9', label: 't9 — dark green on cream' }); });
-app.get('/t10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't10', label: 't10 — newspaper grey' }); });
 
-// Resolution + contrast variations (t11-t20)
-app.get('/t11', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't11', label: 't11 — very low res (200px), tinted' }); });
-app.get('/t12', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't12', label: 't12 — very high res (700px), tinted' }); });
-app.get('/t13', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't13', label: 't13 — very dark (threshold 80)' }); });
-app.get('/t14', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't14', label: 't14 — very light/airy (threshold 200)' }); });
-app.get('/t15', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't15', label: 't15 — extreme contrast (1.8)' }); });
-app.get('/t16', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't16', label: 't16 — very soft/flat (contrast 0.6)' }); });
-app.get('/t17', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't17', label: 't17 — chunky b&w (300px, contrast 1.3)' }); });
-app.get('/t18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't18', label: 't18 — hires soft airy (700px, 0.8)' }); });
-app.get('/t19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't19', label: 't19 — mid-res inverted (400px)' }); });
-app.get('/t20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 't20', label: 't20 — contrasty yellow mono' }); });
 
-// Colored dots series (d1-d20)
-app.get('/d1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd1', label: 'd1 — red dots on white' }); });
-app.get('/d2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd2', label: 'd2 — blue dots on white' }); });
-app.get('/d3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd3', label: 'd3 — green dots on white' }); });
-app.get('/d4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd4', label: 'd4 — orange dots on white' }); });
-app.get('/d5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd5', label: 'd5 — grey dots on cream' }); });
-app.get('/d6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd6', label: 'd6 — navy dots on lavender' }); });
-app.get('/d7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd7', label: 'd7 — burgundy dots on blush' }); });
-app.get('/d8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd8', label: 'd8 — forest dots on mint' }); });
-app.get('/d9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd9', label: 'd9 — dark grey dots on white' }); });
-app.get('/d10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd10', label: 'd10 — black dots on warm cream' }); });
-app.get('/d11', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd11', label: 'd11 — chunky red dots' }); });
-app.get('/d12', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd12', label: 'd12 — hires soft blue dots' }); });
-app.get('/d13', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd13', label: 'd13 — dark green, more dots' }); });
-app.get('/d14', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd14', label: 'd14 — very light grey, airy' }); });
-app.get('/d15', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd15', label: 'd15 — high contrast pure b&w' }); });
-app.get('/d16', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd16', label: 'd16 — terracotta on warm white' }); });
-app.get('/d17', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd17', label: 'd17 — purple dots on lilac' }); });
-app.get('/d18', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd18', label: 'd18 — black on cyan background' }); });
-app.get('/d19', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd19', label: 'd19 — black on blush background' }); });
-app.get('/d20', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'd20', label: 'd20 — black on yellow background' }); });
 
-// Red/warm third color tests (r1-r10) — navy + forest stay the same, only third color changes
-app.get('/r1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r1', label: 'r1 — coral pink dots' }); });
-app.get('/r2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r2', label: 'r2 — brick red dots' }); });
-app.get('/r3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r3', label: 'r3 — salmon dots' }); });
-app.get('/r4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r4', label: 'r4 — muted rose dots' }); });
-app.get('/r5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r5', label: 'r5 — burnt sienna dots' }); });
-app.get('/r6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r6', label: 'r6 — copper dots' }); });
-app.get('/r7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r7', label: 'r7 — deep clay dots' }); });
-app.get('/r8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r8', label: 'r8 — soft terracotta dots' }); });
-app.get('/r9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r9', label: 'r9 — warm mauve dots' }); });
-app.get('/r10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'r10', label: 'r10 — ochre/amber dots' }); });
 
-// Brightness/contrast variations (b1-b10) — same r7 colors, different balance
-app.get('/b1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b1', label: 'b1 — target 130, threshold 140 (slightly denser)' }); });
-app.get('/b2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b2', label: 'b2 — target 170, threshold 180 (very airy)' }); });
-app.get('/b3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b3', label: 'b3 — target 150, threshold 160, contrast 1.2 (crisp)' }); });
-app.get('/b4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b4', label: 'b4 — target 150, threshold 160, contrast 0.8 (soft)' }); });
-app.get('/b5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b5', label: 'b5 — target 160, threshold 170 (light + airy)' }); });
-app.get('/b6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b6', label: 'b6 — target 140, threshold 150 (balanced)' }); });
-app.get('/b7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b7', label: 'b7 — target 150, threshold 140, contrast 1.1 (punchy)' }); });
-app.get('/b8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b8', label: 'b8 — target 160, threshold 180, contrast 0.9 (ethereal)' }); });
-app.get('/b9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b9', label: 'b9 — target 155, threshold 165, contrast 1.05 (sweet spot?)' }); });
-app.get('/b10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'b10', label: 'b10 — target 145, threshold 155, contrast 0.95 (neutral)' }); });
 
-// Combo tests: c1-c10, mix of d6 (navy/lavender), d8 (forest/mint), d9 (dark grey/white)
-app.get('/c1', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c1', label: 'c1 — c6 base + warm terracotta' }); });
-app.get('/c2', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c2', label: 'c2 — c6 base + muted burgundy' }); });
-app.get('/c3', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c3', label: 'c3 — c6 base + dusty rose' }); });
-app.get('/c4', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c4', label: 'c4 — c6 base + warm ochre' }); });
-app.get('/c5', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c5', label: 'c5 — c6 base + soft purple' }); });
-app.get('/c6', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c6', label: 'c6 — original (navy + forest + grey)' }); });
-app.get('/c7', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c7', label: 'c7 — c6 base + warm brown' }); });
-app.get('/c8', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c8', label: 'c8 — navy + forest + rust' }); });
-app.get('/c9', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c9', label: 'c9 — navy + forest + plum' }); });
-app.get('/c10', async (req, res) => { await renderPublic(req, res, { ...baseCfg, ditherMode: 'c10', label: 'c10 — navy + terracotta + forest' }); });
 
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
