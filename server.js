@@ -761,7 +761,7 @@ ${featuredCards}
 ${archiveCards}
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
-    <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
   </div>
 </div>
 
@@ -1473,6 +1473,8 @@ ${archiveCards}
     if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
     if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
     document.querySelector('.filters-medium').classList.toggle('visible', isFiltered);
+    const archiveToggleEl = document.getElementById('archive-toggle');
+    if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
 
     if (value === 'all') {
       grid.classList.toggle('show-archive', userArchiveOpen);
@@ -1531,10 +1533,10 @@ ${archiveCards}
     archiveToggle.classList.toggle('is-open', isOpen);
     const btn = document.getElementById('archive-btn');
     if (isOpen) {
-      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
       setTimeout(trimTags, 50);
     } else {
-      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
   });
 </script>
