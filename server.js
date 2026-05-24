@@ -367,7 +367,7 @@ async function renderPublic(req, res, config) {
   .filters-extra .tag-close:hover { border-color: #111; color: #111; }
   .filters button {
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 0.02em;
     padding: 6px 15px;
     border: 1px solid #ccc;
