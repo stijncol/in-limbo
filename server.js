@@ -240,8 +240,15 @@ async function renderPublic(req, res, config) {
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
   const archiveCards = archive.map(v => renderCard(v, 'false')).join('\n');
 
-  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
-  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
+  const themeTagCounts = {};
+  const mediumTagCounts = {};
+  allVideos.forEach(v => {
+    (v.tags_theme || v.tags || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => { themeTagCounts[t] = (themeTagCounts[t] || 0) + 1; });
+    (v.tags_medium || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => { mediumTagCounts[t] = (mediumTagCounts[t] || 0) + 1; });
+  });
+
+  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}<span class="tag-count">${themeTagCounts[t] || 0}</span></button>`).join('\n    ');
+  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}<span class="tag-count">${mediumTagCounts[t] || 0}</span></button>`).join('\n    ');
 
   res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -372,6 +379,15 @@ async function renderPublic(req, res, config) {
   }
   .filters button:hover { border-color: #111; color: #111; }
   .filters button.active { background: #111; border-color: #111; color: #fff; }
+  .tag-count {
+    font-size: 8px;
+    vertical-align: super;
+    opacity: 0.5;
+    margin-left: 2px;
+    line-height: 0;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
   .tag-expand {
     font-family: inherit;
     font-size: 16px;
@@ -1682,7 +1698,28 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: #888;
+      padding: 6px 4px;
+    }
+    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters button:hover { color: #111; background: transparent; border: none; }
+    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+    .filters button.active { color: #111; background: transparent; border: none; }
+    .filters button.active::before, .filters button.active::after { opacity: 1; }
+    .filters-medium button { border: none; background: transparent; }
+    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
+    .tag-expand:hover { border: none; background: transparent; color: #111; }
+    .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
+    .filters-extra .tag-close:hover { border: none; background: transparent; color: #111; }
+  ` });
 });
 
 // v1 — plain text tags (no border box, underline active state)
