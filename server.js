@@ -1278,10 +1278,12 @@ ${archiveCards}
     });
 
     if (type === 'youtube') {
-      img.src = 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg';
+      const ytMatch = id.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+      const ytId = ytMatch ? ytMatch[1] : id;
+      img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
       const ytKey = '${process.env.YOUTUBE_API_KEY || ""}';
       if (ytKey) {
-        fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + id + '&key=' + ytKey)
+        fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + ytId + '&key=' + ytKey)
           .then(r => r.json())
           .then(data => {
             const item = data.items && data.items[0];
@@ -1292,8 +1294,11 @@ ${archiveCards}
             const iso = item.contentDetails.duration;
             if (iso) {
               const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-              const h = parseInt(m[1] || 0), min = parseInt(m[2] || 0), sec = parseInt(m[3] || 0);
-              parts.push((h * 60 + min) + ':' + String(sec).padStart(2, '0'));
+              if (m) {
+                const h = parseInt(m[1] || 0), min = parseInt(m[2] || 0), sec = parseInt(m[3] || 0);
+                const totalSec = h * 3600 + min * 60 + sec;
+                if (totalSec > 0) parts.push((h * 60 + min) + ':' + String(sec).padStart(2, '0'));
+              }
             }
             if (item.contentDetails.definition) parts.push(item.contentDetails.definition.toUpperCase());
             if (parts.length) dur.textContent = parts.join(' · ');
