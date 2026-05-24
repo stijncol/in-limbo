@@ -167,17 +167,25 @@ app.get('/api/vimeo/:id', (req, res) => {
     let body = '';
     r.on('data', chunk => { body += chunk; });
     r.on('end', () => {
-      if (r.statusCode !== 200) return res.json({});
+      console.log('[vimeo proxy]', id, 'status:', r.statusCode);
+      if (r.statusCode !== 200) {
+        console.log('[vimeo proxy] error body:', body.slice(0, 200));
+        return res.json({});
+      }
       try {
         const data = JSON.parse(body);
+        console.log('[vimeo proxy] width:', data.width, 'duration:', data.duration);
         const result = { duration: data.duration, width: data.width, height: data.height };
         if (result.duration || result.width) vimeoCache.set(id, result);
         res.json(result);
-      } catch(e) { res.json({}); }
+      } catch(e) {
+        console.log('[vimeo proxy] parse error:', e.message);
+        res.json({});
+      }
     });
   });
-  apiReq.on('error', () => { if (!res.headersSent) res.json({}); });
-  apiReq.setTimeout(8000, () => { apiReq.destroy(); if (!res.headersSent) res.json({}); });
+  apiReq.on('error', (e) => { console.log('[vimeo proxy] request error:', e.message); if (!res.headersSent) res.json({}); });
+  apiReq.setTimeout(8000, () => { apiReq.destroy(); console.log('[vimeo proxy] timeout for', id); if (!res.headersSent) res.json({}); });
 });
 
 // --- Public frontend ---
