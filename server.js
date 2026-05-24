@@ -1287,11 +1287,20 @@ ${archiveCards}
           u = u.replace(/_\\d+x\\d+/, '_640');
           img.src = u;
           img.alt = data.title || '';
-          if (data.duration) {
-            const m = Math.floor(data.duration / 60);
-            const s = data.duration % 60;
-            const dur = card.querySelector('.card-duration');
-            if (dur) dur.textContent = m + ':' + String(s).padStart(2, '0');
+          const dur = card.querySelector('.card-duration');
+          if (dur) {
+            const parts = [];
+            if (data.duration) {
+              const m = Math.floor(data.duration / 60);
+              const s = data.duration % 60;
+              parts.push(m + ':' + String(s).padStart(2, '0'));
+            }
+            if (data.thumbnail_width) {
+              const w = data.thumbnail_width;
+              const res = w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD';
+              parts.push(res);
+            }
+            if (parts.length) dur.textContent = parts.join(' · ');
           }
         })
         .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
