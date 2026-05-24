@@ -266,6 +266,7 @@ async function renderPublic(req, res, config) {
     font-display: swap;
   }
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
     background: #fff;
@@ -624,12 +625,10 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text a.year-filter {
     font-weight: 400;
-    text-decoration: none;
+    text-decoration: underline;
     cursor: pointer;
     color: #555;
   }
-  .intro-block .intro-text a.year-filter::before { content: "["; opacity: 0.5; margin-right: 1px; }
-  .intro-block .intro-text a.year-filter::after { content: "]"; opacity: 0.5; margin-left: 1px; }
   .intro-block .intro-text a.year-filter:hover { color: #111; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
@@ -871,7 +870,7 @@ async function renderPublic(req, res, config) {
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="text-decoration:underline;text-underline-offset:4px;">Search</span> <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="text-decoration:underline;">Search</span> <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
