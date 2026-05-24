@@ -415,9 +415,10 @@ async function renderPublic(req, res, config) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-auto-flow: dense;
-    gap: 16px;
+    gap: 28px;
   }
   .card {
+    position: relative;
     opacity: 0;
     transform: translateY(30px);
     animation: fadeUp 0.6s ease forwards;
@@ -474,6 +475,10 @@ async function renderPublic(req, res, config) {
     opacity: 1;
   }
   .card .meta {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
