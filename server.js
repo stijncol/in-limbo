@@ -181,6 +181,7 @@ async function renderPublic(req, res, config) {
     const videoType = v.video_type || 'vimeo';
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
+      <div class="card-duration"></div>
       <div class="thumb"><img alt=""><div class="paper-tint"></div></div>
       <div class="meta">
         <div class="tags">
@@ -427,6 +428,18 @@ async function renderPublic(req, res, config) {
   .card.hidden { display: none !important; }
   .card[data-featured="false"] { display: none; }
   .grid.show-archive .card[data-featured="false"] { display: block; }
+  .card-duration {
+    position: absolute;
+    left: -16px;
+    top: 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: #aaa;
+    white-space: nowrap;
+  }
   .card .thumb {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -1274,6 +1287,12 @@ ${archiveCards}
           u = u.replace(/_\\d+x\\d+/, '_640');
           img.src = u;
           img.alt = data.title || '';
+          if (data.duration) {
+            const m = Math.floor(data.duration / 60);
+            const s = data.duration % 60;
+            const dur = card.querySelector('.card-duration');
+            if (dur) dur.textContent = m + ':' + String(s).padStart(2, '0');
+          }
         })
         .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
     }
