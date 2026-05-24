@@ -415,8 +415,7 @@ async function renderPublic(req, res, config) {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-auto-flow: dense;
-    column-gap: 25px;
-    row-gap: 20px;
+    gap: 16px;
   }
   .card {
     opacity: 0;
