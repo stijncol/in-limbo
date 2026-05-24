@@ -1278,8 +1278,13 @@ ${archiveCards}
     });
 
     if (type === 'youtube') {
-      const ytMatch = id.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
-      const ytId = ytMatch ? ytMatch[1] : id;
+      let ytId = id;
+      try {
+        if (id.includes('youtube.com') || id.includes('youtu.be')) {
+          const u = new URL(id);
+          ytId = u.searchParams.get('v') || u.pathname.slice(1);
+        }
+      } catch(e) {}
       img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
       const ytKey = '${process.env.YOUTUBE_API_KEY || ""}';
       if (ytKey) {
