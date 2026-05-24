@@ -1591,7 +1591,6 @@ ${archiveCards}
       const match = title.includes(q) || authors.includes(q) || tags.includes(q);
       card.classList.toggle('hidden', !match);
     });
-    if (introBlock) introBlock.style.display = 'none';
   });
 
   function applyFilter(value, type) {
@@ -1688,16 +1687,16 @@ ${archiveCards}
 // Default: current style
 // Old default (tinted whites)
 app.get('/old', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'old — tinted whites', font: "'IBM Plex Sans'", introSize: '20px' });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'old — tinted whites', font: "'IBM Plex Sans'", introSize: '19px' });
 });
 
 app.get('/paper', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'paper — newspaper tint', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', paperTint: true });
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'paper — newspaper tint', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', paperTint: true });
 });
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 0;
@@ -1723,7 +1722,7 @@ app.get('/', async (req, res) => {
 
 // v1 — plain text tags (no border box, underline active state)
 app.get('/v1', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — plain tags', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — plain tags', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 0;
@@ -1744,7 +1743,7 @@ app.get('/v1', async (req, res) => {
 
 // v2 — filled square chips (no border, light background)
 app.get('/v2', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v2 — filled chips', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v2 — filled chips', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 3px;
@@ -1765,7 +1764,7 @@ app.get('/v2', async (req, res) => {
 
 // v3 — square border (sharp corners, solid border)
 app.get('/v3', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — square border', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — square border', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button { border-radius: 0; }
     .tag-expand { border-radius: 0; }
     .filters-extra .tag-close { border-radius: 0; }
@@ -1774,7 +1773,7 @@ app.get('/v3', async (req, res) => {
 
 // v4 — uppercase small pill
 app.get('/v4', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v4 — uppercase pill', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v4 — uppercase pill', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       text-transform: uppercase;
       font-size: 10px;
@@ -1786,7 +1785,7 @@ app.get('/v4', async (req, res) => {
 
 // v5 — underline tab (bottom border only, no box)
 app.get('/v5', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v5 — underline tabs', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v5 — underline tabs', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-bottom: 1px solid #ddd;
@@ -1808,7 +1807,7 @@ app.get('/v5', async (req, res) => {
 
 // v6 — dotted border pill
 app.get('/v6', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v6 — dotted pill', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v6 — dotted pill', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button { border-style: dotted; }
     .filters button:hover { border-style: dotted; }
     .filters button.active { border-style: dotted; }
@@ -1820,7 +1819,7 @@ app.get('/v6', async (req, res) => {
 
 // v7 — bold 2px black border, square
 app.get('/v7', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v7 — bold square', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v7 — bold square', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: 2px solid #111;
       border-radius: 0;
@@ -1840,7 +1839,7 @@ app.get('/v7', async (req, res) => {
 
 // v8 — bracket style [tag]
 app.get('/v8', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v8 — brackets', font: "'IBM Plex Sans'", introSize: '20px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v8 — brackets', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 0;
