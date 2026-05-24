@@ -182,7 +182,6 @@ async function renderPublic(req, res, config) {
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
-      <div class="card-resolution"></div>
       <div class="thumb"><img alt=""><div class="paper-tint"></div></div>
       <div class="meta">
         <div class="tags">
@@ -429,9 +428,10 @@ async function renderPublic(req, res, config) {
   .card.hidden { display: none !important; }
   .card[data-featured="false"] { display: none; }
   .grid.show-archive .card[data-featured="false"] { display: block; }
-  .card-duration, .card-resolution {
+  .card-duration {
     position: absolute;
     left: -16px;
+    top: 0;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-family: inherit;
@@ -440,8 +440,6 @@ async function renderPublic(req, res, config) {
     color: #aaa;
     white-space: nowrap;
   }
-  .card-duration { top: 0; }
-  .card-resolution { bottom: 0; font-size: 9px; letter-spacing: 0.06em; opacity: 0.6; }
   .card .thumb {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -1296,20 +1294,19 @@ ${archiveCards}
             const item = data.items && data.items[0];
             if (!item) return;
             const iso = item.contentDetails.duration;
-            if (iso) {
-              const m = iso.match(/PT(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?/);
-              if (m) {
-                const h = parseInt(m[1] || 0), min = parseInt(m[2] || 0), sec = parseInt(m[3] || 0);
-                const totalSec = h * 3600 + min * 60 + sec;
-                if (totalSec > 0) {
-                  const dur = card.querySelector('.card-duration');
-                  if (dur) dur.textContent = (h * 60 + min) + ':' + String(sec).padStart(2, '0');
+            const dur = card.querySelector('.card-duration');
+            if (dur) {
+              const parts = [];
+              if (iso) {
+                const m = iso.match(/PT(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?/);
+                if (m) {
+                  const h = parseInt(m[1] || 0), min = parseInt(m[2] || 0), sec = parseInt(m[3] || 0);
+                  const totalSec = h * 3600 + min * 60 + sec;
+                  if (totalSec > 0) parts.push((h * 60 + min) + ':' + String(sec).padStart(2, '0'));
                 }
               }
-            }
-            if (item.contentDetails.definition) {
-              const res = card.querySelector('.card-resolution');
-              if (res) res.textContent = item.contentDetails.definition.toUpperCase();
+              if (item.contentDetails.definition) parts.push(item.contentDetails.definition.toUpperCase());
+              if (parts.length) dur.textContent = parts.join(' · ');
             }
           })
           .catch(() => {});
@@ -1322,17 +1319,19 @@ ${archiveCards}
           u = u.replace(/_[0-9]+(?:x[0-9]+)?(?=\.|$)/, '_640');
           img.src = u;
           img.alt = data.title || '';
-          if (data.duration) {
-            const dur = card.querySelector('.card-duration');
-            const m = Math.floor(data.duration / 60);
-            const s = data.duration % 60;
-            if (dur) dur.textContent = m + ':' + String(s).padStart(2, '0');
-          }
-          if (data.thumbnail_width) {
-            const res = card.querySelector('.card-resolution');
-            const w = data.thumbnail_width;
-            const label = w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD';
-            if (res) res.textContent = label;
+          const dur = card.querySelector('.card-duration');
+          if (dur) {
+            const parts = [];
+            if (data.duration) {
+              const m = Math.floor(data.duration / 60);
+              const s = data.duration % 60;
+              parts.push(m + ':' + String(s).padStart(2, '0'));
+            }
+            if (data.thumbnail_width) {
+              const w = data.thumbnail_width;
+              parts.push(w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD');
+            }
+            if (parts.length) dur.textContent = parts.join(' · ');
           }
         })
         .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
