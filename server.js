@@ -620,9 +620,30 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text a.year-filter {
     font-weight: 400;
-    text-decoration: underline;
+    text-decoration: none;
     cursor: pointer;
+    color: #555;
   }
+  .intro-block .intro-text a.year-filter::before { content: "["; opacity: 0.5; margin-right: 1px; }
+  .intro-block .intro-text a.year-filter::after { content: "]"; opacity: 0.5; margin-left: 1px; }
+  .intro-block .intro-text a.year-filter:hover { color: #111; }
+  .inline-search-wrap { white-space: nowrap; }
+  .inline-search-wrap::before { content: "["; color: #999; }
+  .inline-search-wrap::after { content: "]"; color: #999; }
+  .inline-search-input {
+    font-family: inherit;
+    font-size: inherit;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    background: transparent;
+    outline: none;
+    color: #111;
+    width: 180px;
+    padding: 0 3px;
+    vertical-align: baseline;
+  }
+  .inline-search-input::placeholder { color: #ccc; }
+  .inline-search-input:focus { border-bottom-color: #888; }
   .intro-block .intro-text strong {
     font-weight: 500;
   }
@@ -827,16 +848,13 @@ async function renderPublic(req, res, config) {
         <div class="medium-tags">${mediumButtons}</div>
       </div>
     </div>
-    <div class="search-wrap" id="search-wrap">
-      <button class="search-toggle" id="search-toggle" title="search">&#x2315;</button>
-      <input type="text" id="search-input" class="search-input" placeholder="search title, students...">
-    </div>
   </div>
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
@@ -1542,28 +1560,15 @@ ${archiveCards}
 
   // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
-    if (searchInput.classList.contains('open')) {
-      searchInput.classList.remove('open');
+    if (activeType === 'search') {
       searchInput.value = '';
-      if (activeType === 'search') applyFilter('all', 'tag');
+      applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
   });
 
   // Search toggle
-  const searchToggle = document.getElementById('search-toggle');
   const searchInput = document.getElementById('search-input');
-  searchToggle.addEventListener('click', () => {
-    const opening = !searchInput.classList.contains('open');
-    searchInput.classList.toggle('open');
-    if (opening) {
-      searchInput.focus();
-      filtersBar.classList.remove('show-all');
-    } else {
-      searchInput.value = '';
-      applyFilter('all', 'tag');
-    }
-  });
 
   // Search input — only filter when actually typing
   searchInput.addEventListener('input', () => {
@@ -1593,6 +1598,7 @@ ${archiveCards}
     activeFilter = value;
     activeType = type || 'tag';
     if (value === 'all') filtersBar.classList.remove('show-all');
+    if (type !== 'search' && searchInput && searchInput.value) searchInput.value = '';
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
