@@ -1333,15 +1333,20 @@ ${archiveCards}
           .catch(() => {});
       }
     } else {
+      // Load thumbnail immediately via oEmbed (fast, no auth)
+      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id)
+        .then(r => r.json())
+        .then(data => {
+          let u = data.thumbnail_url || '';
+          img.src = u.replace(/_[0-9]+x[0-9]+/, '_640') || ('https://vumbnail.com/'+id+'.jpg');
+          if (data.title) img.alt = data.title;
+        })
+        .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
+      // Get accurate resolution + duration via server proxy (may be slower)
       fetch('/api/vimeo/' + id)
         .then(r => r.json())
         .then(data => {
-          if (data.thumbnail) {
-            img.src = data.thumbnail;
-          } else {
-            img.src = 'https://vumbnail.com/'+id+'.jpg';
-          }
-          if (data.title) img.alt = data.title;
+          if (data.thumbnail) img.src = data.thumbnail;
           const dur = card.querySelector('.card-duration');
           if (dur) {
             const parts = [];
@@ -1357,7 +1362,7 @@ ${archiveCards}
             if (parts.length) dur.textContent = parts.join(' · ');
           }
         })
-        .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
+        .catch(() => {});
     }
   });
 
