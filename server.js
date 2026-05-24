@@ -200,7 +200,7 @@ async function renderPublic(req, res, config) {
   const archiveCards = archive.map(v => renderCard(v, 'false')).join('\n');
 
   const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
-  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}</button>`).join('\n    ');
+  const mediumButtons = [...mediumTags].sort().map(t => `<button class="filter-btn-medium" data-filter="${t}">${t}</button>`).join('\n    ');
 
   res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -300,6 +300,7 @@ async function renderPublic(req, res, config) {
     margin-top: 6px;
   }
   .filters.show-all .filters-extra { display: flex; }
+  .filters-extra .filter-btn-medium { border-style: dashed; }
   .filters-extra .tag-close {
     width: 32px;
     height: 32px;
@@ -752,11 +753,7 @@ async function renderPublic(req, res, config) {
           <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
         </div>
       </div>
-      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close"><span style="display:inline-block;transform:rotate(45deg)">+</span></button></div>
-      <div class="filters-row filters-medium">
-        <span class="filters-label">medium</span>
-        <div class="medium-tags">${mediumButtons}</div>
-      </div>
+      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close"><span style="display:inline-block;transform:rotate(45deg)">+</span></button>${mediumButtons}</div>
     </div>
     <div class="search-wrap" id="search-wrap">
       <button class="search-toggle" id="search-toggle" title="search">&#x2315;</button>
@@ -1485,7 +1482,6 @@ ${archiveCards}
     const isFiltered = value !== 'all';
     if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
     if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
-    document.querySelector('.filters-medium').classList.toggle('visible', isFiltered);
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
 
@@ -1532,8 +1528,6 @@ ${archiveCards}
       applyFilter(link.dataset.year, 'year');
       // Keep intro visible when filtering from text
       if (introBlock) introBlock.style.display = '';
-      // Keep medium tags hidden
-      document.querySelector('.filters-medium').classList.remove('visible');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
