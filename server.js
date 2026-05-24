@@ -627,9 +627,9 @@ async function renderPublic(req, res, config) {
     font-weight: 400;
     text-decoration: none;
     cursor: pointer;
-    color: #555;
+    color: #111;
   }
-  .intro-block .intro-text a.year-filter:hover { color: #111; text-decoration: underline; }
+  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
