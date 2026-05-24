@@ -594,6 +594,8 @@ async function renderPublic(req, res, config) {
     white-space: nowrap;
   }
   .card .card-year:hover { color: #111; }
+  .card:hover .card-duration { color: #111; }
+  .card:hover .card-title { text-decoration: underline; }
   .card-logos .thumb::after { display: none; }
   .card-logos .thumb:hover img { transform: none; }
   .intro-block {
@@ -867,7 +869,7 @@ async function renderPublic(req, res, config) {
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search <span style="opacity:0.5;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
