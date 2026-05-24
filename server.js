@@ -815,14 +815,13 @@ async function renderPublic(req, res, config) {
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
-        <span class="filters-label">theme</span>
         <div class="theme-tags">
           <button class="active" data-filter="all">all</button>
           ${themeButtons}
           <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
         </div>
       </div>
-      <div class="filters-extra" id="filters-extra"><button class="tag-close" id="tag-close" title="close"><span style="display:inline-block;transform:rotate(45deg)">+</span></button></div>
+      <div class="filters-extra" id="filters-extra"></div>
       <div class="filters-row filters-medium">
         <span class="filters-label">medium</span>
         <div class="medium-tags">${mediumButtons}</div>
@@ -1512,7 +1511,6 @@ ${archiveCards}
   const filtersRow = document.getElementById('filters-row');
   const themeTags = filtersRow.querySelector('.theme-tags');
   const filtersExtra = document.getElementById('filters-extra');
-  const tagClose = document.getElementById('tag-close');
   const tagBtns = Array.from(themeTags.querySelectorAll('button[data-filter]'));
   const expandBtn = document.getElementById('tag-expand');
   
@@ -1531,11 +1529,9 @@ ${archiveCards}
     const hasMediumTags = document.querySelectorAll('.medium-tags button[data-filter]').length > 0;
     if (!hasOverflow && !hasMediumTags) {
       expandBtn.style.display = 'none';
-      tagClose.style.display = 'none';
     }
-    // Check if expand button itself overflowed
+    // Check if expand button itself overflowed — move one tag to make room
     if (expandBtn.offsetTop > firstTop) {
-      // Move last visible tag to extra to make room for +
       const visibleTags = Array.from(filtersRow.querySelectorAll('button[data-filter]')).filter(b => b.dataset.filter !== 'all');
       if (visibleTags.length > 0) {
         const last = visibleTags[visibleTags.length - 1];
@@ -1552,11 +1548,6 @@ ${archiveCards}
       if (activeType === 'search') applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
-  });
-
-  // Tag close
-  tagClose.addEventListener('click', () => {
-    filtersBar.classList.remove('show-all');
   });
 
   // Search toggle
@@ -1601,6 +1592,7 @@ ${archiveCards}
   function applyFilter(value, type) {
     activeFilter = value;
     activeType = type || 'tag';
+    if (value === 'all') filtersBar.classList.remove('show-all');
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
