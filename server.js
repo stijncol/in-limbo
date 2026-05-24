@@ -670,7 +670,9 @@ async function renderPublic(req, res, config) {
   .archive-toggle {
     display: flex;
     justify-content: center;
-    margin-top: 32px;
+    align-items: center;
+    margin-top: 42px;
+    position: relative;
   }
   .archive-toggle button {
     width: 46px;
@@ -688,6 +690,17 @@ async function renderPublic(req, res, config) {
   }
   .archive-toggle button:hover { border-color: #111; color: #111; }
   .archive-toggle button svg { stroke: currentColor; }
+  .archive-toggle-label {
+    position: absolute;
+    left: calc(50% + 28px);
+    font-size: 13px;
+    color: #aaa;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .archive-toggle button:hover ~ .archive-toggle-label { opacity: 1; }
   .lightbox {
     display: none;
     position: fixed;
@@ -862,6 +875,7 @@ ${archiveCards}
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
     <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <span class="archive-toggle-label">load the complete archive</span>
   </div>
 </div>
 
