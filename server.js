@@ -155,18 +155,22 @@ app.get('/api/vimeo/:id', (req, res) => {
   const options = {
     hostname: 'api.vimeo.com',
     path: '/videos/' + req.params.id,
-    headers: { 'Authorization': 'bearer ' + token, 'Accept': 'application/json' }
+    headers: { 'Authorization': 'bearer ' + token, 'Accept': 'application/json' },
+    agent: false  // disable keep-alive to avoid stale connection on repeated loads
   };
-  https.get(options, (r) => {
+  const apiReq = https.get(options, (r) => {
     let body = '';
     r.on('data', chunk => { body += chunk; });
     r.on('end', () => {
+      if (r.statusCode !== 200) return res.json({});
       try {
         const data = JSON.parse(body);
         res.json({ duration: data.duration, width: data.width, height: data.height });
       } catch(e) { res.json({}); }
     });
-  }).on('error', () => res.json({}));
+  });
+  apiReq.on('error', () => { if (!res.headersSent) res.json({}); });
+  apiReq.setTimeout(8000, () => { apiReq.destroy(); if (!res.headersSent) res.json({}); });
 });
 
 // --- Public frontend ---
