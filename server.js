@@ -1617,6 +1617,107 @@ app.get('/v2', async (req, res) => {
   ` });
 });
 
+// v3 — square border (sharp corners, solid border)
+app.get('/v3', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v3 — square border', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button { border-radius: 0; }
+    .tag-expand { border-radius: 0; }
+    .filters-extra .tag-close { border-radius: 0; }
+  ` });
+});
+
+// v4 — uppercase small pill
+app.get('/v4', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v4 — uppercase pill', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      padding: 5px 14px;
+    }
+  ` });
+});
+
+// v5 — underline tab (bottom border only, no box)
+app.get('/v5', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v5 — underline tabs', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: none;
+      border-bottom: 1px solid #ddd;
+      border-radius: 0;
+      padding: 6px 8px;
+      background: transparent;
+      color: #999;
+    }
+    .filters button:hover { color: #111; border-bottom-color: #999; background: transparent; border-top: none; border-left: none; border-right: none; }
+    .filters button.active { color: #111; border-bottom: 2px solid #111; background: transparent; border-top: none; border-left: none; border-right: none; }
+    .filters-medium button { border: none; border-bottom: 1px dashed #ddd; background: transparent; }
+    .filters-medium button:hover { border: none; border-bottom: 1px dashed #999; }
+    .tag-expand { border: none; border-bottom: 1px solid #ddd; border-radius: 0; background: transparent; }
+    .tag-expand:hover { border: none; border-bottom: 1px solid #999; background: transparent; color: #111; }
+    .filters-extra .tag-close { border: none; border-bottom: 1px solid #ddd; border-radius: 0; background: transparent; }
+    .filters-extra .tag-close:hover { border: none; border-bottom: 1px solid #999; background: transparent; color: #111; }
+  ` });
+});
+
+// v6 — dotted border pill
+app.get('/v6', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v6 — dotted pill', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button { border-style: dotted; }
+    .filters button:hover { border-style: dotted; }
+    .filters button.active { border-style: dotted; }
+    .filters-medium button { border-style: dotted; }
+    .tag-expand { border-style: dotted; }
+    .filters-extra .tag-close { border-style: dotted; }
+  ` });
+});
+
+// v7 — bold 2px black border, square
+app.get('/v7', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v7 — bold square', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: 2px solid #111;
+      border-radius: 0;
+      color: #111;
+      background: transparent;
+    }
+    .filters button:hover { background: #111; color: #fff; border-color: #111; }
+    .filters button.active { background: #111; color: #fff; border-color: #111; }
+    .filters-medium button { border-style: solid; border-width: 2px; border-color: #111; border-radius: 0; }
+    .filters-medium button:hover { background: #111; color: #fff; }
+    .tag-expand { border: 2px solid #111; border-radius: 0; color: #111; }
+    .tag-expand:hover { background: #111; color: #fff; border-color: #111; }
+    .filters-extra .tag-close { border: 2px solid #111; border-radius: 0; color: #111; }
+    .filters-extra .tag-close:hover { background: #111; color: #fff; border-color: #111; }
+  ` });
+});
+
+// v8 — bracket style [tag]
+app.get('/v8', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v8 — brackets', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: #888;
+      padding: 6px 4px;
+    }
+    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters button:hover { color: #111; background: transparent; border: none; }
+    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+    .filters button.active { color: #111; background: transparent; border: none; }
+    .filters button.active::before, .filters button.active::after { opacity: 1; }
+    .filters-medium button { border: none; background: transparent; }
+    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
+    .tag-expand:hover { border: none; background: transparent; color: #111; }
+    .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
+    .filters-extra .tag-close:hover { border: none; background: transparent; color: #111; }
+  ` });
+});
+
 
 
 
