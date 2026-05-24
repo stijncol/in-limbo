@@ -736,6 +736,7 @@ async function renderPublic(req, res, config) {
     .page { padding: 24px 16px 60px; }
     .grid { grid-template-columns: 1fr; gap: 12px; }
   }
+  ${cfg.extraCSS || ''}
 </style>
 </head>
 <body class="${cfg.paperTint ? 'paper-tint-active' : ''}">
@@ -1572,6 +1573,48 @@ app.get('/paper', async (req, res) => {
 // Default: c7 style
 app.get('/', async (req, res) => {
   await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7' });
+});
+
+// v1 — plain text tags (no border box, underline active state)
+app.get('/v1', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v1 — plain tags', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: none;
+      border-radius: 0;
+      padding: 6px 8px;
+      background: transparent;
+      color: #aaa;
+      letter-spacing: 0.04em;
+    }
+    .filters button:hover { color: #111; background: transparent; }
+    .filters button.active { color: #111; background: transparent; border-bottom: 1px solid #111; }
+    .filters-medium button { border-style: solid; border: none; }
+    .tag-expand { border: none; border-radius: 0; background: transparent; }
+    .tag-expand:hover { background: transparent; border: none; color: #111; }
+    .filters-extra .tag-close { border: none; border-radius: 0; background: transparent; }
+    .filters-extra .tag-close:hover { border: none; color: #111; background: transparent; }
+  ` });
+});
+
+// v2 — filled square chips (no border, light background)
+app.get('/v2', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v2 — filled chips', font: "'IBM Plex Sans'", introSize: '21px', ditherMode: 'b7', extraCSS: `
+    .filters button {
+      border: none;
+      border-radius: 3px;
+      padding: 6px 14px;
+      background: #efefef;
+      color: #555;
+    }
+    .filters button:hover { background: #e2e2e2; color: #111; border: none; }
+    .filters button.active { background: #111; border-color: #111; color: #fff; }
+    .filters-medium button { border-style: solid; border: none; background: #efefef; }
+    .filters-medium button:hover { background: #e2e2e2; border: none; }
+    .tag-expand { border: none; border-radius: 3px; background: #efefef; }
+    .tag-expand:hover { border: none; background: #e2e2e2; color: #111; }
+    .filters-extra .tag-close { border: none; border-radius: 3px; background: #efefef; }
+    .filters-extra .tag-close:hover { border: none; background: #e2e2e2; color: #111; }
+  ` });
 });
 
 
