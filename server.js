@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 app.use(express.json());
@@ -148,20 +149,24 @@ app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/vimeo/:id', async (req, res) => {
+app.get('/api/vimeo/:id', (req, res) => {
   const token = process.env.VIMEO_ACCESS_TOKEN;
   if (!token) return res.json({});
-  try {
-    const r = await fetch('https://api.vimeo.com/videos/' + req.params.id, {
-      headers: { 'Authorization': 'bearer ' + token }
+  const options = {
+    hostname: 'api.vimeo.com',
+    path: '/videos/' + req.params.id,
+    headers: { 'Authorization': 'bearer ' + token, 'Accept': 'application/json' }
+  };
+  https.get(options, (r) => {
+    let body = '';
+    r.on('data', chunk => { body += chunk; });
+    r.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        res.json({ duration: data.duration, width: data.width, height: data.height });
+      } catch(e) { res.json({}); }
     });
-    const data = await r.json();
-    res.json({
-      duration: data.duration,
-      width: data.width,
-      height: data.height
-    });
-  } catch(e) { res.json({}); }
+  }).on('error', () => res.json({}));
 });
 
 // --- Public frontend ---
