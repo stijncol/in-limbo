@@ -1528,7 +1528,8 @@ ${archiveCards}
         hasOverflow = true;
       }
     });
-    if (!hasOverflow) {
+    const hasMediumTags = document.querySelectorAll('.medium-tags button[data-filter]').length > 0;
+    if (!hasOverflow && !hasMediumTags) {
       expandBtn.style.display = 'none';
       tagClose.style.display = 'none';
     }
