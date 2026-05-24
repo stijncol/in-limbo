@@ -148,6 +148,27 @@ app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/vimeo/:id', async (req, res) => {
+  const token = process.env.VIMEO_ACCESS_TOKEN;
+  if (!token) return res.json({});
+  try {
+    const r = await fetch('https://api.vimeo.com/videos/' + req.params.id, {
+      headers: { 'Authorization': 'bearer ' + token }
+    });
+    const data = await r.json();
+    const thumb = data.pictures && data.pictures.sizes
+      ? (data.pictures.sizes.find(s => s.width >= 640) || data.pictures.sizes[data.pictures.sizes.length - 1])
+      : null;
+    res.json({
+      duration: data.duration,
+      width: data.width,
+      height: data.height,
+      title: data.name,
+      thumbnail: thumb ? thumb.link : null
+    });
+  } catch(e) { res.json({}); }
+});
+
 // --- Public frontend ---
 async function renderPublic(req, res, config) {
   const cfg = config || { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' };
@@ -1312,14 +1333,15 @@ ${archiveCards}
           .catch(() => {});
       }
     } else {
-      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id)
+      fetch('/api/vimeo/' + id)
         .then(r => r.json())
         .then(data => {
-          let u = data.thumbnail_url;
-          const sizeM = u.match(/_([0-9]+)x([0-9]+)/);
-          u = u.replace(/_[0-9]+x[0-9]+/, '_640');
-          img.src = u;
-          img.alt = data.title || '';
+          if (data.thumbnail) {
+            img.src = data.thumbnail;
+          } else {
+            img.src = 'https://vumbnail.com/'+id+'.jpg';
+          }
+          if (data.title) img.alt = data.title;
           const dur = card.querySelector('.card-duration');
           if (dur) {
             const parts = [];
@@ -1328,9 +1350,9 @@ ${archiveCards}
               const s = data.duration % 60;
               parts.push(m + ':' + String(s).padStart(2, '0'));
             }
-            const nativeW = sizeM ? parseInt(sizeM[1]) : data.thumbnail_width;
-            if (nativeW) {
-              parts.push(nativeW >= 3840 ? '4K' : nativeW >= 1920 ? '1080p' : nativeW >= 1280 ? '720p' : nativeW >= 854 ? '480p' : 'SD');
+            if (data.width) {
+              const w = data.width;
+              parts.push(w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD');
             }
             if (parts.length) dur.textContent = parts.join(' · ');
           }
