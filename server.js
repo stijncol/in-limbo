@@ -624,7 +624,7 @@ async function renderPublic(req, res, config) {
     font-weight: 400;
   }
   .intro-block .intro-text a.year-filter {
-    font-weight: 425;
+    font-weight: 400;
     text-decoration: none;
     cursor: pointer;
     color: #555;
