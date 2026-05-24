@@ -671,7 +671,7 @@ async function renderPublic(req, res, config) {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 42px;
+    margin-top: 61px;
     position: relative;
   }
   .archive-toggle button {
@@ -692,7 +692,7 @@ async function renderPublic(req, res, config) {
   .archive-toggle button svg { stroke: currentColor; }
   .archive-toggle-label {
     position: absolute;
-    left: calc(50% + 28px);
+    left: calc(50% + 38px);
     font-size: 13px;
     color: #aaa;
     white-space: nowrap;
@@ -700,7 +700,7 @@ async function renderPublic(req, res, config) {
     pointer-events: none;
     transition: opacity 0.2s ease;
   }
-  .archive-toggle button:hover ~ .archive-toggle-label { opacity: 1; }
+  .archive-toggle:not(.is-open) button:hover ~ .archive-toggle-label { opacity: 1; }
   .lightbox {
     display: none;
     position: fixed;
