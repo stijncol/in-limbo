@@ -1124,6 +1124,7 @@ ${archiveCards}
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
+    blue_only: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, dotColor: [30, 50, 180], bgColor: [240, 243, 255] },
     b7:  { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
@@ -1880,7 +1881,29 @@ app.get('/v8', async (req, res) => {
   ` });
 });
 
-
+app.get('/v9', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: 'v9 — blue only', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'blue_only', extraCSS: `
+    .filters button {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: #888;
+      padding: 6px 4px;
+    }
+    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters button:hover { color: #111; background: transparent; border: none; }
+    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+    .filters button.active { color: #111; background: transparent; border: none; }
+    .filters button.active::before, .filters button.active::after { opacity: 1; }
+    .filters button[data-filter="all"] { text-decoration: underline; }
+    .filters-medium button { border: none; background: transparent; }
+    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
+    .tag-expand:hover { border: none; background: transparent; color: #111; }
+  ` });
+});
 
 
 
