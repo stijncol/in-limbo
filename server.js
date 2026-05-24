@@ -867,7 +867,7 @@ async function renderPublic(req, res, config) {
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-architecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="font-size:0.9em;opacity:0.5;">&#x2315;</span> Search by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search <span style="opacity:0.5;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
