@@ -416,7 +416,7 @@ async function renderPublic(req, res, config) {
     grid-template-columns: repeat(3, 1fr);
     grid-auto-flow: dense;
     column-gap: 25px;
-    row-gap: 8px;
+    row-gap: 20px;
   }
   .card {
     opacity: 0;
@@ -478,7 +478,7 @@ async function renderPublic(req, res, config) {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 6px 0 2px;
+    padding: 4px 0 2px;
     gap: 12px;
   }
   .card .tags {
