@@ -1724,6 +1724,7 @@ app.get('/', async (req, res) => {
     .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
     .filters button.active { color: #111; background: transparent; border: none; }
     .filters button.active::before, .filters button.active::after { opacity: 1; }
+    .filters button[data-filter="all"] { text-decoration: underline; }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
