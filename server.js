@@ -596,6 +596,8 @@ async function renderPublic(req, res, config) {
   .card .card-year:hover { color: #111; }
   .card:hover .card-duration { color: #111; }
   .card:hover .card-title { text-decoration: underline; }
+  .card:hover .card-year { color: #111; }
+  .card:hover .tags span { color: #111; }
   .card-logos .thumb::after { display: none; }
   .card-logos .thumb:hover img { transform: none; }
   .intro-block {
