@@ -1315,7 +1315,8 @@ ${archiveCards}
         .then(r => r.json())
         .then(data => {
           let u = data.thumbnail_url;
-          u = u.replace(/_\\d+x\\d+/, '_640');
+          const sizeMatch = u.match(/_([0-9]+)x([0-9]+)/);
+          u = u.replace(/_[0-9]+x[0-9]+/, '_640');
           img.src = u;
           img.alt = data.title || '';
           const dur = card.querySelector('.card-duration');
@@ -1326,10 +1327,8 @@ ${archiveCards}
               const s = data.duration % 60;
               parts.push(m + ':' + String(s).padStart(2, '0'));
             }
-            if (data.thumbnail_width) {
-              const w = data.thumbnail_width;
-              const res = w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD';
-              parts.push(res);
+            if (sizeMatch) {
+              parts.push(sizeMatch[1] + '×' + sizeMatch[2]);
             }
             if (parts.length) dur.textContent = parts.join(' · ');
           }
