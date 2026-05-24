@@ -149,14 +149,19 @@ app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+const vimeoCache = new Map();
+
 app.get('/api/vimeo/:id', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const token = process.env.VIMEO_ACCESS_TOKEN;
   if (!token) return res.json({});
+  const id = req.params.id;
+  if (vimeoCache.has(id)) return res.json(vimeoCache.get(id));
   const options = {
     hostname: 'api.vimeo.com',
-    path: '/videos/' + req.params.id,
+    path: '/videos/' + id,
     headers: { 'Authorization': 'bearer ' + token, 'Accept': 'application/json' },
-    agent: false  // disable keep-alive to avoid stale connection on repeated loads
+    agent: false
   };
   const apiReq = https.get(options, (r) => {
     let body = '';
@@ -165,7 +170,9 @@ app.get('/api/vimeo/:id', (req, res) => {
       if (r.statusCode !== 200) return res.json({});
       try {
         const data = JSON.parse(body);
-        res.json({ duration: data.duration, width: data.width, height: data.height });
+        const result = { duration: data.duration, width: data.width, height: data.height };
+        if (result.duration || result.width) vimeoCache.set(id, result);
+        res.json(result);
       } catch(e) { res.json({}); }
     });
   });
@@ -1337,19 +1344,26 @@ ${archiveCards}
           .catch(() => {});
       }
     } else {
-      // Load thumbnail immediately via oEmbed (fast, no auth)
+      // oEmbed: thumbnail + duration fallback (always works, no auth)
       fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id)
         .then(r => r.json())
         .then(data => {
           let u = data.thumbnail_url || '';
           img.src = u.replace(/_[0-9]+x[0-9]+/, '_640') || ('https://vumbnail.com/'+id+'.jpg');
           if (data.title) img.alt = data.title;
+          const dur = card.querySelector('.card-duration');
+          if (dur && !dur.textContent && data.duration) {
+            const m = Math.floor(data.duration / 60);
+            const s = data.duration % 60;
+            dur.textContent = m + ':' + String(s).padStart(2, '0');
+          }
         })
         .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
-      // Get accurate resolution + duration via server proxy (may be slower)
+      // Proxy: overwrites with accurate duration + real resolution when available
       fetch('/api/vimeo/' + id)
         .then(r => r.json())
         .then(data => {
+          if (!data.duration && !data.width) return;
           const dur = card.querySelector('.card-duration');
           if (dur) {
             const parts = [];
