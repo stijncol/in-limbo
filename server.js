@@ -1316,7 +1316,8 @@ ${archiveCards}
         .then(r => r.json())
         .then(data => {
           let u = data.thumbnail_url;
-          u = u.replace(/_[0-9]+(?:x[0-9]+)?(?=\.|$)/, '_640');
+          const sizeM = u.match(/_([0-9]+)x([0-9]+)/);
+          u = u.replace(/_[0-9]+x[0-9]+/, '_640');
           img.src = u;
           img.alt = data.title || '';
           const dur = card.querySelector('.card-duration');
@@ -1327,9 +1328,9 @@ ${archiveCards}
               const s = data.duration % 60;
               parts.push(m + ':' + String(s).padStart(2, '0'));
             }
-            if (data.thumbnail_width) {
-              const w = data.thumbnail_width;
-              parts.push(w >= 3840 ? '4K' : w >= 1920 ? '1080p' : w >= 1280 ? '720p' : w >= 854 ? '480p' : 'SD');
+            const nativeW = sizeM ? parseInt(sizeM[1]) : data.thumbnail_width;
+            if (nativeW) {
+              parts.push(nativeW >= 3840 ? '4K' : nativeW >= 1920 ? '1080p' : nativeW >= 1280 ? '720p' : nativeW >= 854 ? '480p' : 'SD');
             }
             if (parts.length) dur.textContent = parts.join(' · ');
           }
