@@ -156,15 +156,10 @@ app.get('/api/vimeo/:id', async (req, res) => {
       headers: { 'Authorization': 'bearer ' + token }
     });
     const data = await r.json();
-    const thumb = data.pictures && data.pictures.sizes
-      ? (data.pictures.sizes.find(s => s.width >= 640) || data.pictures.sizes[data.pictures.sizes.length - 1])
-      : null;
     res.json({
       duration: data.duration,
       width: data.width,
-      height: data.height,
-      title: data.name,
-      thumbnail: thumb ? thumb.link : null
+      height: data.height
     });
   } catch(e) { res.json({}); }
 });
@@ -1346,7 +1341,6 @@ ${archiveCards}
       fetch('/api/vimeo/' + id)
         .then(r => r.json())
         .then(data => {
-          if (data.thumbnail) img.src = data.thumbnail;
           const dur = card.querySelector('.card-duration');
           if (dur) {
             const parts = [];
