@@ -1311,12 +1311,11 @@ ${archiveCards}
           .catch(() => {});
       }
     } else {
-      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id+'&width=640')
+      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id)
         .then(r => r.json())
         .then(data => {
           let u = data.thumbnail_url;
-          const sizeMatch = u.match(/_([0-9]+)x([0-9]+)/);
-          u = u.replace(/_[0-9]+x[0-9]+/, '_640');
+          u = u.replace(/_[0-9]+(?:x[0-9]+)?(?=\.|$)/, '_640');
           img.src = u;
           img.alt = data.title || '';
           const dur = card.querySelector('.card-duration');
@@ -1327,8 +1326,8 @@ ${archiveCards}
               const s = data.duration % 60;
               parts.push(m + ':' + String(s).padStart(2, '0'));
             }
-            if (sizeMatch) {
-              parts.push(sizeMatch[1] + '×' + sizeMatch[2]);
+            if (data.thumbnail_width && data.thumbnail_height) {
+              parts.push(data.thumbnail_width + '×' + data.thumbnail_height);
             }
             if (parts.length) dur.textContent = parts.join(' · ');
           }
