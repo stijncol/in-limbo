@@ -1298,7 +1298,7 @@ ${archiveCards}
             const parts = [];
             const iso = item.contentDetails.duration;
             if (iso) {
-              const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+              const m = iso.match(/PT(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?/);
               if (m) {
                 const h = parseInt(m[1] || 0), min = parseInt(m[2] || 0), sec = parseInt(m[3] || 0);
                 const totalSec = h * 3600 + min * 60 + sec;
