@@ -814,7 +814,7 @@ async function renderPublic(req, res, config) {
   ${cfg.label ? '<div style="position:fixed;top:10px;right:10px;font-size:11px;color:#aaa;z-index:999;">' + cfg.label + '</div>' : ''}
   <div class="filters" id="filters">
     <div class="filters-left">
-      <div class="filters-row" id="filters-row">
+      <div class="filters-row" id="filters-row" style="grid-template-columns:1fr">
         <div class="theme-tags">
           <button class="active" data-filter="all">all</button>
           ${themeButtons}
