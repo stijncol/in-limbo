@@ -579,11 +579,11 @@ async function renderPublic(req, res, config) {
   .intro-block .intro-text a {
     color: #111;
     text-decoration: underline;
-    font-weight: 300;
+    font-weight: 400;
   }
   .intro-block .intro-text a.year-filter {
-    font-weight: 300;
-    text-decoration: underline;
+    font-weight: 400;
+    text-decoration: none;
     cursor: pointer;
     color: #111;
   }
@@ -823,7 +823,7 @@ async function renderPublic(req, res, config) {
       </div>
     </div>
     <div class="filters-search-wrap">
-      <input type="text" id="search-input" class="filters-search-input" placeholder="title · student · tag">
+      <input type="text" class="filters-search-input" placeholder="title · student · tag">
     </div>
   </div>
   <div class="grid">
@@ -831,6 +831,7 @@ async function renderPublic(req, res, config) {
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/" style="text-decoration:none;">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="text-decoration:underline;">Search</span> <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
@@ -1086,7 +1087,12 @@ ${archiveCards}
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
     blue_only: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, dotColor: [60, 60, 120], bgColor: [248, 248, 255] },
-    b7:  { w: 400, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+    b7:  { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
+      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
+    ]},
+    b7lo:{ w: 400, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
@@ -1539,28 +1545,27 @@ ${archiveCards}
   // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
     if (activeType === 'search') {
-      searchInput.value = '';
+      clearSearchInputs();
       applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
   });
 
-  // Search toggle
+  // Support both inline intro search and filter-bar search
   const searchInput = document.getElementById('search-input');
+  const filterBarSearch = document.querySelector('.filters-search-input');
 
-  // Search input — only filter when actually typing
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.toLowerCase().trim();
+  function clearSearchInputs() {
+    if (searchInput) searchInput.value = '';
+    if (filterBarSearch) filterBarSearch.value = '';
+  }
+
+  function runSearch(q) {
     if (!q) { applyFilter('all', 'tag'); return; }
-
-    // Clear active tag
     activeFilter = 'search';
     activeType = 'search';
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
-
-    // Show archive when searching
     grid.classList.add('show-archive');
-
     document.querySelectorAll('.card').forEach(card => {
       if (!card.dataset.videoId) return;
       const title = (card.dataset.title || '').toLowerCase();
@@ -1569,13 +1574,16 @@ ${archiveCards}
       const match = title.includes(q) || authors.includes(q) || tags.includes(q);
       card.classList.toggle('hidden', !match);
     });
-  });
+  }
+
+  if (searchInput) searchInput.addEventListener('input', () => runSearch(searchInput.value.toLowerCase().trim()));
+  if (filterBarSearch) filterBarSearch.addEventListener('input', () => runSearch(filterBarSearch.value.toLowerCase().trim()));
 
   function applyFilter(value, type) {
     activeFilter = value;
     activeType = type || 'tag';
     if (value === 'all') filtersBar.classList.remove('show-all');
-    if (type !== 'search' && searchInput && searchInput.value) searchInput.value = '';
+    if (type !== 'search') clearSearchInputs();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
@@ -1674,7 +1682,8 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '16px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
+    .filters-search-wrap { display: none !important; }
     .filters button {
       border: none;
       border-radius: 0;
@@ -1872,7 +1881,7 @@ app.get('/v9', async (req, res) => {
 
 
 app.get('/test', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '15px', ditherMode: 'b7lo', extraCSS: `
     /* Two-column page: sidebar + grid */
     .page {
       display: grid;
