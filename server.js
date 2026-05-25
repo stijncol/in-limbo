@@ -1092,7 +1092,7 @@ ${archiveCards}
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
-    b7lo:{ w: 400, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+    b7lo:{ w: 400, threshold: 155, contrast: 1.0, targetLum: 185, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
@@ -1881,7 +1881,7 @@ app.get('/v9', async (req, res) => {
 
 
 app.get('/test', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '15px', ditherMode: 'b7lo', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '18px', ditherMode: 'b7lo', extraCSS: `
     /* Two-column page: sidebar + grid */
     .page {
       display: grid;
