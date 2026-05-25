@@ -1921,7 +1921,7 @@ app.get('/test', async (req, res) => {
       font-weight: 300;
       letter-spacing: -0.01em;
       color: #111;
-      margin-bottom: 8px;
+      margin-bottom: 20px;
     }
     /* Hide title from filters-left (now on .filters) */
     .filters-left::before { display: none !important; }
@@ -1933,12 +1933,21 @@ app.get('/test', async (req, res) => {
       padding-top: 0;
       margin-bottom: 20px;
     }
+    .filters-search-wrap::before {
+      content: "⌕";
+      font-size: 15px;
+      color: #bbb;
+      margin-right: 5px;
+      line-height: 1;
+    }
     .filters-left {
       order: 1;
       display: flex;
       flex-direction: column;
       gap: 0;
       width: 100%;
+      overflow-y: auto;
+      max-height: calc(100vh - 220px);
     }
     /* Theme tags vertical */
     #filters-row { grid-template-columns: 1fr; }
@@ -1978,6 +1987,23 @@ app.get('/test', async (req, res) => {
     .medium-tags button::before { content: "└ "; opacity: 0.4; }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::after { content: ""; }
+    /* Year: vertical at bottom-left of video */
+    .card .card-year {
+      position: absolute;
+      left: -16px;
+      bottom: 0;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 10px;
+      color: #aaa;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .card:hover .card-year { color: #111; }
+    /* 1px smaller for all card text except title */
+    .card-duration { font-size: 10px !important; }
+    .card .tags span { font-size: 10px !important; }
     /* Mobile fallback */
     @media (max-width: 768px) {
       .page { grid-template-columns: 1fr; }
