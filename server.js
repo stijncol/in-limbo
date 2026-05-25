@@ -407,6 +407,8 @@ async function renderPublic(req, res, config) {
   }
   .tag-expand:hover { border-color: #111; color: #111; }
   .filters.show-all .tag-expand { display: none; }
+  /* Prevent phantom flex items in default (row) layout */
+  .filters::before, .filters::after { display: none; }
   .filters-search-wrap {
     flex-shrink: 0;
     display: flex;
@@ -1084,7 +1086,7 @@ ${archiveCards}
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
     blue_only: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, dotColor: [60, 60, 120], bgColor: [248, 248, 255] },
-    b7:  { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+    b7:  { w: 400, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
@@ -1672,7 +1674,7 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '17px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '16px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 0;
@@ -1889,14 +1891,9 @@ app.get('/test', async (req, res) => {
       position: sticky;
       top: 24px;
     }
-    /* Use flexbox order to keep title lines at top, above children */
-    .filters-left {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      width: 100%;
-    }
-    .filters-left::before {
+    /* Title on .filters level so search can sit between title and tags */
+    .filters::before {
+      display: block;
       order: -2;
       content: 'inlimbo';
       font-family: inherit;
@@ -1906,7 +1903,8 @@ app.get('/test', async (req, res) => {
       color: #111;
       margin-bottom: 0;
     }
-    .filters-left::after {
+    .filters::after {
+      display: block;
       order: -1;
       content: '.database';
       font-family: inherit;
@@ -1914,7 +1912,24 @@ app.get('/test', async (req, res) => {
       font-weight: 300;
       letter-spacing: -0.01em;
       color: #111;
-      margin-bottom: 28px;
+      margin-bottom: 8px;
+    }
+    /* Hide title from filters-left (now on .filters) */
+    .filters-left::before { display: none !important; }
+    .filters-left::after  { display: none !important; }
+    /* Search sits between title (order -1) and tags (order 1) */
+    .filters-search-wrap {
+      order: 0;
+      width: 100%;
+      padding-top: 0;
+      margin-bottom: 20px;
+    }
+    .filters-left {
+      order: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
     }
     /* Theme tags vertical */
     #filters-row { grid-template-columns: 1fr; }
