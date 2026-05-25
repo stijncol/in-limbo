@@ -1916,7 +1916,7 @@ app.get('/test', async (req, res) => {
     /* Two-column page: sidebar + grid */
     .page {
       display: grid;
-      grid-template-columns: 155px 1fr;
+      grid-template-columns: 190px 1fr;
       grid-template-rows: auto auto;
       gap: 0 44px;
       align-items: start;
@@ -1931,29 +1931,31 @@ app.get('/test', async (req, res) => {
       position: sticky;
       top: 24px;
     }
+    /* Use flexbox order to keep title lines at top, above children */
     .filters-left {
+      display: flex;
       flex-direction: column;
       gap: 0;
       width: 100%;
     }
     .filters-left::before {
+      order: -2;
       content: 'inlimbo';
-      display: block;
       font-family: inherit;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 300;
       letter-spacing: -0.01em;
       color: #111;
-      margin-bottom: 1px;
+      margin-bottom: 0;
     }
     .filters-left::after {
+      order: -1;
       content: '.database';
-      display: block;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 24px;
       font-weight: 300;
-      letter-spacing: 0.01em;
-      color: #888;
+      letter-spacing: -0.01em;
+      color: #111;
       margin-bottom: 28px;
     }
     /* Theme tags vertical */
@@ -1979,13 +1981,14 @@ app.get('/test', async (req, res) => {
     .grid { grid-column: 2; grid-row: 1; }
     .archive-toggle { grid-column: 2; grid-row: 2; }
     /* Base button style — no brackets */
-    .filters button { border: none; border-radius: 0; background: transparent; color: #888; padding: 2px 0; font-size: 13px; text-align: left; }
+    .filters button { border: none; border-radius: 0; background: transparent; color: #888; padding: 2px 0; font-size: 14px; text-align: left; }
     .filters button::before { content: ""; }
     .filters button::after { content: ""; }
     .filters button:hover { color: #111; background: transparent; border: none; }
     .filters button.active { color: #111; background: transparent; border: none; }
     .filters button[data-filter="all"] { text-decoration: underline; }
-    /* Branch symbols — theme tags moved to filters-extra by overflow JS */
+    /* Branch symbols — theme tags in sidebar (both in-place and moved to filters-extra) */
+    .theme-tags button[data-filter]:not([data-filter="all"])::before { content: "└ "; opacity: 0.4; }
     .filters-extra button::before { content: "└ "; opacity: 0.4; }
     /* Branch symbols — medium tags */
     .medium-tags button::before { content: "└ "; opacity: 0.4; }
