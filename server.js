@@ -1665,6 +1665,7 @@ ${archiveCards}
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
   });
+  ${cfg.extraJS || ''}
 </script>
 </body>
 </html>`);
@@ -1881,7 +1882,20 @@ app.get('/v9', async (req, res) => {
 
 
 app.get('/test', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '18px', ditherMode: 'b7lo', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '18px', ditherMode: 'b7lo', extraJS: `
+    (function() {
+      function prependYear(dur) {
+        const card = dur.closest('.card');
+        const year = card && card.dataset.year;
+        if (!year || !dur.textContent.trim() || dur.textContent.startsWith(year)) return;
+        dur.textContent = year + ' · ' + dur.textContent;
+      }
+      document.querySelectorAll('.card-duration').forEach(dur => {
+        prependYear(dur);
+        new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
+      });
+    })();
+  `, extraCSS: `
     /* Two-column page: sidebar + grid */
     .page {
       display: grid;
@@ -1987,20 +2001,8 @@ app.get('/test', async (req, res) => {
     .medium-tags button::before { content: "└ "; opacity: 0.4; }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::after { content: ""; }
-    /* Year: vertical at bottom-left of video */
-    .card .card-year {
-      position: absolute;
-      left: -16px;
-      bottom: 0;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      font-size: 10px;
-      color: #aaa;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-    .card:hover .card-year { color: #111; }
+    /* Year is prepended into duration strip via JS — hide the separate element */
+    .card .card-year { display: none !important; }
     /* 1px smaller for all card text except title */
     .card-duration { font-size: 10px !important; }
     .card .tags span { font-size: 10px !important; }
