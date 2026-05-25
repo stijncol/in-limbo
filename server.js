@@ -1911,6 +1911,88 @@ app.get('/v9', async (req, res) => {
 
 
 
+app.get('/test', async (req, res) => {
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
+    /* Two-column page: sidebar + grid */
+    .page {
+      display: grid;
+      grid-template-columns: 155px 1fr;
+      grid-template-rows: auto auto;
+      gap: 0 44px;
+      align-items: start;
+    }
+    .filters {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      margin-bottom: 0;
+      position: sticky;
+      top: 24px;
+    }
+    .filters-left {
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+    }
+    .filters-left::before {
+      content: 'inlimbo.database';
+      display: block;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.01em;
+      color: #111;
+      margin-bottom: 28px;
+    }
+    /* Theme tags vertical */
+    #filters-row { grid-template-columns: 1fr; }
+    .theme-tags { flex-direction: column !important; align-items: flex-start !important; gap: 1px !important; }
+    /* Overflow tags shown vertically (JS will move them here) */
+    .filters-extra {
+      display: flex !important;
+      flex-direction: column !important;
+      flex-wrap: nowrap !important;
+      gap: 1px !important;
+      padding: 0 !important;
+      align-items: flex-start !important;
+    }
+    .filters-extra .tag-close { display: none !important; }
+    /* Medium section always visible */
+    .filters-medium { display: block !important; margin-top: 16px; }
+    .filters-medium .filters-label { padding-top: 0; margin-bottom: 2px; }
+    .medium-tags { display: flex !important; flex-direction: column !important; gap: 1px !important; align-items: flex-start !important; }
+    /* Hide expand button (all tags visible) */
+    .tag-expand { display: none !important; }
+    /* Grid and archive in column 2 */
+    .grid { grid-column: 2; grid-row: 1; }
+    .archive-toggle { grid-column: 2; grid-row: 2; }
+    /* Bracket button style */
+    .filters button { border: none; border-radius: 0; background: transparent; color: #888; padding: 2px 4px; font-size: 13px; text-align: left; }
+    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters button:hover { color: #111; background: transparent; border: none; }
+    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+    .filters button.active { color: #111; background: transparent; border: none; }
+    .filters button.active::before, .filters button.active::after { opacity: 1; }
+    .filters button[data-filter="all"] { text-decoration: underline; }
+    .filters-medium button { border: none; background: transparent; }
+    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    /* Mobile fallback */
+    @media (max-width: 768px) {
+      .page { grid-template-columns: 1fr; }
+      .filters { position: static; grid-column: 1; grid-row: auto; }
+      .theme-tags { flex-direction: row !important; flex-wrap: wrap !important; }
+      .filters-extra { flex-direction: row !important; flex-wrap: wrap !important; }
+      .medium-tags { flex-direction: row !important; flex-wrap: wrap !important; }
+      .grid { grid-column: 1; grid-row: auto; }
+      .archive-toggle { grid-column: 1; }
+    }
+  ` });
+});
+
 // --- Student submit page ---
 app.get('/submit', requireStudent, (req, res) => {
   res.send(`<!DOCTYPE html>
