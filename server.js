@@ -1087,7 +1087,7 @@ ${archiveCards}
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
     blue_only: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, dotColor: [60, 60, 120], bgColor: [248, 248, 255] },
-    b7:  { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, combo: [
+    b7:  { w: 650, threshold: 155, contrast: 1.0, targetLum: 185, combo: [
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
