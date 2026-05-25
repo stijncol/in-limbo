@@ -1937,13 +1937,23 @@ app.get('/test', async (req, res) => {
       width: 100%;
     }
     .filters-left::before {
-      content: 'inlimbo.database';
+      content: 'inlimbo';
+      display: block;
+      font-family: inherit;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      color: #111;
+      margin-bottom: 1px;
+    }
+    .filters-left::after {
+      content: '.database';
       display: block;
       font-family: inherit;
       font-size: 13px;
       font-weight: 300;
       letter-spacing: 0.01em;
-      color: #111;
+      color: #888;
       margin-bottom: 28px;
     }
     /* Theme tags vertical */
@@ -1968,18 +1978,19 @@ app.get('/test', async (req, res) => {
     /* Grid and archive in column 2 */
     .grid { grid-column: 2; grid-row: 1; }
     .archive-toggle { grid-column: 2; grid-row: 2; }
-    /* Bracket button style */
-    .filters button { border: none; border-radius: 0; background: transparent; color: #888; padding: 2px 4px; font-size: 13px; text-align: left; }
-    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    /* Base button style — no brackets */
+    .filters button { border: none; border-radius: 0; background: transparent; color: #888; padding: 2px 0; font-size: 13px; text-align: left; }
+    .filters button::before { content: ""; }
+    .filters button::after { content: ""; }
     .filters button:hover { color: #111; background: transparent; border: none; }
-    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
     .filters button.active { color: #111; background: transparent; border: none; }
-    .filters button.active::before, .filters button.active::after { opacity: 1; }
     .filters button[data-filter="all"] { text-decoration: underline; }
+    /* Branch symbols — theme tags moved to filters-extra by overflow JS */
+    .filters-extra button::before { content: "└ "; opacity: 0.4; }
+    /* Branch symbols — medium tags */
+    .medium-tags button::before { content: "└ "; opacity: 0.4; }
     .filters-medium button { border: none; background: transparent; }
-    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters-medium button::after { content: ""; }
     /* Mobile fallback */
     @media (max-width: 768px) {
       .page { grid-template-columns: 1fr; }
