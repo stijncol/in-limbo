@@ -407,69 +407,25 @@ async function renderPublic(req, res, config) {
   }
   .tag-expand:hover { border-color: #111; color: #111; }
   .filters.show-all .tag-expand { display: none; }
-  .search-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .filters-search-wrap {
     flex-shrink: 0;
-  }
-  .search-input {
-    font-family: inherit;
-    font-size: 15px;
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 100px;
-    background: transparent;
-    color: #111;
-    outline: none;
-    width: 0;
-    opacity: 0;
-    transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-    overflow: hidden;
-  }
-  .search-input.open {
-    width: 220px;
-    opacity: 1;
-    padding: 8px 16px;
-  }
-  .search-input:focus { border-color: #111; }
-  .search-toggle {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 100px;
-    background: transparent;
-    color: #555;
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-family: inherit;
+    padding-top: 7px;
   }
-  .search-toggle:hover { border-color: #111; color: #111; }
-  .search-input {
+  .filters-search-input {
     font-family: inherit;
-    font-size: 15px;
-    padding: 8px 16px;
-    border: 1px solid #ccc;
-    border-radius: 100px;
+    font-size: 13px;
+    border: none;
+    border-bottom: 1px solid #ccc;
     background: transparent;
-    color: #111;
     outline: none;
-    width: 0;
-    opacity: 0;
-    transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-    padding: 8px 0;
+    color: #111;
+    width: 160px;
+    padding: 0 3px 2px;
   }
-  .search-input.open {
-    width: 220px;
-    opacity: 1;
-    padding: 8px 16px;
-  }
-  .search-input:focus { border-color: #111; }
+  .filters-search-input::placeholder { color: #ccc; }
+  .filters-search-input:focus { border-bottom-color: #888; }
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -621,11 +577,11 @@ async function renderPublic(req, res, config) {
   .intro-block .intro-text a {
     color: #111;
     text-decoration: underline;
-    font-weight: 400;
+    font-weight: 300;
   }
   .intro-block .intro-text a.year-filter {
-    font-weight: 400;
-    text-decoration: none;
+    font-weight: 300;
+    text-decoration: underline;
     cursor: pointer;
     color: #111;
   }
@@ -864,13 +820,15 @@ async function renderPublic(req, res, config) {
         <div class="medium-tags">${mediumButtons}</div>
       </div>
     </div>
+    <div class="filters-search-wrap">
+      <input type="text" id="search-input" class="filters-search-input" placeholder="title · student · tag">
+    </div>
   </div>
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/" style="text-decoration:none;">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="text-decoration:underline;">Search</span> <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
       </div>
     </div>
 ${featuredCards}
@@ -1714,7 +1672,7 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '17px', ditherMode: 'b7', extraCSS: `
     .filters button {
       border: none;
       border-radius: 0;
