@@ -1959,6 +1959,8 @@ app.get('/test', async (req, res) => {
     .medium-tags { display: flex !important; flex-direction: column !important; gap: 1px !important; align-items: flex-start !important; }
     /* Hide expand button (all tags visible) */
     .tag-expand { display: none !important; }
+    /* Hide the search paragraph — only needed on main */
+    .intro-block .intro-text p:last-child { display: none; }
     /* Grid and archive in column 2 */
     .grid { grid-column: 2; grid-row: 1; }
     .archive-toggle { grid-column: 2; grid-row: 2; }
