@@ -1683,8 +1683,22 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraCSS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraJS: `
+    (function() {
+      function prependYear(dur) {
+        const card = dur.closest('.card');
+        const year = card && card.dataset.year;
+        if (!year || !dur.textContent.trim() || dur.textContent.startsWith(year)) return;
+        dur.textContent = year + ' · ' + dur.textContent;
+      }
+      document.querySelectorAll('.card-duration').forEach(dur => {
+        prependYear(dur);
+        new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
+      });
+    })();
+  `, extraCSS: `
     .filters-search-wrap { display: none !important; }
+    .card .card-year { display: none !important; }
     .filters button {
       border: none;
       border-radius: 0;
