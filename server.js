@@ -1144,7 +1144,24 @@ ${archiveCards}
       greyDot: [100,100,100], greyBg: [245,245,245],
       accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
                  { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } }
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
+    // g1a-g1c: strict 3-colour dither (single FS pass → 3 levels → 3 palette entries)
+    g1a: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
+      mode: 'fixed', threshold2: 205,
+      dark:  [60,60,120], mid: [130,65,45], light: [255,252,245]
+    }},
+    g1b: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
+      mode: 'monofamily', threshold2: 205,
+      accents: [ { dark: [60,60,120],  mid: [154,154,188], light: [248,248,255], hue: 50  },
+                 { dark: [40,90,70],   mid: [144,173,160], light: [248,255,250], hue: 180 },
+                 { dark: [130,65,45],  mid: [193,158,147], light: [255,250,248], hue: 0   } ]
+    }},
+    g1c: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
+      mode: 'twofamily', threshold2: 205,
+      accents: [ { dot: [60,60,120],  bg: [248,248,255], hue: 50  },
+                 { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
+                 { dot: [130,65,45],  bg: [255,250,248], hue: 0   } ]
+    }}
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
 
@@ -1355,6 +1372,48 @@ ${archiveCards}
       }
     }
 
+    // Pre-compute three-colour palette for threeColor mode
+    let tcDark = null, tcMid = null, tcLight = null;
+    if (cfg.threeColor) {
+      const tc = cfg.threeColor;
+      if (tc.mode === 'fixed') {
+        tcDark = tc.dark; tcMid = tc.mid; tcLight = tc.light;
+      } else {
+        // Compute smoothed hue histogram (same logic as combo/greyAccent blocks)
+        const hb2 = new Array(360).fill(0);
+        for (let i = 0; i < origData.data.length; i += 16) {
+          const rv = origData.data[i]/255, gv = origData.data[i+1]/255, bv = origData.data[i+2]/255;
+          const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+          const delta = mx - mn;
+          if (delta < 0.08) continue;
+          const lum = (mx + mn) / 2;
+          if (lum < 0.1 || lum > 0.9) continue;
+          let hue = 0;
+          if (mx === rv) hue = ((gv - bv) / delta) % 6;
+          else if (mx === gv) hue = (bv - rv) / delta + 2;
+          else hue = (rv - gv) / delta + 4;
+          hue = Math.round(hue * 60);
+          if (hue < 0) hue += 360;
+          hb2[hue]++;
+        }
+        let mc2 = 0, dh2 = 0;
+        for (let hh = 0; hh < 360; hh++) {
+          let sum = 0;
+          for (let j = -15; j <= 15; j++) sum += hb2[(hh + j + 360) % 360];
+          if (sum > mc2) { mc2 = sum; dh2 = hh; }
+        }
+        // Sort accents by distance to dominant hue (closest first)
+        const hueDist = (a) => { let d = Math.abs(dh2 - a.hue); return d > 180 ? 360 - d : d; };
+        const sorted = tc.accents.slice().sort((a, b) => hueDist(a) - hueDist(b));
+        if (tc.mode === 'monofamily') {
+          const best = sorted[0];
+          tcDark = best.dark; tcMid = best.mid; tcLight = best.light;
+        } else if (tc.mode === 'twofamily') {
+          tcDark = sorted[0].dot; tcMid = sorted[1].dot; tcLight = sorted[0].bg;
+        }
+      }
+    }
+
     function applyColor(out, imageData) {
       const dc = applyCfg.dotColor || null;
       const bc = applyCfg.bgColor || null;
@@ -1363,7 +1422,11 @@ ${archiveCards}
         const v = out[i] / 255;
         let r, g, b;
 
-        if (applyCfg.greyAccent) {
+        if (applyCfg.threeColor && tcDark) {
+          if (out[i] === 0)        { [r, g, b] = tcDark; }
+          else if (out[i] === 128) { [r, g, b] = tcMid; }
+          else                     { [r, g, b] = tcLight; }
+        } else if (applyCfg.greyAccent) {
           const ga = applyCfg.greyAccent;
           const isDot = out[i] === 0;
           if (ga.mode === 'blur' && satBlurred) {
@@ -1454,7 +1517,9 @@ ${archiveCards}
         for (let x = 0; x < w; x++) {
           const i = y * w + x;
           const old = d[i];
-          const nw = old > threshold ? 255 : 0;
+          const t2 = applyCfg.threeColor ? (applyCfg.threeColor.threshold2 || 205) : null;
+          const nw = t2 !== null ? (old > t2 ? 255 : old > threshold ? 128 : 0)
+                                 : (old > threshold ? 255 : 0);
           out[i] = nw;
           const err = old - nw;
           if (x + 1 < w) d[i+1] += err * 7/16;
@@ -2073,7 +2138,10 @@ app.get('/g1', async (req, res) => { await renderPublic(req, res, { bodyWeight: 
 app.get('/g2', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g2', label: 'g2 — blur r15 · bias 0.5 (medium)' }); });
 app.get('/g3', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g3', label: 'g3 — blur r20 · bias 1.0 (less colour)' }); });
 app.get('/g4', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g4', label: 'g4 — twopass · bias 0.5 (more colour)' }); });
-app.get('/g5', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g5', label: 'g5 — twopass · bias 1.0 (less colour)' }); });
+app.get('/g5',  async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g5',  label: 'g5 — twopass · bias 1.0 (less colour)' }); });
+app.get('/g1a', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1a', label: 'g1a — 3-colour fixed: navy · clay · cream' }); });
+app.get('/g1b', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1b', label: 'g1b — 3-colour mono-family: dark · mid · light tint' }); });
+app.get('/g1c', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1c', label: 'g1c — 3-colour two-family: top-2 hue accents + bg' }); });
 
 
 
