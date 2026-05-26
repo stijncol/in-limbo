@@ -1112,12 +1112,39 @@ ${archiveCards}
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
     ]},
-    // g-series: grey base + single accent color on high-saturation pixels (risograph effect)
-    g1: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
-    g2: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.20, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
-    g3: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.50, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
-    g4: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [80,80,80],    greyBg: [248,248,248], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
-    g5: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [130,130,130], greyBg: [240,240,240], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } }
+    // g-series: risograph effect — grey base + hue-matched accent in saturated regions
+    // g1-g3: option A (blur saturation map, soft blend zone, relative threshold)
+    // g4-g5: option B (two-pass Floyd-Steinberg on saturation layer)
+    g1: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
+      mode: 'blur', blurRadius: 8,  thresholdBias: 0.5, blendZone: 0.2,
+      greyDot: [100,100,100], greyBg: [245,245,245],
+      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
+                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
+    g2: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
+      mode: 'blur', blurRadius: 15, thresholdBias: 0.5, blendZone: 0.2,
+      greyDot: [100,100,100], greyBg: [245,245,245],
+      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
+                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
+    g3: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
+      mode: 'blur', blurRadius: 20, thresholdBias: 1.0, blendZone: 0.2,
+      greyDot: [100,100,100], greyBg: [245,245,245],
+      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
+                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
+    g4: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
+      mode: 'twopass', thresholdBias: 0.5,
+      greyDot: [100,100,100], greyBg: [245,245,245],
+      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
+                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
+    g5: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
+      mode: 'twopass', thresholdBias: 1.0,
+      greyDot: [100,100,100], greyBg: [245,245,245],
+      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
+                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
+                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } }
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
 
@@ -1210,16 +1237,26 @@ ${archiveCards}
     }
     const threshold = cfg.threshold;
 
-    // Pre-compute per-pixel saturation + accent color for greyAccent mode
-    let pixelSat = null;
+    // Pre-compute greyAccent data: saturation map, accent colors, blur/twopass state
+    let satBlurred = null;     // option A: blurred saturation map
+    let satThreshLo = 0;       // option A: blend zone lower bound
+    let satThreshHi = 1;       // option A: blend zone upper bound
+    let outSat = null;         // option B: pre-computed FS on saturation layer
     let accentDotColor = null;
+    let accentBgColor = null;
+
     if (cfg.greyAccent) {
-      pixelSat = new Float32Array(w * h);
+      const ga = cfg.greyAccent;
+
+      // Raw HSV saturation per pixel
+      const rawSat = new Float32Array(w * h);
       for (let i = 0; i < w * h; i++) {
         const rv = origData.data[i*4]/255, gv = origData.data[i*4+1]/255, bv = origData.data[i*4+2]/255;
         const mx = Math.max(rv, gv, bv);
-        pixelSat[i] = mx > 0 ? (mx - Math.min(rv, gv, bv)) / mx : 0;
+        rawSat[i] = mx > 0 ? (mx - Math.min(rv, gv, bv)) / mx : 0;
       }
+
+      // Dominant hue detection (same as combo block) → pick accent colors
       const hb = new Array(360).fill(0);
       for (let i = 0; i < origData.data.length; i += 16) {
         const rv = origData.data[i]/255, gv = origData.data[i+1]/255, bv = origData.data[i+2]/255;
@@ -1242,13 +1279,80 @@ ${archiveCards}
         for (let j = -15; j <= 15; j++) sum += hb[(hh + j + 360) % 360];
         if (sum > mc) { mc = sum; dh = hh; }
       }
-      let bestAcc = cfg.greyAccent.accents[0], bestDist = Infinity;
-      for (const a of cfg.greyAccent.accents) {
+      let bestAcc = ga.accents[0], bestDist = Infinity;
+      for (const a of ga.accents) {
         let dist = Math.abs(dh - a.hue);
         if (dist > 180) dist = 360 - dist;
         if (dist < bestDist) { bestDist = dist; bestAcc = a; }
       }
       accentDotColor = bestAcc.dot;
+      accentBgColor = bestAcc.tintBg;
+
+      if (ga.mode === 'blur') {
+        // Separable box blur on saturation map
+        const r = ga.blurRadius || 12;
+        const tmp = new Float32Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let sum = 0, cnt = 0;
+            for (let dx = -r; dx <= r; dx++) {
+              const nx = x + dx;
+              if (nx >= 0 && nx < w) { sum += rawSat[y*w+nx]; cnt++; }
+            }
+            tmp[y*w+x] = sum/cnt;
+          }
+        }
+        satBlurred = new Float32Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let sum = 0, cnt = 0;
+            for (let dy = -r; dy <= r; dy++) {
+              const ny = y + dy;
+              if (ny >= 0 && ny < h) { sum += tmp[ny*w+x]; cnt++; }
+            }
+            satBlurred[y*w+x] = sum/cnt;
+          }
+        }
+        // Relative threshold: mean + bias * stddev of blurred saturation
+        let mean = 0;
+        for (let i = 0; i < w*h; i++) mean += satBlurred[i];
+        mean /= w*h;
+        let variance = 0;
+        for (let i = 0; i < w*h; i++) variance += (satBlurred[i]-mean)**2;
+        const stddev = Math.sqrt(variance / (w*h));
+        const thresh = mean + (ga.thresholdBias || 0.5) * stddev;
+        const bz = ga.blendZone || 0.2;
+        satThreshLo = thresh * (1 - bz);
+        satThreshHi = thresh * (1 + bz);
+
+      } else if (ga.mode === 'twopass') {
+        // Relative threshold from raw saturation distribution
+        let mean = 0;
+        for (let i = 0; i < w*h; i++) mean += rawSat[i];
+        mean /= w*h;
+        let variance = 0;
+        for (let i = 0; i < w*h; i++) variance += (rawSat[i]-mean)**2;
+        const stddev = Math.sqrt(variance / (w*h));
+        const satThreshNorm = Math.min(0.98, mean + (ga.thresholdBias || 0.5) * stddev);
+        // FS on inverted saturation: high sat → low value → dot (0)
+        const satFSThresh = (1 - satThreshNorm) * 255;
+        const sd = new Float32Array(w * h);
+        for (let i = 0; i < w*h; i++) sd[i] = (1 - rawSat[i]) * 255;
+        outSat = new Uint8Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = y*w+x;
+            const old = sd[idx];
+            const nw = old > satFSThresh ? 255 : 0;
+            outSat[idx] = nw;
+            const err = old - nw;
+            if (x+1 < w) sd[idx+1] += err*7/16;
+            if (y+1 < h && x > 0) sd[idx+w-1] += err*3/16;
+            if (y+1 < h) sd[idx+w] += err*5/16;
+            if (y+1 < h && x+1 < w) sd[idx+w+1] += err*1/16;
+          }
+        }
+      }
     }
 
     function applyColor(out, imageData) {
@@ -1259,14 +1363,31 @@ ${archiveCards}
         const v = out[i] / 255;
         let r, g, b;
 
-        if (applyCfg.greyAccent && pixelSat) {
+        if (applyCfg.greyAccent) {
           const ga = applyCfg.greyAccent;
-          if (out[i] === 0 && pixelSat[i] > ga.satThreshold) {
-            [r, g, b] = accentDotColor;
-          } else if (out[i] === 0) {
-            [r, g, b] = ga.greyDot;
+          const isDot = out[i] === 0;
+          if (ga.mode === 'blur' && satBlurred) {
+            const sv = satBlurred[i];
+            if (sv <= satThreshLo) {
+              [r, g, b] = isDot ? ga.greyDot : ga.greyBg;
+            } else if (sv >= satThreshHi) {
+              [r, g, b] = isDot ? accentDotColor : accentBgColor;
+            } else {
+              const t = (sv - satThreshLo) / (satThreshHi - satThreshLo);
+              const from = isDot ? ga.greyDot : ga.greyBg;
+              const to   = isDot ? accentDotColor : accentBgColor;
+              r = Math.round(from[0] + t * (to[0] - from[0]));
+              g = Math.round(from[1] + t * (to[1] - from[1]));
+              b = Math.round(from[2] + t * (to[2] - from[2]));
+            }
+          } else if (ga.mode === 'twopass' && outSat) {
+            const isAccent = outSat[i] === 0;
+            if (isDot && isAccent)       { [r, g, b] = accentDotColor; }
+            else if (isDot)              { [r, g, b] = ga.greyDot; }
+            else if (isAccent)           { [r, g, b] = accentBgColor; }
+            else                         { [r, g, b] = ga.greyBg; }
           } else {
-            [r, g, b] = ga.greyBg;
+            [r, g, b] = isDot ? ga.greyDot : ga.greyBg;
           }
         } else if (dc && bc) {
           // Custom dot + background colors
@@ -1947,11 +2068,12 @@ app.get('/v9', async (req, res) => {
 });
 
 // g-series: grey base + hue-matched accent on saturated pixels
-app.get('/g1', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1', label: 'g1 — sat 0.35 · grey [100] · bg [245]' }); });
-app.get('/g2', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g2', label: 'g2 — sat 0.20 · more colour' }); });
-app.get('/g3', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g3', label: 'g3 — sat 0.50 · less colour' }); });
-app.get('/g4', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g4', label: 'g4 — sat 0.35 · grey [80] · bg [248]' }); });
-app.get('/g5', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g5', label: 'g5 — sat 0.35 · grey [130] · bg [240]' }); });
+app.get('/g',  async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1', label: 'g — blur r8 · bias 0.5' }); });
+app.get('/g1', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1', label: 'g1 — blur r8  · bias 0.5 (more colour)' }); });
+app.get('/g2', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g2', label: 'g2 — blur r15 · bias 0.5 (medium)' }); });
+app.get('/g3', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g3', label: 'g3 — blur r20 · bias 1.0 (less colour)' }); });
+app.get('/g4', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g4', label: 'g4 — twopass · bias 0.5 (more colour)' }); });
+app.get('/g5', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g5', label: 'g5 — twopass · bias 1.0 (less colour)' }); });
 
 
 
