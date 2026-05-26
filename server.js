@@ -1111,7 +1111,13 @@ ${archiveCards}
       { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
       { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
       { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]}
+    ]},
+    // g-series: grey base + single accent color on high-saturation pixels (risograph effect)
+    g1: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
+    g2: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.20, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
+    g3: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.50, greyDot: [100,100,100], greyBg: [245,245,245], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
+    g4: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [80,80,80],    greyBg: [248,248,248], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } },
+    g5: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: { satThreshold: 0.35, greyDot: [130,130,130], greyBg: [240,240,240], accents: [ { dot: [60,60,120], hue: 50 }, { dot: [40,90,70], hue: 180 }, { dot: [130,65,45], hue: 0 } ] } }
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
 
@@ -1204,6 +1210,47 @@ ${archiveCards}
     }
     const threshold = cfg.threshold;
 
+    // Pre-compute per-pixel saturation + accent color for greyAccent mode
+    let pixelSat = null;
+    let accentDotColor = null;
+    if (cfg.greyAccent) {
+      pixelSat = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        const rv = origData.data[i*4]/255, gv = origData.data[i*4+1]/255, bv = origData.data[i*4+2]/255;
+        const mx = Math.max(rv, gv, bv);
+        pixelSat[i] = mx > 0 ? (mx - Math.min(rv, gv, bv)) / mx : 0;
+      }
+      const hb = new Array(360).fill(0);
+      for (let i = 0; i < origData.data.length; i += 16) {
+        const rv = origData.data[i]/255, gv = origData.data[i+1]/255, bv = origData.data[i+2]/255;
+        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
+        const delta = mx - mn;
+        if (delta < 0.08) continue;
+        const lum = (mx + mn) / 2;
+        if (lum < 0.1 || lum > 0.9) continue;
+        let hue = 0;
+        if (mx === rv) hue = ((gv - bv) / delta) % 6;
+        else if (mx === gv) hue = (bv - rv) / delta + 2;
+        else hue = (rv - gv) / delta + 4;
+        hue = Math.round(hue * 60);
+        if (hue < 0) hue += 360;
+        hb[hue]++;
+      }
+      let mc = 0, dh = 0;
+      for (let hh = 0; hh < 360; hh++) {
+        let sum = 0;
+        for (let j = -15; j <= 15; j++) sum += hb[(hh + j + 360) % 360];
+        if (sum > mc) { mc = sum; dh = hh; }
+      }
+      let bestAcc = cfg.greyAccent.accents[0], bestDist = Infinity;
+      for (const a of cfg.greyAccent.accents) {
+        let dist = Math.abs(dh - a.hue);
+        if (dist > 180) dist = 360 - dist;
+        if (dist < bestDist) { bestDist = dist; bestAcc = a; }
+      }
+      accentDotColor = bestAcc.dot;
+    }
+
     function applyColor(out, imageData) {
       const dc = applyCfg.dotColor || null;
       const bc = applyCfg.bgColor || null;
@@ -1211,8 +1258,17 @@ ${archiveCards}
       for (let i = 0; i < out.length; i++) {
         const v = out[i] / 255;
         let r, g, b;
-        
-        if (dc && bc) {
+
+        if (applyCfg.greyAccent && pixelSat) {
+          const ga = applyCfg.greyAccent;
+          if (out[i] === 0 && pixelSat[i] > ga.satThreshold) {
+            [r, g, b] = accentDotColor;
+          } else if (out[i] === 0) {
+            [r, g, b] = ga.greyDot;
+          } else {
+            [r, g, b] = ga.greyBg;
+          }
+        } else if (dc && bc) {
           // Custom dot + background colors
           r = Math.round(dc[0] + v * (bc[0] - dc[0]));
           g = Math.round(dc[1] + v * (bc[1] - dc[1]));
@@ -1890,7 +1946,12 @@ app.get('/v9', async (req, res) => {
   ` });
 });
 
-
+// g-series: grey base + hue-matched accent on saturated pixels
+app.get('/g1', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g1', label: 'g1 — sat 0.35 · grey [100] · bg [245]' }); });
+app.get('/g2', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g2', label: 'g2 — sat 0.20 · more colour' }); });
+app.get('/g3', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g3', label: 'g3 — sat 0.50 · less colour' }); });
+app.get('/g4', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g4', label: 'g4 — sat 0.35 · grey [80] · bg [248]' }); });
+app.get('/g5', async (req, res) => { await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagColor: '#777', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'g5', label: 'g5 — sat 0.35 · grey [130] · bg [240]' }); });
 
 
 
