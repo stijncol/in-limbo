@@ -3081,7 +3081,8 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
 #modal.open{display:flex}
 #mbox{background:#fff;padding:20px;max-width:520px;width:90%}
 #mjson{width:100%;height:260px;border:1px solid #ddd;padding:8px;font-size:10px;font-family:inherit;resize:none;outline:none}
-#mclose{margin-top:10px;font-family:inherit;font-size:10px;padding:5px 12px;border:1px solid #999;background:#fff;cursor:pointer}
+#mapply,#mclose{font-family:inherit;font-size:10px;padding:5px 12px;border:1px solid #999;background:#fff;cursor:pointer}
+#mapply{border-color:#333;background:#333;color:#fff}#mapply:hover{background:#000}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.grid{grid-template-columns:1fr};#grid-wrap{padding:52px 16px 40px}}
 </style>
@@ -3153,8 +3154,12 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
 
 <div id="modal"><div id="mbox">
   <div style="font-size:10px;color:#aaa;margin-bottom:8px;letter-spacing:.06em">SETTINGS — select all &amp; copy</div>
-  <textarea id="mjson" readonly></textarea>
-  <br><button id="mclose">close</button>
+  <textarea id="mjson"></textarea>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button id="mapply">apply</button>
+    <button id="mclose">close</button>
+    <span id="merr" style="font-size:10px;color:#c00;align-self:center"></span>
+  </div>
 </div></div>
 
 <script>
@@ -3598,6 +3603,59 @@ document.getElementById('copy-btn').addEventListener('click',function(){
   document.getElementById('modal').classList.add('open');
   setTimeout(function(){document.getElementById('mjson').select()},50);
 });
+function rgbArrToHex(v){if(!Array.isArray(v))return v;return'#'+v.map(function(n){return Math.max(0,Math.min(255,Math.round(n))).toString(16).padStart(2,'0')}).join('')}
+function setVal(id,v){var el=document.getElementById(id);if(el)el.value=v}
+function setChk(id,v){var el=document.getElementById(id);if(el)el.checked=!!v}
+
+function applySettings(json){
+  var c;
+  try{c=JSON.parse(json)}catch(ex){document.getElementById('merr').textContent='invalid JSON';return}
+  document.getElementById('merr').textContent='';
+  if(c.image){
+    if(c.image.brightness!==undefined)setVal('i-bright',c.image.brightness);
+    if(c.image.shadows!==undefined)setVal('i-shadows',c.image.shadows);
+    if(c.image.gamma!==undefined)setVal('i-gamma',Math.round(c.image.gamma*100));
+    if(c.image.contrast!==undefined)setVal('i-contrast',Math.round(c.image.contrast*100));
+  }
+  if(c.dither){
+    if(c.dither.technique)setVal('i-tech',c.dither.technique);
+    if(c.dither.width)setVal('i-width',c.dither.width);
+  }
+  if(c.palette){
+    if(c.palette.mode)setVal('i-pmode',c.palette.mode);
+    if(c.palette.colors)setVal('i-pcolors',c.palette.colors);
+    if(c.palette.pastel!==undefined)setVal('i-pastel',c.palette.pastel);
+    if(c.palette.lightness!==undefined)setVal('i-light',c.palette.lightness);
+    if(c.palette.hue){setVal('i-monohue',c.palette.hue);setVal('i-tinthue',c.palette.hue)}
+    if(c.palette.extras)setVal('i-fixedx',c.palette.extras);
+    if(c.palette.color1){setVal('i-duo1',c.palette.color1);setVal('i-cus1',c.palette.color1)}
+    if(c.palette.color2){setVal('i-duo2',c.palette.color2);setVal('i-cus2',c.palette.color2)}
+    if(c.palette.color3)setVal('i-cus3',c.palette.color3);
+  }
+  if(c.baseTones){
+    setChk('i-basetones',c.baseTones.enabled);
+    document.getElementById('pc-basetones').classList.toggle('vis',!!c.baseTones.enabled);
+    if(c.baseTones.cream)setVal('i-cream',rgbArrToHex(c.baseTones.cream));
+    if(c.baseTones.charcoal)setVal('i-charcoal',rgbArrToHex(c.baseTones.charcoal));
+  }
+  if(c.hover){
+    setChk('i-shimmer',c.hover.shimmer);
+    if(c.hover.fps)setVal('i-fps',c.hover.fps);
+    if(c.hover.intensity)setVal('i-inten',c.hover.intensity);
+    setChk('i-reveal',c.hover.hiddenColor);
+    if(c.hover.accentMode)setVal('i-amode',c.hover.accentMode);
+    if(c.hover.accent1)setVal('i-acc1',c.hover.accent1);
+    if(c.hover.accent2)setVal('i-acc2',c.hover.accent2);
+    if(c.hover.revealPct)setVal('i-revpct',c.hover.revealPct);
+  }
+  // refresh all labels and conditional visibility
+  document.querySelectorAll('#panel-body input[type=range]').forEach(function(el){el.dispatchEvent(new Event('input'))});
+  updPMode();updAMode();
+  document.getElementById('modal').classList.remove('open');
+  scheduleRerender();
+}
+
+document.getElementById('mapply').addEventListener('click',function(){applySettings(document.getElementById('mjson').value)});
 document.getElementById('mclose').addEventListener('click',function(){document.getElementById('modal').classList.remove('open')});
 document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')});
 </script>
