@@ -1238,11 +1238,8 @@ ${archiveCards}
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 
     if (cfg.mono) {
-      const mw = cfg.w;
-      const mh = Math.round(mw * img.naturalHeight / img.naturalWidth);
-      canvas.width = mw;
-      canvas.height = mh;
-      ctx.drawImage(img, 0, 0, mw, mh);
+      const mw = w;
+      const mh = h;
 
       const raw = ctx.getImageData(0, 0, mw, mh);
       const pd = raw.data;
@@ -1257,10 +1254,10 @@ ${archiveCards}
         // 3. Gamma 1.4
         pr = 255 * Math.pow(pr / 255, 1 / 1.4); pg = 255 * Math.pow(pg / 255, 1 / 1.4); pb = 255 * Math.pow(pb / 255, 1 / 1.4);
         pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
-        // 4. Contrast 0.8
-        pr = ((pr / 255 - 0.5) * 0.8 + 0.5) * 255;
-        pg = ((pg / 255 - 0.5) * 0.8 + 0.5) * 255;
-        pb = ((pb / 255 - 0.5) * 0.8 + 0.5) * 255;
+        // 4. Contrast 1.3
+        pr = ((pr / 255 - 0.5) * 1.3 + 0.5) * 255;
+        pg = ((pg / 255 - 0.5) * 1.3 + 0.5) * 255;
+        pb = ((pb / 255 - 0.5) * 1.3 + 0.5) * 255;
         pd[i]   = Math.max(0, Math.min(255, pr));
         pd[i+1] = Math.max(0, Math.min(255, pg));
         pd[i+2] = Math.max(0, Math.min(255, pb));
