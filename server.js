@@ -1161,9 +1161,61 @@ ${archiveCards}
       accents: [ { dot: [60,60,120],  bg: [248,248,255], hue: 50  },
                  { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
                  { dot: [130,65,45],  bg: [255,250,248], hue: 0   } ]
-    }}
+    }},
+    m1: { w: 800, mono: true }
   };
   const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
+
+  function hslToRgb(h, s, l) {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    let r, g, b;
+    if (h < 60)       { r = c; g = x; b = 0; }
+    else if (h < 120) { r = x; g = c; b = 0; }
+    else if (h < 180) { r = 0; g = c; b = x; }
+    else if (h < 240) { r = 0; g = x; b = c; }
+    else if (h < 300) { r = x; g = 0; b = c; }
+    else              { r = c; g = 0; b = x; }
+    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+  }
+
+  function rgbToLab(r, g, b) {
+    function toLinear(v) {
+      v /= 255;
+      return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }
+    const lr = toLinear(r), lg = toLinear(g), lb = toLinear(b);
+    const x = lr * 0.4124564 + lg * 0.3575761 + lb * 0.1804375;
+    const y = lr * 0.2126729 + lg * 0.7151522 + lb * 0.0721750;
+    const z = lr * 0.0193339 + lg * 0.1191920 + lb * 0.9503041;
+    function f(t) { return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116; }
+    const fx = f(x / 0.95047), fy = f(y), fz = f(z / 1.08883);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+
+  function labDist(lab1, lab2) {
+    const dL = lab1[0] - lab2[0], da = lab1[1] - lab2[1], db = lab1[2] - lab2[2];
+    return Math.sqrt(dL * dL + da * da + db * db);
+  }
+
+  function buildMonoPalette() {
+    const H = 210, S = 0.333;
+    const shades = [];
+    for (let i = 0; i < 8; i++) {
+      let l = 85 - i * (65 / 7);
+      const s = S * (1 - 0.55 * 0.7);
+      l = Math.min(95, l + (85 - l) * 0.55 * 0.6);
+      l = Math.min(95, l + 12);
+      shades.push(hslToRgb(H, s, l / 100));
+    }
+    const all = [...shades, [248, 245, 238], [120, 120, 120]];
+    all.sort((a, b) => (b[0] * 0.299 + b[1] * 0.587 + b[2] * 0.114) - (a[0] * 0.299 + a[1] * 0.587 + a[2] * 0.114));
+    return all;
+  }
+
+  const M1_PALETTE = buildMonoPalette();
+  const M1_PALETTE_LAB = M1_PALETTE.map(c => rgbToLab(c[0], c[1], c[2]));
 
   function ditherImage(img, thumb, variation) {
     const cfg = activeDitherConfig;
@@ -1184,6 +1236,117 @@ ${archiveCards}
       sy = (img.naturalHeight - sh) / 2;
     }
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+
+    if (cfg.mono) {
+      const mw = cfg.w;
+      const mh = Math.round(mw * img.naturalHeight / img.naturalWidth);
+      canvas.width = mw;
+      canvas.height = mh;
+      ctx.drawImage(img, 0, 0, mw, mh);
+
+      const raw = ctx.getImageData(0, 0, mw, mh);
+      const pd = raw.data;
+      for (let i = 0; i < pd.length; i += 4) {
+        let pr = pd[i], pg = pd[i+1], pb = pd[i+2];
+        // 1. Shadows lift +60
+        pr = 60 + pr * 195 / 255; pg = 60 + pg * 195 / 255; pb = 60 + pb * 195 / 255;
+        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
+        // 2. Brightness +40
+        pr += 40; pg += 40; pb += 40;
+        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
+        // 3. Gamma 1.4
+        pr = 255 * Math.pow(pr / 255, 1 / 1.4); pg = 255 * Math.pow(pg / 255, 1 / 1.4); pb = 255 * Math.pow(pb / 255, 1 / 1.4);
+        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
+        // 4. Contrast 0.8
+        pr = ((pr / 255 - 0.5) * 0.8 + 0.5) * 255;
+        pg = ((pg / 255 - 0.5) * 0.8 + 0.5) * 255;
+        pb = ((pb / 255 - 0.5) * 0.8 + 0.5) * 255;
+        pd[i]   = Math.max(0, Math.min(255, pr));
+        pd[i+1] = Math.max(0, Math.min(255, pg));
+        pd[i+2] = Math.max(0, Math.min(255, pb));
+      }
+
+      const preProc = new Float32Array(mw * mh * 3);
+      for (let i = 0; i < mw * mh; i++) {
+        preProc[i*3]   = pd[i*4];
+        preProc[i*3+1] = pd[i*4+1];
+        preProc[i*3+2] = pd[i*4+2];
+      }
+
+      function ditherM1(noiseX, noiseY, noiseRadius) {
+        const rd = new Float32Array(preProc);
+        if (noiseRadius === -1) {
+          for (let i = 0; i < mw * mh; i++) {
+            const n = (Math.random() - 0.5) * 20;
+            rd[i*3] += n; rd[i*3+1] += n; rd[i*3+2] += n;
+          }
+        } else if (noiseRadius > 0) {
+          for (let y = 0; y < mh; y++) {
+            for (let x = 0; x < mw; x++) {
+              const dist = Math.sqrt((x - noiseX) ** 2 + (y - noiseY) ** 2);
+              if (dist < noiseRadius) {
+                const n = (Math.random() - 0.5) * (1 - dist / noiseRadius) * 40;
+                const i = y * mw + x;
+                rd[i*3] += n; rd[i*3+1] += n; rd[i*3+2] += n;
+              }
+            }
+          }
+        }
+        const outImg = ctx.createImageData(mw, mh);
+        for (let y = 0; y < mh; y++) {
+          for (let x = 0; x < mw; x++) {
+            const idx = y * mw + x;
+            const qr = Math.max(0, Math.min(255, rd[idx*3]));
+            const qg = Math.max(0, Math.min(255, rd[idx*3+1]));
+            const qb = Math.max(0, Math.min(255, rd[idx*3+2]));
+            const pxLab = rgbToLab(qr, qg, qb);
+            let bestIdx = 0, bestDist = Infinity;
+            for (let p = 0; p < M1_PALETTE_LAB.length; p++) {
+              const d = labDist(pxLab, M1_PALETTE_LAB[p]);
+              if (d < bestDist) { bestDist = d; bestIdx = p; }
+            }
+            const [nr, ng, nb] = M1_PALETTE[bestIdx];
+            const er = qr - nr, eg = qg - ng, eb = qb - nb;
+            if (x + 1 < mw) {
+              rd[(idx+1)*3] += er*7/16; rd[(idx+1)*3+1] += eg*7/16; rd[(idx+1)*3+2] += eb*7/16;
+            }
+            if (y + 1 < mh && x > 0) {
+              rd[(idx+mw-1)*3] += er*3/16; rd[(idx+mw-1)*3+1] += eg*3/16; rd[(idx+mw-1)*3+2] += eb*3/16;
+            }
+            if (y + 1 < mh) {
+              rd[(idx+mw)*3] += er*5/16; rd[(idx+mw)*3+1] += eg*5/16; rd[(idx+mw)*3+2] += eb*5/16;
+            }
+            if (y + 1 < mh && x + 1 < mw) {
+              rd[(idx+mw+1)*3] += er*1/16; rd[(idx+mw+1)*3+1] += eg*1/16; rd[(idx+mw+1)*3+2] += eb*1/16;
+            }
+            outImg.data[idx*4]   = nr;
+            outImg.data[idx*4+1] = ng;
+            outImg.data[idx*4+2] = nb;
+            outImg.data[idx*4+3] = 255;
+          }
+        }
+        ctx.putImageData(outImg, 0, 0);
+      }
+
+      ditherM1(0, 0, 0);
+      canvas.style.imageRendering = 'pixelated';
+      thumb.appendChild(canvas);
+
+      let shimmerActive = false;
+      let shimmerFrame = null;
+      function shimmerLoopM1() {
+        if (!shimmerActive) return;
+        ditherM1(0, 0, -1);
+        setTimeout(() => { shimmerFrame = requestAnimationFrame(shimmerLoopM1); }, 120);
+      }
+      thumb.addEventListener('mouseenter', () => { shimmerActive = true; shimmerLoopM1(); });
+      thumb.addEventListener('mouseleave', () => {
+        shimmerActive = false;
+        if (shimmerFrame) cancelAnimationFrame(shimmerFrame);
+        ditherM1(0, 0, 0);
+      });
+      return;
+    }
 
     const [cr, cg, cb] = getDominantColor(ctx, w, h);
 
@@ -1925,7 +2088,7 @@ app.get('/paper', async (req, res) => {
 
 // Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'b7', extraJS: `
+  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'm1', extraJS: `
     (function() {
       function prependYear(dur) {
         const card = dur.closest('.card');
