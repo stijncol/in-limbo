@@ -558,7 +558,7 @@ async function renderPublic(req, res, config) {
     left: 0;
     right: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: flex-start;
     padding: 4px 0 2px;
     gap: 12px;
@@ -567,6 +567,14 @@ async function renderPublic(req, res, config) {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    flex: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .card:hover .tags {
+    opacity: 1;
+    pointer-events: auto;
   }
   .card .tags span {
     font-size: 11px;
@@ -592,6 +600,7 @@ async function renderPublic(req, res, config) {
     text-align: right;
     white-space: nowrap;
     flex-shrink: 0;
+    transition: color 0.2s ease;
   }
   .card .card-year {
     font-size: 11px;
@@ -603,7 +612,7 @@ async function renderPublic(req, res, config) {
   }
   .card .card-year:hover { color: #111; }
   .card:hover .card-duration { color: #111; }
-  .card:hover .card-title { text-decoration: underline; }
+  .card:hover .card-title { text-decoration: underline; color: #1a3461; }
   .card:hover .card-year { color: #111; }
   .card:hover .tags span { color: #111; }
   .card-logos .thumb::after { display: none; }
