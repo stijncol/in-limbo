@@ -2249,14 +2249,29 @@ app.get('/', async (req, res) => {
       background: transparent;
       color: #888;
       padding: 6px 4px;
+      position: relative;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
     .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
     .filters button:hover { color: #1e40af; background: transparent; border: none; }
     .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
     .filters button.active { color: #1e40af; background: transparent; border: none; }
-    .filters button.active::before, .filters button.active::after { opacity: 1; }
-    .filters button[data-filter="all"] { text-decoration: underline; }
+    .filters button.active::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, -7px);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #1e40af;
+      margin: 0;
+      opacity: 1;
+    }
+    .filters button.active::after { content: ""; margin: 0; opacity: 0; }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
