@@ -2342,8 +2342,7 @@ ${archiveCards}
     // Align top of indicator with top of first card, plus 1/3 extra margin each side
     var firstRect = cards[0].getBoundingClientRect();
     var baseMargin = Math.round(firstRect.top + window.scrollY);
-    var extraMargin = Math.round(baseMargin / 3);
-    var indTop = baseMargin + extraMargin;
+    var indTop = baseMargin * 2;
     ind.style.top = indTop + 'px';
     ind.style.height = Math.max(vpH - indTop * 2, 40) + 'px';
 
