@@ -1814,14 +1814,55 @@ ${archiveCards}
     });
   }
 
-  // Hover handler for baked thumbnails: shows sharp version on hover
+  // Hover handler for baked thumbnails: shows sharp + pixel-noise shimmer
   function setupBakedHover(thumb) {
     const sharp = thumb.querySelector('.baked-sharp');
     if (!sharp) return;
+    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false;
+
+    function initShimmer() {
+      if (canvas || !sharp.naturalWidth) return false;
+      canvas = document.createElement('canvas');
+      canvas.width = sharp.naturalWidth;
+      canvas.height = sharp.naturalHeight;
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated';
+      thumb.appendChild(canvas);
+      ctx = canvas.getContext('2d');
+      try {
+        ctx.drawImage(sharp, 0, 0, canvas.width, canvas.height);
+        origData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return true;
+      } catch(e) { return false; }
+    }
+
+    function shimmerTick() {
+      if (!shimmerActive || !origData) return;
+      const id = new ImageData(new Uint8ClampedArray(origData.data), origData.width, origData.height);
+      const d = id.data, n = origData.width * origData.height;
+      const swaps = Math.floor(n * 0.015);
+      for (let k = 0; k < swaps; k++) {
+        const i = Math.floor(Math.random() * n) * 4;
+        const j = Math.floor(Math.random() * n) * 4;
+        const r = d[i], g = d[i+1], b = d[i+2];
+        d[i] = d[j]; d[i+1] = d[j+1]; d[i+2] = d[j+2];
+        d[j] = r; d[j+1] = g; d[j+2] = b;
+      }
+      ctx.putImageData(id, 0, 0);
+      setTimeout(() => { if (shimmerActive) shimmerRaf = requestAnimationFrame(shimmerTick); }, 120);
+    }
+
     thumb.addEventListener('mouseenter', () => {
-      if (sharp.naturalWidth) sharp.style.opacity = '1';
+      sharp.style.opacity = '1';
+      if (initShimmer()) {
+        shimmerActive = true;
+        canvas.style.display = 'block';
+        shimmerTick();
+      }
     });
     thumb.addEventListener('mouseleave', () => {
+      shimmerActive = false;
+      if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
+      if (canvas) canvas.style.display = 'none';
       sharp.style.opacity = '0';
     });
   }
