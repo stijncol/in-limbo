@@ -3598,7 +3598,12 @@ document.getElementById('i-amode').addEventListener('change',updAMode);updAMode(
   inp.addEventListener('input',upd);upd();
 });
 
-// render button
+// wire all controls
+document.querySelectorAll('#panel-body input,#panel-body select').forEach(function(el){
+  el.addEventListener('input',scheduleRerender);el.addEventListener('change',scheduleRerender);
+});
+
+// render button (immediate, bypasses debounce)
 var renderBtn=document.getElementById('render-btn');if(renderBtn)renderBtn.addEventListener('click',rerenderAll);
 
 // copy settings
