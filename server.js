@@ -2365,7 +2365,7 @@ app.get('/', async (req, res) => {
     #medium-axis {
       flex: 0 0 auto;
       width: fit-content;
-      padding-left: 8px;
+      padding-left: 28px;
       padding-top: 0;
       display: flex;
       flex-direction: column;
