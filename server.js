@@ -1831,14 +1831,14 @@ ${archiveCards}
   function setupBakedHover(thumb) {
     const sharp = thumb.querySelector('.baked-sharp');
     if (!sharp) return;
-    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false, shimmerDelay = null;
+    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false;
 
     function initShimmer() {
       if (canvas || !sharp.naturalWidth) return false;
       canvas = document.createElement('canvas');
       canvas.width = sharp.naturalWidth;
       canvas.height = sharp.naturalHeight;
-      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;opacity:0;transition:opacity 0.9s ease-in-out;image-rendering:pixelated';
       thumb.appendChild(canvas);
       ctx = canvas.getContext('2d');
       try {
@@ -1867,19 +1867,20 @@ ${archiveCards}
     thumb.addEventListener('mouseenter', () => {
       sharp.style.opacity = '1';
       if (!canvas) initShimmer();
-      shimmerDelay = setTimeout(() => {
-        if (canvas && origData) {
-          shimmerActive = true;
-          canvas.style.display = 'block';
-          shimmerTick();
-        }
-      }, 500);
+      if (canvas && origData) {
+        shimmerActive = true;
+        canvas.style.display = 'block';
+        shimmerTick();
+        requestAnimationFrame(() => requestAnimationFrame(() => { canvas.style.opacity = '1'; }));
+      }
     });
     thumb.addEventListener('mouseleave', () => {
-      clearTimeout(shimmerDelay);
       shimmerActive = false;
       if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
-      if (canvas) canvas.style.display = 'none';
+      if (canvas) {
+        canvas.style.opacity = '0';
+        setTimeout(() => { if (!shimmerActive && canvas) canvas.style.display = 'none'; }, 900);
+      }
       sharp.style.opacity = '0';
     });
   }
