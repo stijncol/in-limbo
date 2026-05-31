@@ -2275,6 +2275,122 @@ ${archiveCards}
   });
   ${cfg.extraJS || ''}
 </script>
+
+<style>
+  .scroll-ind {
+    position: fixed;
+    right: 12px;
+    top: 10vh;
+    height: 80vh;
+    width: 8px;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .scroll-ind-line {
+    position: absolute;
+    left: 50%;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(0,0,0,0.15);
+    transform: translateX(-50%);
+  }
+  .scroll-ind-vp {
+    position: absolute;
+    left: 50%;
+    width: 2px;
+    background: rgba(0,0,0,0.25);
+    transform: translateX(-50%);
+    transition: top 0.1s ease-out, height 0.1s ease-out;
+    min-height: 4px;
+  }
+  .scroll-ind-tick {
+    position: absolute;
+    left: 50%;
+    width: 6px;
+    height: 1px;
+    background: rgba(0,0,0,0.4);
+    transform: translateX(-50%);
+  }
+  @media (max-width: 768px) { .scroll-ind { display: none !important; } }
+</style>
+
+<div class="scroll-ind" id="scroll-ind">
+  <div class="scroll-ind-line"></div>
+  <div class="scroll-ind-vp" id="scroll-ind-vp"></div>
+</div>
+
+<script>
+(function() {
+  var ind = document.getElementById('scroll-ind');
+  var vpEl = document.getElementById('scroll-ind-vp');
+  if (!ind || !vpEl) return;
+
+  var rafPending = false;
+
+  function visibleCards() {
+    return Array.from(document.querySelectorAll('.card[data-video-id]')).filter(function(c) {
+      return !c.classList.contains('hidden') && c.style.display !== 'none' && getComputedStyle(c).display !== 'none';
+    });
+  }
+
+  function recalc() {
+    var docH = Math.max(document.body.scrollHeight, 1);
+    var vpH = window.innerHeight;
+    if (docH <= vpH) { ind.style.visibility = 'hidden'; return; }
+    ind.style.visibility = '';
+
+    var indH = ind.offsetHeight;
+    var cards = visibleCards();
+
+    // Remove old ticks
+    var old = ind.querySelectorAll('.scroll-ind-tick');
+    for (var i = 0; i < old.length; i++) old[i].remove();
+
+    // Add ticks
+    cards.forEach(function(card) {
+      var rect = card.getBoundingClientRect();
+      var centerY = rect.top + window.scrollY + rect.height / 2;
+      var frac = Math.min(Math.max(centerY / docH, 0), 1);
+      var tick = document.createElement('div');
+      tick.className = 'scroll-ind-tick';
+      tick.style.top = Math.round(frac * indH) + 'px';
+      ind.appendChild(tick);
+    });
+
+    updateVp(docH, indH);
+  }
+
+  function updateVp(docH, indH) {
+    docH = docH || Math.max(document.body.scrollHeight, 1);
+    indH = indH || ind.offsetHeight;
+    var scrollY = window.scrollY;
+    var vpH = window.innerHeight;
+    var top = (scrollY / docH) * indH;
+    var height = Math.max((vpH / docH) * indH, 4);
+    vpEl.style.top = top + 'px';
+    vpEl.style.height = height + 'px';
+  }
+
+  function onScroll() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(function() { rafPending = false; updateVp(); });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', recalc);
+
+  // Watch card class/style changes (filter + archive toggle)
+  var mo = new MutationObserver(recalc);
+  document.querySelectorAll('.card[data-video-id]').forEach(function(c) {
+    mo.observe(c, { attributes: true, attributeFilter: ['class', 'style'] });
+  });
+
+  // Initial build — after cards animate in
+  if (document.readyState === 'complete') { setTimeout(recalc, 100); }
+  else { window.addEventListener('load', function() { setTimeout(recalc, 100); }); }
+})();
+</script>
 </body>
 </html>`);
 }
