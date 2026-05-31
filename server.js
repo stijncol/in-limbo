@@ -269,7 +269,7 @@ async function renderPublic(req, res, config) {
   * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
-    background: #fff;
+    background: #f5f5f5;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
@@ -3120,8 +3120,8 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <div id="pc-fixed" class="pc"><label>extras <select id="i-fixedx"><option value="warm">warm</option><option value="cool">cool</option><option value="neutral">neutral</option></select></label></div>
       <div id="pc-duo" class="pc">
         <label>preset <select id="i-duopreset" style="max-width:148px"></select></label>
-        <label>col 1 <input type="color" id="i-duo1" value="#2d5a46"></label>
-        <label>col 2 <input type="color" id="i-duo2" value="#a0707a"></label>
+        <label>col 1 <input type="color" id="i-duo1" value="#5991a6"></label>
+        <label>col 2 <input type="color" id="i-duo2" value="#bab4b0"></label>
       </div>
       <div id="pc-custom" class="pc">
         <label>col 1 <input type="color" id="i-cus1" value="#3C3C78"></label>
@@ -3133,7 +3133,7 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <div class="pgl">options</div>
       <label><input type="checkbox" id="i-basetones" checked> + cream &amp; charcoal</label>
       <div id="pc-basetones" class="pc vis">
-        <label>cream <input type="color" id="i-cream" value="#F8F5EE"></label>
+        <label>cream <input type="color" id="i-cream" value="#ffffff"></label>
         <label>grey <input type="color" id="i-charcoal" value="#787878"></label>
       </div>
       <label><input type="checkbox" id="i-shared"> shared palette</label>
