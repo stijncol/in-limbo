@@ -663,17 +663,17 @@ async function renderPublic(req, res, config) {
     margin-bottom: 16px;
   }
   .intro-block .intro-text a {
-    color: #111;
+    color: #1e40af;
     text-decoration: underline;
     font-weight: 400;
   }
   .intro-block .intro-text a.year-filter {
     font-weight: 400;
-    text-decoration: none;
+    text-decoration: underline;
     cursor: pointer;
-    color: #111;
+    color: #1e40af;
   }
-  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; color: #1e40af; }
+  .intro-block .intro-text a.year-filter:hover { color: #1e40af; }
   .intro-block .intro-text a.year-filter.active { text-decoration: underline; color: #1e40af; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
@@ -682,16 +682,18 @@ async function renderPublic(req, res, config) {
     font-family: inherit;
     font-size: inherit;
     border: none;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #1e40af;
     background: transparent;
     outline: none;
-    color: #111;
+    color: #1e40af;
     width: 180px;
     padding: 0 3px;
     vertical-align: baseline;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
-  .inline-search-input::placeholder { color: #ccc; }
-  .inline-search-input:focus { border-bottom-color: #888; }
+  .inline-search-input::placeholder { color: #aac0e8; }
+  .inline-search-input:focus { border-bottom-color: #1e40af; }
   .intro-block .intro-text strong {
     font-weight: 500;
   }
