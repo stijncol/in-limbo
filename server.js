@@ -393,7 +393,7 @@ async function renderPublic(req, res, config) {
     justify-content: center;
     font-size: 16px;
   }
-  .filters-extra .tag-close:hover { border-color: #111; color: #111; }
+  .filters-extra .tag-close:hover { border-color: #1a3461; color: #1a3461; }
   .filters button {
     font-family: inherit;
     font-size: 14px;
@@ -406,8 +406,8 @@ async function renderPublic(req, res, config) {
     cursor: pointer;
     transition: all 0.2s ease;
   }
-  .filters button:hover { border-color: #111; color: #111; }
-  .filters button.active { background: #111; border-color: #111; color: #fff; }
+  .filters button:hover { border-color: #1a3461; color: #1a3461; }
+  .filters button.active { background: #1a3461; border-color: #1a3461; color: #fff; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -433,7 +433,7 @@ async function renderPublic(req, res, config) {
     align-items: center;
     justify-content: center;
   }
-  .tag-expand:hover { border-color: #111; color: #111; }
+  .tag-expand:hover { border-color: #1a3461; color: #1a3461; }
   .filters.show-all .tag-expand { display: none; }
   /* Prevent phantom flex items in default (row) layout */
   .filters::before, .filters::after { display: none; }
@@ -584,7 +584,7 @@ async function renderPublic(req, res, config) {
     cursor: pointer;
     transition: color 0.2s ease;
   }
-  .card .tags span:hover { color: #111; }
+  .card .tags span:hover { color: #1a3461; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
   .card .tags span.tag-medium { font-style: italic; }
   .card .card-right {
@@ -611,10 +611,10 @@ async function renderPublic(req, res, config) {
     transition: color 0.2s ease;
     white-space: nowrap;
   }
-  .card .card-year:hover { color: #111; }
+  .card .card-year:hover { color: #1a3461; }
   .card:hover .card-duration { color: #111; }
-  .card:hover .card-title { text-decoration: underline; color: #1a3461; }
-  .card:hover .card-year { color: #111; }
+  .card:hover .card-title { text-decoration: underline; color: #1a3461 !important; }
+  .card:hover .card-year { color: #1a3461; }
   .card:hover .tags span { color: #111; }
   .card-logos .thumb::after { display: none; }
   .card-logos .thumb:hover img { transform: none; }
@@ -2251,9 +2251,9 @@ app.get('/', async (req, res) => {
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
     .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
-    .tag-expand:hover { border: none; background: transparent; color: #111; }
+    .tag-expand:hover { border: none; background: transparent; color: #1a3461; }
     .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
-    .filters-extra .tag-close:hover { border: none; background: transparent; color: #111; }
+    .filters-extra .tag-close:hover { border: none; background: transparent; color: #1a3461; }
   ` });
 });
 
@@ -2268,13 +2268,13 @@ app.get('/v1', async (req, res) => {
       color: #aaa;
       letter-spacing: 0.04em;
     }
-    .filters button:hover { color: #111; background: transparent; }
-    .filters button.active { color: #111; background: transparent; border-bottom: 1px solid #111; }
+    .filters button:hover { color: #1a3461; background: transparent; }
+    .filters button.active { color: #1a3461; background: transparent; border-bottom: 1px solid #1a3461; }
     .filters-medium button { border-style: solid; border: none; }
     .tag-expand { border: none; border-radius: 0; background: transparent; }
-    .tag-expand:hover { background: transparent; border: none; color: #111; }
+    .tag-expand:hover { background: transparent; border: none; color: #1a3461; }
     .filters-extra .tag-close { border: none; border-radius: 0; background: transparent; }
-    .filters-extra .tag-close:hover { border: none; color: #111; background: transparent; }
+    .filters-extra .tag-close:hover { border: none; color: #1a3461; background: transparent; }
   ` });
 });
 
@@ -2394,9 +2394,9 @@ app.get('/v8', async (req, res) => {
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
     .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
-    .tag-expand:hover { border: none; background: transparent; color: #111; }
+    .tag-expand:hover { border: none; background: transparent; color: #1a3461; }
     .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
-    .filters-extra .tag-close:hover { border: none; background: transparent; color: #111; }
+    .filters-extra .tag-close:hover { border: none; background: transparent; color: #1a3461; }
   ` });
 });
 
