@@ -2313,7 +2313,7 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     width: 16px;
-    height: 2px;
+    height: 1px;
     background: #000;
     transform: translateX(-50%);
   }
