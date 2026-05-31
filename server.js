@@ -2283,6 +2283,7 @@ ${archiveCards}
     width: 16px;
     pointer-events: none;
     z-index: 50;
+    display: none;
   }
   .scroll-ind-line {
     position: absolute;
