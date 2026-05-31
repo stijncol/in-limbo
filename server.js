@@ -461,7 +461,6 @@ async function renderPublic(req, res, config) {
     background: #f0f0f0;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
   }
   .card .thumb img {
     width: 100%; height: 100%;
@@ -472,6 +471,7 @@ async function renderPublic(req, res, config) {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.13);
   }
   .card .thumb .paper-tint {
     position: absolute;
