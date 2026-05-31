@@ -524,7 +524,7 @@ async function renderPublic(req, res, config) {
     content: '';
     position: absolute;
     inset: 0;
-    border: 1px solid rgba(0,0,0,0.14);
+    border: 1px solid rgba(0,0,0,0.35);
     z-index: 10;
     pointer-events: none;
     transition: border-color 0.2s ease;
