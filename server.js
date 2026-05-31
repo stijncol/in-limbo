@@ -550,7 +550,7 @@ async function renderPublic(req, res, config) {
     object-fit: cover;
     display: block;
     opacity: 0;
-    transition: opacity 0.7s ease-in-out;
+    transition: opacity 0.45s ease-in-out;
   }
   .card .thumb[data-baked] canvas { display: none; }
   .card .thumb .paper-tint {
@@ -1838,7 +1838,7 @@ ${archiveCards}
       canvas = document.createElement('canvas');
       canvas.width = sharp.naturalWidth;
       canvas.height = sharp.naturalHeight;
-      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;opacity:0;transition:opacity 0.9s ease-in-out;image-rendering:pixelated';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;opacity:0;transition:opacity 0.55s ease-in-out;image-rendering:pixelated';
       thumb.appendChild(canvas);
       ctx = canvas.getContext('2d');
       try {
@@ -1879,7 +1879,7 @@ ${archiveCards}
       if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
       if (canvas) {
         canvas.style.opacity = '0';
-        setTimeout(() => { if (!shimmerActive && canvas) canvas.style.display = 'none'; }, 900);
+        setTimeout(() => { if (!shimmerActive && canvas) canvas.style.display = 'none'; }, 550);
       }
       sharp.style.opacity = '0';
     });
