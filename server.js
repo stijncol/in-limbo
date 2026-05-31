@@ -4,7 +4,7 @@ const path = require('path');
 const https = require('https');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
@@ -46,11 +46,13 @@ async function initDB() {
   // Migrate old data: copy vimeo_id to video_id, tags to tags_theme
   try { await pool.query("UPDATE videos SET video_id = vimeo_id WHERE video_id IS NULL"); } catch(e) {}
   try { await pool.query("UPDATE videos SET tags_theme = tags WHERE tags_theme = '' AND tags != ''"); } catch(e) {}
+  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_data BYTEA"); } catch(e) {}
+  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_settings JSONB"); } catch(e) {}
 }
 
 async function getVideoRows() {
-  const result = await pool.query('SELECT * FROM videos ORDER BY sort_order ASC, id DESC');
-  return result.rows;
+  const result = await pool.query('SELECT *, thumb_data IS NOT NULL AS has_thumb FROM videos ORDER BY sort_order ASC, id DESC');
+  return result.rows.map(r => { const row = Object.assign({}, r); delete row.thumb_data; return row; });
 }
 
 // --- Basic Auth middleware ---
@@ -83,6 +85,29 @@ function requireStudent(req, res, next) {
   res.set('WWW-Authenticate', 'Basic realm="in limbo submit"');
   return res.status(401).send('Invalid credentials');
 }
+
+// --- Baked thumbnails ---
+app.get('/thumb/:id', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT thumb_data FROM videos WHERE id=$1', [req.params.id]);
+    if (!result.rows[0] || !result.rows[0].thumb_data) return res.status(404).send('Not found');
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=604800');
+    res.send(result.rows[0].thumb_data);
+  } catch(e) { res.status(500).send('Error'); }
+});
+
+app.post('/thumb/:id', requireAuth, async (req, res) => {
+  try {
+    const { imageData, settings } = req.body;
+    if (!imageData) return res.status(400).json({ error: 'imageData required' });
+    const base64 = imageData.replace(/^data:image\/png;base64,/, '');
+    const buf = Buffer.from(base64, 'base64');
+    await pool.query('UPDATE videos SET thumb_data=$1, thumb_settings=$2 WHERE id=$3',
+      [buf, settings ? JSON.stringify(settings) : null, req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { console.error('POST /thumb error:', e.message); res.status(500).json({ error: e.message }); }
+});
 
 // --- API ---
 function parseVideoUrl(url) {
@@ -219,10 +244,13 @@ async function renderPublic(req, res, config) {
     const mediumSpans = tm.map(t => `<span data-tag="${t}" class="tag-medium">${t}</span>`).join('\n            ');
     const videoId = v.video_id || v.vimeo_id;
     const videoType = v.video_type || 'vimeo';
+    const thumbHtml = v.has_thumb
+      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" loading="lazy" class="baked-thumb" alt="${esc(v.title)}"><div class="paper-tint"></div></div>`
+      : `<div class="thumb"><img alt=""><div class="paper-tint"></div></div>`;
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
-      <div class="thumb"><img alt=""><div class="paper-tint"></div></div>
+      ${thumbHtml}
       <div class="meta">
         <div class="tags">
             ${themeSpans}
@@ -472,6 +500,20 @@ async function renderPublic(req, res, config) {
     inset: 0;
     width: 100%; height: 100%;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.13);
+  }
+  .card .thumb .baked-thumb {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.13);
+  }
+  .card .thumb[data-baked] canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    display: none;
   }
   .card .thumb .paper-tint {
     position: absolute;
@@ -1725,17 +1767,79 @@ ${archiveCards}
     });
   }
 
+  // Lazy pixel-noise shimmer for baked thumbnails
+  function setupBakedShimmer(thumb, bakedImg) {
+    let canvas = null, ctx = null, origData = null;
+    let shimmerActive = false, shimmerRaf = null;
+    let initialized = false;
+
+    function init() {
+      if (initialized) return true;
+      canvas = document.createElement('canvas');
+      canvas.width = bakedImg.naturalWidth || 596;
+      canvas.height = bakedImg.naturalHeight || 335;
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.13)';
+      thumb.appendChild(canvas);
+      ctx = canvas.getContext('2d');
+      try {
+        ctx.drawImage(bakedImg, 0, 0, canvas.width, canvas.height);
+        origData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        initialized = true;
+        return true;
+      } catch(e) { return false; }
+    }
+
+    function shimmerTick() {
+      if (!shimmerActive || !origData) return;
+      const id = new ImageData(new Uint8ClampedArray(origData.data), origData.width, origData.height);
+      const d = id.data, n = origData.width * origData.height;
+      const swaps = Math.floor(n * 0.015);
+      for (let k = 0; k < swaps; k++) {
+        const i = Math.floor(Math.random() * n) * 4;
+        const j = Math.floor(Math.random() * n) * 4;
+        const r = d[i], g = d[i+1], b = d[i+2];
+        d[i] = d[j]; d[i+1] = d[j+1]; d[i+2] = d[j+2];
+        d[j] = r; d[j+1] = g; d[j+2] = b;
+      }
+      ctx.putImageData(id, 0, 0);
+      setTimeout(() => { shimmerRaf = requestAnimationFrame(shimmerTick); }, 120);
+    }
+
+    thumb.addEventListener('mouseenter', () => {
+      if (!init()) return;
+      shimmerActive = true;
+      canvas.style.display = 'block';
+      shimmerTick();
+    });
+    thumb.addEventListener('mouseleave', () => {
+      shimmerActive = false;
+      if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
+      if (canvas) canvas.style.display = 'none';
+    });
+  }
+
   let videoIndex = 0;
   document.querySelectorAll('.card[data-video-id]').forEach(card => {
     const id = card.dataset.videoId;
     const type = card.dataset.videoType;
+    const thumb = card.querySelector('.thumb');
+    const isBaked = !!(thumb && thumb.dataset.baked === 'true');
     const img = card.querySelector('img');
     img.crossOrigin = 'anonymous';
     const myIndex = videoIndex++;
 
-    img.addEventListener('load', () => {
-      try { ditherImage(img, card.querySelector('.thumb'), myIndex); } catch(e) {}
-    });
+    if (isBaked) {
+      // Baked: set up shimmer when thumbnail loads (may already be complete)
+      if (img.complete && img.naturalWidth) {
+        setupBakedShimmer(thumb, img);
+      } else {
+        img.addEventListener('load', () => setupBakedShimmer(thumb, img));
+      }
+    } else {
+      img.addEventListener('load', () => {
+        try { ditherImage(img, thumb, myIndex); } catch(e) {}
+      });
+    }
 
     if (type === 'youtube') {
       let ytId = id;
@@ -1745,7 +1849,7 @@ ${archiveCards}
           ytId = u.searchParams.get('v') || u.pathname.slice(1);
         }
       } catch(e) {}
-      img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+      if (!isBaked) img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
       const ytKey = '${process.env.YOUTUBE_API_KEY || ""}';
       if (ytKey) {
         fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + ytId + '&key=' + ytKey)
@@ -1776,9 +1880,11 @@ ${archiveCards}
       fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+id)
         .then(r => r.json())
         .then(data => {
-          let u = data.thumbnail_url || '';
-          img.src = u.replace(/_[0-9]+x[0-9]+/, '_640') || ('https://vumbnail.com/'+id+'.jpg');
-          if (data.title) img.alt = data.title;
+          if (!isBaked) {
+            let u = data.thumbnail_url || '';
+            img.src = u.replace(/_[0-9]+x[0-9]+/, '_640') || ('https://vumbnail.com/'+id+'.jpg');
+            if (data.title) img.alt = data.title;
+          }
           const dur = card.querySelector('.card-duration');
           if (dur && !dur.textContent && data.duration) {
             const m = Math.floor(data.duration / 60);
@@ -1786,7 +1892,7 @@ ${archiveCards}
             dur.textContent = m + ':' + String(s).padStart(2, '0');
           }
         })
-        .catch(() => { img.src = 'https://vumbnail.com/'+id+'.jpg'; });
+        .catch(() => { if (!isBaked) img.src = 'https://vumbnail.com/'+id+'.jpg'; });
       // Proxy: overwrites with accurate duration + real resolution when available
       fetch('/api/vimeo/' + id)
         .then(r => r.json())
@@ -3036,9 +3142,20 @@ async function renderLab(req, res) {
   const cards = allVideos.map(v => {
     const vid = v.video_id || v.vimeo_id;
     const vtype = v.video_type || 'vimeo';
-    return '<div class="lc" data-vid="' + e(vid) + '" data-vtype="' + e(vtype) + '">' +
+    const hasThumb = v.has_thumb ? '1' : '0';
+    return '<div class="lc" data-vid="' + e(vid) + '" data-vtype="' + e(vtype) + '" data-id="' + v.id + '" data-has-thumb="' + hasThumb + '">' +
       '<div class="lt"></div>' +
-      '<div class="lm"><div class="ln">' + e(v.title) + '</div><div class="ls">' + e(v.students) + '</div><div class="lsw"></div></div>' +
+      '<div class="lm">' +
+        '<div class="lmr">' +
+          '<div class="ln">' + e(v.title) + '</div>' +
+          '<div class="ls">' + e(v.students) + '</div>' +
+          '<div class="lsw"></div>' +
+        '</div>' +
+        '<div class="lact">' +
+          '<span class="ldot' + (v.has_thumb ? ' baked' : '') + '" title="' + (v.has_thumb ? 'baked' : 'not baked') + '"></span>' +
+          '<button class="lbake-btn" data-id="' + v.id + '">bake</button>' +
+        '</div>' +
+      '</div>' +
       '</div>';
   }).join('');
 
@@ -3079,7 +3196,6 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
 .lt{position:relative;aspect-ratio:16/9;background:#eee;overflow:hidden;cursor:pointer}
 .lt img{width:100%;height:100%;object-fit:cover;display:block}
 .lt canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
-.lm{padding:3px 0 0}
 .ln{font-size:11px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ls{font-size:10px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
@@ -3088,6 +3204,17 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
 #mjson{width:100%;height:260px;border:1px solid #ddd;padding:8px;font-size:10px;font-family:inherit;resize:none;outline:none}
 #mapply,#mclose{font-family:inherit;font-size:10px;padding:5px 12px;border:1px solid #999;background:#fff;cursor:pointer}
 #mapply{border-color:#333;background:#333;color:#fff}#mapply:hover{background:#000}
+#bake-all-btn{font-family:inherit;font-size:10px;letter-spacing:.05em;padding:5px 12px;border:1px solid #5a9a5a;background:#5a9a5a;color:#fff;cursor:pointer;margin-top:8px;align-self:flex-start}
+#bake-all-btn:hover{background:#3d7a3d;border-color:#3d7a3d}
+#bake-all-btn:disabled{background:#aaa;border-color:#aaa;cursor:default}
+.lm{display:flex;align-items:flex-start;gap:6px;padding:3px 0 0}
+.lmr{flex:1;min-width:0}
+.lact{display:flex;align-items:center;gap:5px;flex-shrink:0;padding-top:1px}
+.ldot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.ldot.baked{background:#5a9a5a}
+.lbake-btn{font-family:inherit;font-size:9px;padding:2px 6px;border:1px solid #bbb;background:#fff;cursor:pointer;white-space:nowrap}
+.lbake-btn:hover{background:#333;color:#fff;border-color:#333}
+.lbake-btn.saved{background:#5a9a5a;color:#fff;border-color:#5a9a5a}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.grid{grid-template-columns:1fr};#grid-wrap{padding:52px 16px 40px}}
 </style>
@@ -3152,7 +3279,7 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <div id="pc-acc2" class="pc"><label>acc 2 <input type="color" id="i-acc2" value="#285A46"></label></div>
       <label>reveal% <input type="range" id="i-revpct" min="5" max="50" value="15"><span class="val" id="v-revpct">15</span></label>
     </div>
-    <div class="pg" style="justify-content:flex-end;gap:6px"><button id="render-btn">▶ render</button><button id="copy-btn">copy settings ↗</button></div>
+    <div class="pg" style="justify-content:flex-end;gap:6px"><button id="render-btn">▶ render</button><button id="bake-all-btn">bake all</button><button id="copy-btn">copy settings ↗</button></div>
   </div>
 </div>
 
@@ -3607,6 +3734,70 @@ document.querySelectorAll('#panel-body input,#panel-body select').forEach(functi
 // render button (immediate, bypasses debounce)
 var renderBtn=document.getElementById('render-btn');if(renderBtn)renderBtn.addEventListener('click',rerenderAll);
 
+// ── bake ─────────────────────────────────────────────────
+function getAuthHeader(){
+  var u=prompt('Admin username (or cancel to abort):');if(!u)return null;
+  var p=prompt('Admin password:');if(p===null)return null;
+  return 'Basic '+btoa(u+':'+p);
+}
+var _authHeader=null;
+function ensureAuth(){
+  if(_authHeader)return _authHeader;
+  _authHeader=getAuthHeader();
+  return _authHeader;
+}
+
+function bakeCard(card,auth){
+  return new Promise(function(resolve){
+    var canvas=card.querySelector('canvas');
+    if(!canvas){resolve({ok:false,reason:'no canvas'});return}
+    var id=card.dataset.id;
+    if(!id){resolve({ok:false,reason:'no id'});return}
+    var imageData=canvas.toDataURL('image/png');
+    var settings=readCfg();
+    fetch('/thumb/'+id,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':auth},
+      body:JSON.stringify({imageData:imageData,settings:settings})
+    }).then(function(r){return r.json()}).then(function(data){
+      if(data.ok){
+        var dot=card.querySelector('.ldot');
+        if(dot){dot.classList.add('baked');dot.title='baked'}
+        card.dataset.hasThumb='1';
+        var btn=card.querySelector('.lbake-btn');
+        if(btn){btn.textContent='✓';btn.classList.add('saved');setTimeout(function(){btn.textContent='bake';btn.classList.remove('saved')},2000)}
+      }
+      resolve(data);
+    }).catch(function(e){resolve({ok:false,reason:e.message})});
+  });
+}
+
+var bakeAllBtn=document.getElementById('bake-all-btn');
+if(bakeAllBtn){
+  bakeAllBtn.addEventListener('click',function(){
+    var auth=ensureAuth();if(!auth)return;
+    var cards=[...document.querySelectorAll('.lc')].filter(function(c){return c.querySelector('canvas')});
+    var total=cards.length,done=0;
+    bakeAllBtn.disabled=true;
+    bakeAllBtn.textContent='baking 0/'+total+'...';
+    (function next(){
+      if(done>=total){bakeAllBtn.textContent='✓ all baked ('+total+')';bakeAllBtn.disabled=false;return}
+      var card=cards[done];
+      bakeAllBtn.textContent='baking '+(done+1)+'/'+total+'...';
+      bakeCard(card,auth).then(function(){done++;next()});
+    })();
+  });
+}
+
+document.querySelectorAll('.lbake-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var auth=ensureAuth();if(!auth)return;
+    var card=btn.closest('.lc');
+    btn.textContent='...';btn.disabled=true;
+    bakeCard(card,auth).then(function(){btn.disabled=false});
+  });
+});
+
 // copy settings
 document.getElementById('copy-btn').addEventListener('click',function(){
   var c=readCfg();
@@ -3692,10 +3883,14 @@ app.get('/lab', requireAuth, async (req, res) => { await renderLab(req, res); })
 
 // --- Start ---
 const PORT = process.env.PORT || 3000;
-initDB().then(() => {
+initDB().then(async () => {
   app.listen(PORT, () => {
     console.log('in limbo running at http://localhost:' + PORT);
     console.log('admin panel at /user');
     console.log('student submit at /submit');
   });
+  try {
+    const r = await pool.query('SELECT COUNT(*) AS total, COUNT(thumb_data) AS baked FROM videos WHERE status=$1 OR status IS NULL', ['approved']);
+    console.log('Thumbnails: ' + r.rows[0].baked + '/' + r.rows[0].total + ' baked');
+  } catch(e) {}
 });
