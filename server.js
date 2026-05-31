@@ -2280,7 +2280,6 @@ ${archiveCards}
 <style>
   .scroll-ind {
     position: fixed;
-    right: 24px;
     width: 16px;
     pointer-events: none;
     z-index: 50;
@@ -2340,11 +2339,21 @@ ${archiveCards}
     if (!cards.length) { ind.style.visibility = 'hidden'; return; }
     ind.style.visibility = '';
 
-    // Align top of indicator with top of first card (viewport position at scrollY=0)
+    // Align top of indicator with top of first card, plus 1/3 extra margin each side
     var firstRect = cards[0].getBoundingClientRect();
-    var indTop = Math.round(firstRect.top + window.scrollY);
+    var baseMargin = Math.round(firstRect.top + window.scrollY);
+    var extraMargin = Math.round(baseMargin / 3);
+    var indTop = baseMargin + extraMargin;
     ind.style.top = indTop + 'px';
     ind.style.height = Math.max(vpH - indTop * 2, 40) + 'px';
+
+    // Center horizontally between grid right edge and viewport right edge
+    var grid = document.querySelector('.grid');
+    if (grid) {
+      var gridRight = grid.getBoundingClientRect().right;
+      var midRight = Math.round((window.innerWidth - gridRight) / 2 - 8);
+      ind.style.right = Math.max(midRight, 8) + 'px';
+    }
 
     var indH = ind.offsetHeight;
 
