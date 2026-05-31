@@ -513,6 +513,7 @@ async function renderPublic(req, res, config) {
     background: #f0f0f0;
     overflow: hidden;
     cursor: pointer;
+    isolation: isolate;
   }
   .card .thumb img {
     width: 100%; height: 100%;
