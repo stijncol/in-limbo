@@ -312,7 +312,8 @@ async function renderPublic(req, res, config) {
   }
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   * { text-underline-offset: 4px; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
   body {
     background: #f2f3f5;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
