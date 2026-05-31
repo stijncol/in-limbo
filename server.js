@@ -3037,7 +3037,7 @@ async function renderLab(req, res) {
     const vtype = v.video_type || 'vimeo';
     return '<div class="lc" data-vid="' + e(vid) + '" data-vtype="' + e(vtype) + '">' +
       '<div class="lt"></div>' +
-      '<div class="lm"><div class="ln">' + e(v.title) + '</div><div class="ls">' + e(v.students) + '</div></div>' +
+      '<div class="lm"><div class="ln">' + e(v.title) + '</div><div class="ls">' + e(v.students) + '</div><div class="lsw"></div></div>' +
       '</div>';
   }).join('');
 
@@ -3068,6 +3068,10 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
 .pc.vis{display:flex}
 #copy-btn{font-family:inherit;font-size:10px;letter-spacing:.05em;padding:5px 12px;border:1px solid #bbb;background:#fff;cursor:pointer;margin-top:8px;align-self:flex-start}
 #copy-btn:hover{background:#111;color:#fff;border-color:#111}
+#render-btn{font-family:inherit;font-size:10px;letter-spacing:.05em;padding:5px 14px;border:1px solid #333;background:#333;color:#fff;cursor:pointer;margin-top:8px;align-self:flex-start}
+#render-btn:hover{background:#000;border-color:#000}
+.lsw{display:flex;gap:2px;margin-top:4px;flex-wrap:wrap}
+.sw{display:inline-block;width:11px;height:11px;border-radius:1px}
 #grid-wrap{padding:52px 32px 60px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);column-gap:25px;row-gap:8px}
 .lc{}
@@ -3097,6 +3101,7 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <label>shadows <input type="range" id="i-shadows" min="0" max="120" value="0"><span class="val" id="v-shadows">0</span></label>
       <label>gamma <input type="range" id="i-gamma" min="50" max="300" value="100"><span class="val" id="v-gamma">1.00</span></label>
       <label>contrast <input type="range" id="i-contrast" min="50" max="200" value="100"><span class="val" id="v-contrast">1.00</span></label>
+      <label>blur <input type="range" id="i-blur" min="0" max="3" step="1" value="1"><span class="val" id="v-blur">1</span></label>
     </div>
     <div class="pg">
       <div class="pgl">dither</div>
@@ -3146,7 +3151,7 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <div id="pc-acc2" class="pc"><label>acc 2 <input type="color" id="i-acc2" value="#285A46"></label></div>
       <label>reveal% <input type="range" id="i-revpct" min="5" max="50" value="15"><span class="val" id="v-revpct">15</span></label>
     </div>
-    <div class="pg" style="justify-content:flex-end"><button id="copy-btn">copy settings ↗</button></div>
+    <div class="pg" style="justify-content:flex-end;gap:6px"><button id="render-btn">▶ render</button><button id="copy-btn">copy settings ↗</button></div>
   </div>
 </div>
 
@@ -3282,8 +3287,9 @@ function buildPalette(cfg,samples){
 
 // ── preprocess ───────────────────────────────────────────
 function preprocess(imageData,cfg){
-  var d=imageData.data,br=cfg.image.brightness,sh=cfg.image.shadows,ga=cfg.image.gamma,co=cfg.image.contrast;
-  var res=new Float32Array(imageData.width*imageData.height*3);
+  var d=imageData.data,w=imageData.width,h=imageData.height;
+  var br=cfg.image.brightness,sh=cfg.image.shadows,ga=cfg.image.gamma,co=cfg.image.contrast,bl=cfg.image.blur||0;
+  var res=new Float32Array(w*h*3);
   for(var i=0;i<d.length;i+=4){
     var r=d[i],g=d[i+1],b=d[i+2];
     if(sh>0){r=sh+r*(255-sh)/255;g=sh+g*(255-sh)/255;b=sh+b*(255-sh)/255}
@@ -3291,6 +3297,19 @@ function preprocess(imageData,cfg){
     if(ga!==1){r=255*Math.pow(r/255,1/ga);g=255*Math.pow(g/255,1/ga);b=255*Math.pow(b/255,1/ga)}
     if(co!==1){r=((r/255-.5)*co+.5)*255;g=((g/255-.5)*co+.5)*255;b=((b/255-.5)*co+.5)*255}
     var j=i/4*3;res[j]=Math.max(0,Math.min(255,r));res[j+1]=Math.max(0,Math.min(255,g));res[j+2]=Math.max(0,Math.min(255,b));
+  }
+  if(bl>0){
+    var tmp=new Float32Array(w*h*3);
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+      var sr=0,sg=0,sb=0,cnt=0;
+      for(var dx=-bl;dx<=bl;dx++){var nx=x+dx<0?0:x+dx>=w?w-1:x+dx,j=(y*w+nx)*3;sr+=res[j];sg+=res[j+1];sb+=res[j+2];cnt++}
+      var k=(y*w+x)*3;tmp[k]=sr/cnt;tmp[k+1]=sg/cnt;tmp[k+2]=sb/cnt;
+    }
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+      var sr=0,sg=0,sb=0,cnt=0;
+      for(var dy=-bl;dy<=bl;dy++){var ny=y+dy<0?0:y+dy>=h?h-1:y+dy,j=(ny*w+x)*3;sr+=tmp[j];sg+=tmp[j+1];sb+=tmp[j+2];cnt++}
+      var k=(y*w+x)*3;res[k]=sr/cnt;res[k+1]=sg/cnt;res[k+2]=sb/cnt;
+    }
   }
   return res;
 }
@@ -3410,6 +3429,8 @@ function renderCard(card,cfg,forcePal){
   var out=runDither(px,w,h,pal,plab,cfg.dither.technique);
   ctx.putImageData(new ImageData(out,w,h),0,0);
   card._px=px;card._pal=pal;card._plab=plab;card._cfg=cfg;card._w=w;card._h=h;
+  var sw=card.querySelector('.lsw');
+  if(sw)sw.innerHTML=pal.map(function(c){return'<span class="sw" style="background:rgb('+c[0]+','+c[1]+','+c[2]+')"></span>'}).join('');
 }
 
 // ── hover / shimmer ───────────────────────────────────────
@@ -3474,7 +3495,7 @@ var renderTimer=null;
 function readCfg(){
   function v(id){return document.getElementById(id)}
   return{
-    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100},
+    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:+v('i-blur').value},
     dither:{technique:v('i-tech').value,width:+v('i-width').value},
     palette:{mode:v('i-pmode').value,colors:+v('i-pcolors').value,pastel:+v('i-pastel').value,lightness:+v('i-light').value,
       monoHue:v('i-monohue').value,tintHue:v('i-tinthue').value,fixedExtras:v('i-fixedx').value,
@@ -3523,13 +3544,19 @@ document.querySelectorAll('.lc').forEach(function(card){
     renderCard(card,cfg,pal);
   });
   if(vtype==='youtube'){
-    img.src='https://img.youtube.com/vi/'+vid+'/hqdefault.jpg';
+    var ytSizes=['maxresdefault.jpg','sddefault.jpg','hqdefault.jpg'];
+    (function tryYT(i){
+      var probe=new Image();probe.crossOrigin='anonymous';
+      probe.onload=function(){if(probe.naturalWidth<200&&i+1<ytSizes.length)tryYT(i+1);else img.src=probe.src};
+      probe.onerror=function(){if(i+1<ytSizes.length)tryYT(i+1);else img.src='https://img.youtube.com/vi/'+vid+'/hqdefault.jpg'};
+      probe.src='https://img.youtube.com/vi/'+vid+'/'+ytSizes[i];
+    })(0);
   }else{
     fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
       .then(function(r){return r.json()})
       .then(function(data){
         var u=data.thumbnail_url||'';
-        img.src=u.replace(/_[0-9]+x[0-9]+/,'_640')||(('https://vumbnail.com/'+vid+'.jpg'));
+        img.src=u.replace(/_[0-9]+x[0-9]+/,'_1280')||('https://vumbnail.com/'+vid+'.jpg');
       })
       .catch(function(){img.src='https://vumbnail.com/'+vid+'.jpg'});
   }
@@ -3539,7 +3566,7 @@ document.querySelectorAll('.lc').forEach(function(card){
 // duo presets
 var dp=document.getElementById('i-duopreset');
 DUO.forEach(function(p,i){var o=document.createElement('option');o.value=i;o.textContent=p.name;dp.appendChild(o)});
-dp.addEventListener('change',function(){var p=DUO[+dp.value];document.getElementById('i-duo1').value=p.c1;document.getElementById('i-duo2').value=p.c2;scheduleRerender()});
+dp.addEventListener('change',function(){var p=DUO[+dp.value];document.getElementById('i-duo1').value=p.c1;document.getElementById('i-duo2').value=p.c2});
 
 // panel toggle
 document.getElementById('panel-bar').addEventListener('click',function(){
@@ -3555,19 +3582,19 @@ function updPMode(){
     var el=document.getElementById('pc-'+n);if(el)el.classList.toggle('vis',n===m);
   });
 }
-document.getElementById('i-pmode').addEventListener('change',function(){updPMode();scheduleRerender()});
+document.getElementById('i-pmode').addEventListener('change',updPMode);
 updPMode();
 
 // toggles
 document.getElementById('i-basetones').addEventListener('change',function(){
-  document.getElementById('pc-basetones').classList.toggle('vis',this.checked);scheduleRerender()});
+  document.getElementById('pc-basetones').classList.toggle('vis',this.checked)});
 document.getElementById('i-shared').addEventListener('change',function(){
-  document.getElementById('pc-shared').classList.toggle('vis',this.checked);scheduleRerender()});
+  document.getElementById('pc-shared').classList.toggle('vis',this.checked)});
 function updAMode(){document.getElementById('pc-acc2').classList.toggle('vis',document.getElementById('i-amode').value==='dual')}
 document.getElementById('i-amode').addEventListener('change',updAMode);updAMode();
 
 // slider labels
-[['i-bright','v-bright',1,''],['i-shadows','v-shadows',1,''],['i-gamma','v-gamma',100,''],['i-contrast','v-contrast',100,''],
+[['i-bright','v-bright',1,''],['i-shadows','v-shadows',1,''],['i-gamma','v-gamma',100,''],['i-contrast','v-contrast',100,''],['i-blur','v-blur',1,''],
  ['i-width','v-width',1,'px'],['i-pcolors','v-pcolors',1,''],['i-pastel','v-pastel',1,'%'],['i-light','v-light',1,'%'],
  ['i-pool','v-pool',1,''],['i-fps','v-fps',1,''],['i-inten','v-inten',1,''],['i-revpct','v-revpct',1,'%']
 ].forEach(function(row){
@@ -3577,16 +3604,14 @@ document.getElementById('i-amode').addEventListener('change',updAMode);updAMode(
   inp.addEventListener('input',upd);upd();
 });
 
-// wire all controls
-document.querySelectorAll('#panel-body input,#panel-body select').forEach(function(el){
-  el.addEventListener('input',scheduleRerender);el.addEventListener('change',scheduleRerender);
-});
+// render button
+document.getElementById('render-btn').addEventListener('click',rerenderAll);
 
 // copy settings
 document.getElementById('copy-btn').addEventListener('click',function(){
   var c=readCfg();
   var obj={
-    image:{brightness:c.image.brightness,shadows:c.image.shadows,gamma:c.image.gamma,contrast:c.image.contrast},
+    image:{brightness:c.image.brightness,shadows:c.image.shadows,gamma:c.image.gamma,contrast:c.image.contrast,blur:c.image.blur},
     dither:{technique:c.dither.technique,width:c.dither.width},
     palette:Object.assign({mode:c.palette.mode,colors:c.palette.colors,pastel:c.palette.pastel,lightness:c.palette.lightness},
       c.palette.mode==='mono'?{hue:c.palette.monoHue}:{},
@@ -3616,6 +3641,7 @@ function applySettings(json){
     if(c.image.shadows!==undefined)setVal('i-shadows',c.image.shadows);
     if(c.image.gamma!==undefined)setVal('i-gamma',Math.round(c.image.gamma*100));
     if(c.image.contrast!==undefined)setVal('i-contrast',Math.round(c.image.contrast*100));
+    if(c.image.blur!==undefined)setVal('i-blur',c.image.blur);
   }
   if(c.dither){
     if(c.dither.technique)setVal('i-tech',c.dither.technique);
@@ -3652,7 +3678,7 @@ function applySettings(json){
   document.querySelectorAll('#panel-body input[type=range]').forEach(function(el){el.dispatchEvent(new Event('input'))});
   updPMode();updAMode();
   document.getElementById('modal').classList.remove('open');
-  scheduleRerender();
+  rerenderAll();
 }
 
 document.getElementById('mapply').addEventListener('click',function(){applySettings(document.getElementById('mjson').value)});
