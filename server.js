@@ -619,7 +619,7 @@ async function renderPublic(req, res, config) {
   }
   .card .card-year:hover { color: #1e40af; }
   .card:hover .card-duration { color: #1e40af; }
-  .card:hover .card-title { text-decoration: underline; color: #1e40af !important; }
+  .card:hover .card-title { text-decoration: underline; color: #1e40af; }
   .card:hover .card-year { color: #1e40af; }
   .card:hover .tags span { color: #555; }
   .card-logos .thumb::after { display: none; }
@@ -2274,11 +2274,6 @@ app.get('/', async (req, res) => {
       opacity: 1;
     }
     .filters button.active::after { content: ""; margin: 0; opacity: 0; }
-    body.has-filter .card:not(.hidden) .card-title {
-      color: #1e40af !important;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
