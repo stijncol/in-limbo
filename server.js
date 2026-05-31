@@ -2297,11 +2297,12 @@ ${archiveCards}
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 2px;
-    background: rgba(0,0,0,0.25);
-    transform: translateX(-50%);
-    transition: top 0.1s ease-out, height 0.1s ease-out;
-    min-height: 4px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.4);
+    transform: translate(-50%, -50%);
+    transition: top 0.1s ease-out;
   }
   .scroll-ind-tick {
     position: absolute;
@@ -2363,12 +2364,9 @@ ${archiveCards}
   function updateVp(docH, indH) {
     docH = docH || Math.max(document.body.scrollHeight, 1);
     indH = indH || ind.offsetHeight;
-    var scrollY = window.scrollY;
-    var vpH = window.innerHeight;
-    var top = (scrollY / docH) * indH;
-    var height = Math.max((vpH / docH) * indH, 4);
-    vpEl.style.top = top + 'px';
-    vpEl.style.height = height + 'px';
+    var centerY = window.scrollY + window.innerHeight / 2;
+    var frac = Math.min(Math.max(centerY / docH, 0), 1);
+    vpEl.style.top = Math.round(frac * indH) + 'px';
   }
 
   function onScroll() {
