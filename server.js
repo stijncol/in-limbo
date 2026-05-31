@@ -314,7 +314,7 @@ async function renderPublic(req, res, config) {
   * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
-    background: #f4f7ff;
+    background: #f2f3f5;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
