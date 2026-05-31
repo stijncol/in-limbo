@@ -2281,7 +2281,7 @@ ${archiveCards}
   .scroll-ind {
     position: fixed;
     right: 24px;
-    width: 8px;
+    width: 16px;
     pointer-events: none;
     z-index: 50;
   }
@@ -2289,15 +2289,21 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     top: 0; bottom: 0;
-    width: 1px;
-    background: #000;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      #000 0px,
+      #000 5px,
+      transparent 5px,
+      transparent 11px
+    );
     transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 4px;
-    height: 4px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #000;
     transform: translate(-50%, -50%);
@@ -2306,8 +2312,8 @@ ${archiveCards}
   .scroll-ind-tick {
     position: absolute;
     left: 50%;
-    width: 8px;
-    height: 1px;
+    width: 16px;
+    height: 2px;
     background: #000;
     transform: translateX(-50%);
   }
