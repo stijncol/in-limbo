@@ -3495,7 +3495,7 @@ var renderTimer=null;
 function readCfg(){
   function v(id){return document.getElementById(id)}
   return{
-    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:+v('i-blur').value},
+    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:v('i-blur')?+v('i-blur').value:1},
     dither:{technique:v('i-tech').value,width:+v('i-width').value},
     palette:{mode:v('i-pmode').value,colors:+v('i-pcolors').value,pastel:+v('i-pastel').value,lightness:+v('i-light').value,
       monoHue:v('i-monohue').value,tintHue:v('i-tinthue').value,fixedExtras:v('i-fixedx').value,
@@ -3549,17 +3549,19 @@ document.querySelectorAll('.lc').forEach(function(card){
     var pal=buildPalette(cfg,sd.samples);
     renderCard(card,cfg,pal);
   });
-  if(vtype==='youtube'){
-    img.src='https://img.youtube.com/vi/'+vid+'/'+ytSizes[0];
-  }else{
-    fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
-      .then(function(r){return r.json()})
-      .then(function(data){
-        var u=data.thumbnail_url||'';
-        img.src=u.replace(/_[0-9]+x[0-9]+/,'_1280')||('https://vumbnail.com/'+vid+'.jpg');
-      })
-      .catch(function(){img.src='https://vumbnail.com/'+vid+'.jpg'});
-  }
+  setTimeout(function(){
+    if(vtype==='youtube'){
+      img.src='https://img.youtube.com/vi/'+vid+'/'+ytSizes[0];
+    }else{
+      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
+        .then(function(r){return r.json()})
+        .then(function(data){
+          var u=data.thumbnail_url||'';
+          img.src=u.replace(/_[0-9]+x[0-9]+/,'_1280')||('https://vumbnail.com/'+vid+'.jpg');
+        })
+        .catch(function(){img.src='https://vumbnail.com/'+vid+'.jpg'});
+    }
+  },0);
 });
 
 // ── UI wiring ─────────────────────────────────────────────
@@ -3605,7 +3607,7 @@ document.getElementById('i-amode').addEventListener('change',updAMode);updAMode(
 });
 
 // render button
-document.getElementById('render-btn').addEventListener('click',rerenderAll);
+var renderBtn=document.getElementById('render-btn');if(renderBtn)renderBtn.addEventListener('click',rerenderAll);
 
 // copy settings
 document.getElementById('copy-btn').addEventListener('click',function(){
