@@ -664,17 +664,18 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text a {
     color: #1e40af;
-    text-decoration: underline;
+    text-decoration: none;
     font-weight: 400;
   }
+  .intro-block .intro-text a:hover { text-decoration: underline; }
   .intro-block .intro-text a.year-filter {
     font-weight: 400;
-    text-decoration: underline;
+    text-decoration: none;
     cursor: pointer;
     color: #1e40af;
   }
-  .intro-block .intro-text a.year-filter:hover { color: #1e40af; }
-  .intro-block .intro-text a.year-filter.active { text-decoration: underline; color: #1e40af; }
+  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; }
+  .intro-block .intro-text a.year-filter.active { text-decoration: underline; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
@@ -682,15 +683,13 @@ async function renderPublic(req, res, config) {
     font-family: inherit;
     font-size: inherit;
     border: none;
-    border-bottom: 1px solid #1e40af;
+    border-bottom: 1px solid #aac0e8;
     background: transparent;
     outline: none;
     color: #1e40af;
     width: 180px;
     padding: 0 3px;
     vertical-align: baseline;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
   .inline-search-input::placeholder { color: #aac0e8; }
   .inline-search-input:focus { border-bottom-color: #1e40af; }
