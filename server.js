@@ -458,21 +458,28 @@ async function renderPublic(req, res, config) {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    gap: 5px;
     padding-top: 7px;
+  }
+  .filters-search-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: #1e40af;
   }
   .filters-search-input {
     font-family: inherit;
     font-size: 13px;
     border: none;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #aac0e8;
     background: transparent;
     outline: none;
-    color: #111;
-    width: 160px;
+    color: #1e40af;
+    width: 140px;
     padding: 0 3px 2px;
   }
-  .filters-search-input::placeholder { color: #ccc; }
-  .filters-search-input:focus { border-bottom-color: #888; }
+  .filters-search-input::placeholder { color: transparent; }
+  .filters-search-input:focus { border-bottom-color: #1e40af; }
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -911,7 +918,8 @@ async function renderPublic(req, res, config) {
       </div>
     </div>
     <div class="filters-search-wrap">
-      <input type="text" class="filters-search-input" placeholder="title · student · tag">
+      <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      <input type="text" class="filters-search-input" placeholder="">
     </div>
   </div>
   <div class="grid">
@@ -919,7 +927,7 @@ async function renderPublic(req, res, config) {
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/" style="text-decoration:none;">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. <span style="text-decoration:underline;">Search</span> <span style="opacity:0.5;font-size:1.3em;line-height:0;vertical-align:middle;">&#x2315;</span> by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder="title · student · tag"></span></p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><input type="text" id="search-input" class="inline-search-input" placeholder=""></span></p>
       </div>
     </div>
 ${featuredCards}
