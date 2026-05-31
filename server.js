@@ -2364,62 +2364,50 @@ app.get('/', async (req, res) => {
     }
     #medium-axis {
       flex: 0 0 auto;
-      width: 68px;
-      padding-left: 18px;
+      width: 36px;
+      padding-left: 12px;
       padding-top: 4px;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: 0;
       position: sticky;
       top: 24px;
     }
     #medium-axis .axis-label {
-      font-size: 10px;
+      font-size: 9px;
       color: #bbb;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 8px;
-      padding-left: 4px;
+      margin-bottom: 10px;
       font-family: inherit;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
     }
     #medium-axis button {
       border: none;
       border-radius: 0;
       background: transparent;
       color: #888;
-      padding: 3px 4px;
+      padding: 4px 2px;
       font-size: 13px;
       font-family: inherit;
       font-weight: 300;
-      text-align: left;
       cursor: pointer;
-      line-height: 1.4;
+      line-height: 1;
       position: relative;
       white-space: nowrap;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
     }
-    #medium-axis button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    #medium-axis button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    #medium-axis button::before { content: none; }
+    #medium-axis button::after { content: none; }
     #medium-axis button:hover { color: #1e40af; background: transparent; }
-    #medium-axis button:hover::before, #medium-axis button:hover::after { opacity: 0.7; }
     #medium-axis button.active {
       color: #1e40af; background: transparent;
       text-decoration: underline; text-underline-offset: 3px;
     }
-    #medium-axis button.active::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 0;
-      transform: translate(-50%, -7px);
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #1e40af;
-      margin: 0;
-      opacity: 1;
-    }
-    #medium-axis button.active::after { content: ""; margin: 0; opacity: 0; }
     @media (max-width: 768px) {
       #grid-area { flex-direction: column; }
       #medium-axis { display: none !important; }
