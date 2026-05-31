@@ -461,6 +461,7 @@ async function renderPublic(req, res, config) {
     background: #f0f0f0;
     overflow: hidden;
     cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
   }
   .card .thumb img {
     width: 100%; height: 100%;
@@ -3097,11 +3098,11 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
   <div id="panel-body">
     <div class="pg">
       <div class="pgl">image</div>
-      <label>brightness <input type="range" id="i-bright" min="-80" max="80" value="0"><span class="val" id="v-bright">0</span></label>
-      <label>shadows <input type="range" id="i-shadows" min="0" max="120" value="0"><span class="val" id="v-shadows">0</span></label>
-      <label>gamma <input type="range" id="i-gamma" min="50" max="300" value="100"><span class="val" id="v-gamma">1.00</span></label>
-      <label>contrast <input type="range" id="i-contrast" min="50" max="200" value="100"><span class="val" id="v-contrast">1.00</span></label>
-      <label>blur <input type="range" id="i-blur" min="0" max="3" step="1" value="1"><span class="val" id="v-blur">1</span></label>
+      <label>brightness <input type="range" id="i-bright" min="-80" max="80" value="7"><span class="val" id="v-bright">7</span></label>
+      <label>shadows <input type="range" id="i-shadows" min="0" max="120" value="67"><span class="val" id="v-shadows">67</span></label>
+      <label>gamma <input type="range" id="i-gamma" min="50" max="300" value="135"><span class="val" id="v-gamma">1.35</span></label>
+      <label>contrast <input type="range" id="i-contrast" min="50" max="200" value="127"><span class="val" id="v-contrast">1.27</span></label>
+      <label>blur <input type="range" id="i-blur" min="0" max="3" step="1" value="2"><span class="val" id="v-blur">2</span></label>
     </div>
     <div class="pg">
       <div class="pgl">dither</div>
@@ -3110,8 +3111,8 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
     </div>
     <div class="pg">
       <div class="pgl">palette</div>
-      <label>mode <select id="i-pmode"><option value="kmeans">kmeans (image)</option><option value="fixed">fixed (site)</option><option value="mono">mono</option><option value="duo">duo</option><option value="tint">tint</option><option value="custom">custom</option></select></label>
-      <label>colors <input type="range" id="i-pcolors" min="2" max="8" value="3"><span class="val" id="v-pcolors">3</span></label>
+      <label>mode <select id="i-pmode"><option value="kmeans">kmeans (image)</option><option value="fixed">fixed (site)</option><option value="mono">mono</option><option value="duo" selected>duo</option><option value="tint">tint</option><option value="custom">custom</option></select></label>
+      <label>colors <input type="range" id="i-pcolors" min="2" max="8" value="4"><span class="val" id="v-pcolors">4</span></label>
       <label>pastel <input type="range" id="i-pastel" min="0" max="100" value="60"><span class="val" id="v-pastel">60%</span></label>
       <label>lightness <input type="range" id="i-light" min="0" max="100" value="50"><span class="val" id="v-light">50%</span></label>
       <div id="pc-mono" class="pc"><label>hue <input type="color" id="i-monohue" value="#3C5A78"></label></div>
@@ -3119,8 +3120,8 @@ body{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#111;background:
       <div id="pc-fixed" class="pc"><label>extras <select id="i-fixedx"><option value="warm">warm</option><option value="cool">cool</option><option value="neutral">neutral</option></select></label></div>
       <div id="pc-duo" class="pc">
         <label>preset <select id="i-duopreset" style="max-width:148px"></select></label>
-        <label>col 1 <input type="color" id="i-duo1" value="#3C3C78"></label>
-        <label>col 2 <input type="color" id="i-duo2" value="#82412D"></label>
+        <label>col 1 <input type="color" id="i-duo1" value="#2d5a46"></label>
+        <label>col 2 <input type="color" id="i-duo2" value="#a0707a"></label>
       </div>
       <div id="pc-custom" class="pc">
         <label>col 1 <input type="color" id="i-cus1" value="#3C3C78"></label>
