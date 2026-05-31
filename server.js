@@ -2122,6 +2122,7 @@ ${archiveCards}
   function applyFilter(value, type) {
     activeFilter = value;
     activeType = type || 'tag';
+    document.body.classList.toggle('has-filter', value !== 'all');
     if (value === 'all') filtersBar.classList.remove('show-all');
     if (type !== 'search') clearSearchInputs();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
@@ -2250,14 +2251,15 @@ app.get('/', async (req, res) => {
       color: #888;
       padding: 6px 4px;
       position: relative;
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
     .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
     .filters button:hover { color: #1e40af; background: transparent; border: none; }
     .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
-    .filters button.active { color: #1e40af; background: transparent; border: none; }
+    .filters button.active {
+      color: #1e40af; background: transparent; border: none;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
     .filters button.active::before {
       content: "";
       position: absolute;
@@ -2272,6 +2274,11 @@ app.get('/', async (req, res) => {
       opacity: 1;
     }
     .filters button.active::after { content: ""; margin: 0; opacity: 0; }
+    body.has-filter .card:not(.hidden) .card-title {
+      color: #1e40af !important;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
