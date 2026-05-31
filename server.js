@@ -550,7 +550,7 @@ async function renderPublic(req, res, config) {
     object-fit: cover;
     display: block;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.7s ease-in-out;
   }
   .card .thumb[data-baked] canvas { display: none; }
   .card .thumb .paper-tint {
@@ -1831,7 +1831,7 @@ ${archiveCards}
   function setupBakedHover(thumb) {
     const sharp = thumb.querySelector('.baked-sharp');
     if (!sharp) return;
-    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false;
+    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false, shimmerDelay = null;
 
     function initShimmer() {
       if (canvas || !sharp.naturalWidth) return false;
@@ -1867,13 +1867,16 @@ ${archiveCards}
     thumb.addEventListener('mouseenter', () => {
       sharp.style.opacity = '1';
       if (!canvas) initShimmer();
-      if (canvas && origData) {
-        shimmerActive = true;
-        canvas.style.display = 'block';
-        shimmerTick();
-      }
+      shimmerDelay = setTimeout(() => {
+        if (canvas && origData) {
+          shimmerActive = true;
+          canvas.style.display = 'block';
+          shimmerTick();
+        }
+      }, 500);
     });
     thumb.addEventListener('mouseleave', () => {
+      clearTimeout(shimmerDelay);
       shimmerActive = false;
       if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
       if (canvas) canvas.style.display = 'none';
