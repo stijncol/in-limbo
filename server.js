@@ -2289,7 +2289,7 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     top: 0; bottom: 0;
-    width: 2px;
+    width: 1px;
     background: repeating-linear-gradient(
       to bottom,
       #000 0px,
