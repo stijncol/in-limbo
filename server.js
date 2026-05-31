@@ -589,7 +589,7 @@ async function renderPublic(req, res, config) {
     transition: color 0.2s ease;
   }
   .card .tags span:hover { color: #1e40af; }
-  .card .tags span.active { color: #1e40af; }
+  .card .tags span.active { color: #1e40af; text-decoration: underline; text-underline-offset: 2px; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
   .card .tags span.tag-medium { font-style: italic; }
   .card .tags:has(span.active) { opacity: 1; pointer-events: auto; }
