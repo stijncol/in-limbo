@@ -558,11 +558,12 @@ async function renderPublic(req, res, config) {
     left: 0;
     right: 0;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: flex-start;
     padding: 4px 0 2px;
     gap: 12px;
   }
+  .card .card-right { order: -1; }
   .card .tags {
     display: flex;
     flex-wrap: wrap;
@@ -597,7 +598,7 @@ async function renderPublic(req, res, config) {
     letter-spacing: 0.03em;
     color: #111;
     font-weight: ${cfg.titleWeight};
-    text-align: right;
+    text-align: left;
     white-space: nowrap;
     flex-shrink: 0;
     transition: color 0.2s ease;
