@@ -653,6 +653,7 @@ async function renderPublic(req, res, config) {
     color: #111;
   }
   .intro-block .intro-text a.year-filter:hover { text-decoration: underline; color: #1e40af; }
+  .intro-block .intro-text a.year-filter.active { text-decoration: underline; color: #1e40af; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
@@ -2133,6 +2134,9 @@ ${archiveCards}
     });
     document.querySelectorAll('.card-year').forEach(y => {
       y.style.color = (activeType === 'year' && y.dataset.year === value) ? '#1e40af' : '';
+    });
+    document.querySelectorAll('a.year-filter').forEach(a => {
+      a.classList.toggle('active', type === 'year' && a.dataset.year === value);
     });
     document.querySelectorAll('.card .tags span[data-tag]').forEach(s => s.classList.remove('active'));
     if (value !== 'all' && type === 'tag') {
