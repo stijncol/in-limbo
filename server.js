@@ -502,6 +502,10 @@ async function renderPublic(req, res, config) {
     border: 1px solid rgba(0,0,0,0.14);
     z-index: 10;
     pointer-events: none;
+    transition: border-color 0.2s ease;
+  }
+  .card:hover .thumb::before {
+    border-color: #1e40af;
   }
   .card .thumb canvas {
     position: absolute;
@@ -612,10 +616,10 @@ async function renderPublic(req, res, config) {
     white-space: nowrap;
   }
   .card .card-year:hover { color: #1e40af; }
-  .card:hover .card-duration { color: #111; }
+  .card:hover .card-duration { color: #1e40af; }
   .card:hover .card-title { text-decoration: underline; color: #1e40af !important; }
   .card:hover .card-year { color: #1e40af; }
-  .card:hover .tags span { color: #111; }
+  .card:hover .tags span { color: #555; }
   .card-logos .thumb::after { display: none; }
   .card-logos .thumb:hover img { transform: none; }
   .intro-block {
@@ -646,7 +650,7 @@ async function renderPublic(req, res, config) {
     cursor: pointer;
     color: #111;
   }
-  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; }
+  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; color: #1e40af; }
   .inline-search-wrap { white-space: nowrap; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
@@ -708,7 +712,7 @@ async function renderPublic(req, res, config) {
     align-items: center;
     justify-content: center;
   }
-  .archive-toggle button:hover { border-color: #111; color: #111; }
+  .archive-toggle button:hover { border-color: #1e40af; color: #1e40af; }
   .archive-toggle button svg { stroke: currentColor; }
   .archive-toggle-label {
     position: absolute;
