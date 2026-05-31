@@ -507,8 +507,6 @@ async function renderPublic(req, res, config) {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
-    opacity: 0;
-    transition: opacity 0.5s ease;
   }
   .card .thumb .baked-thumb {
     position: absolute;
@@ -516,8 +514,6 @@ async function renderPublic(req, res, config) {
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
-    opacity: 0;
-    transition: opacity 0.5s ease;
   }
   .card .thumb[data-baked] canvas {
     position: absolute;
@@ -1751,8 +1747,10 @@ ${archiveCards}
     // Initial render
     dither(0, 0, 0);
     canvas.style.imageRendering = 'pixelated';
+    canvas.style.opacity = '0';
+    canvas.style.transition = 'opacity 0.5s ease';
     thumb.appendChild(canvas);
-    requestAnimationFrame(() => { canvas.style.opacity = '1'; });
+    requestAnimationFrame(() => requestAnimationFrame(() => { canvas.style.opacity = '1'; }));
 
     // Shimmer on hover — whole thumbnail
     let shimmerActive = false;
@@ -1841,7 +1839,12 @@ ${archiveCards}
 
     if (isBaked) {
       // Baked: fade in + set up shimmer when thumbnail loads
-      const revealBaked = () => { img.style.opacity = '1'; setupBakedShimmer(thumb, img); };
+      img.style.opacity = '0';
+      img.style.transition = 'opacity 0.5s ease';
+      const revealBaked = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+        img.style.opacity = '1';
+        setupBakedShimmer(thumb, img);
+      }));
       if (img.complete && img.naturalWidth) {
         revealBaked();
       } else {
