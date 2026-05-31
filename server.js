@@ -923,6 +923,7 @@ async function renderPublic(req, res, config) {
       <input type="text" class="filters-search-input" placeholder="">
     </div>
   </div>
+  <div id="grid-area">
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
@@ -933,6 +934,8 @@ async function renderPublic(req, res, config) {
     </div>
 ${featuredCards}
 ${archiveCards}
+  </div>
+  <div id="medium-axis"></div>
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
     <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
@@ -2210,6 +2213,12 @@ ${archiveCards}
         card.classList.toggle('hidden', !tags.split(',').includes(value));
       }
     });
+    const medAxis = document.getElementById('medium-axis');
+    if (medAxis) {
+      medAxis.querySelectorAll('button[data-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === value);
+      });
+    }
   }
 
   filtersBar.addEventListener('click', e => {
@@ -2287,6 +2296,23 @@ app.get('/', async (req, res) => {
         prependYear(dur);
         new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
       });
+
+      // Populate medium Y-axis from .filters-medium buttons
+      var axis = document.getElementById('medium-axis');
+      var srcBtns = document.querySelectorAll('.filters-medium .medium-tags button[data-filter]');
+      if (axis && srcBtns.length) {
+        var label = document.createElement('span');
+        label.className = 'axis-label';
+        label.textContent = 'medium';
+        axis.appendChild(label);
+        srcBtns.forEach(function(src) {
+          var btn = document.createElement('button');
+          btn.dataset.filter = src.dataset.filter;
+          btn.textContent = src.dataset.filter;
+          btn.addEventListener('click', function() { applyFilter(btn.dataset.filter, 'tag'); });
+          axis.appendChild(btn);
+        });
+      }
     })();
   `, extraCSS: `
     .filters-search-wrap { display: none !important; }
@@ -2321,13 +2347,83 @@ app.get('/', async (req, res) => {
       opacity: 1;
     }
     .filters button.active::after { content: ""; margin: 0; opacity: 0; }
-    .filters-medium button { border: none; background: transparent; }
-    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    .filters-medium { display: none !important; }
     .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
     .tag-expand:hover { border: none; background: transparent; color: #1e40af; }
     .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
     .filters-extra .tag-close:hover { border: none; background: transparent; color: #1e40af; }
+    /* Medium axis Y-axis layout */
+    #grid-area {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+    }
+    .grid {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    #medium-axis {
+      flex: 0 0 auto;
+      width: 68px;
+      padding-left: 18px;
+      padding-top: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      position: sticky;
+      top: 24px;
+    }
+    #medium-axis .axis-label {
+      font-size: 10px;
+      color: #bbb;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-left: 4px;
+      font-family: inherit;
+    }
+    #medium-axis button {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: #888;
+      padding: 3px 4px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 300;
+      text-align: left;
+      cursor: pointer;
+      line-height: 1.4;
+      position: relative;
+      white-space: nowrap;
+    }
+    #medium-axis button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+    #medium-axis button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+    #medium-axis button:hover { color: #1e40af; background: transparent; }
+    #medium-axis button:hover::before, #medium-axis button:hover::after { opacity: 0.7; }
+    #medium-axis button.active {
+      color: #1e40af; background: transparent;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    #medium-axis button.active::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-50%, -7px);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #1e40af;
+      margin: 0;
+      opacity: 1;
+    }
+    #medium-axis button.active::after { content: ""; margin: 0; opacity: 0; }
+    @media (max-width: 768px) {
+      #grid-area { flex-direction: column; }
+      #medium-axis { display: none !important; }
+    }
   ` });
 });
 
