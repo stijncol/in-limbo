@@ -2309,14 +2309,6 @@ ${archiveCards}
     transform: translate(-50%, -50%);
     transition: top 0.1s ease-out;
   }
-  .scroll-ind-tick {
-    position: absolute;
-    left: 50%;
-    width: 16px;
-    height: 1px;
-    background: #000;
-    transform: translateX(-50%);
-  }
   @media (max-width: 768px) { .scroll-ind { display: none !important; } }
 </style>
 
@@ -2355,21 +2347,6 @@ ${archiveCards}
     ind.style.height = Math.max(vpH - indTop * 2, 40) + 'px';
 
     var indH = ind.offsetHeight;
-
-    // Remove old ticks
-    var old = ind.querySelectorAll('.scroll-ind-tick');
-    for (var i = 0; i < old.length; i++) old[i].remove();
-
-    // Add ticks
-    cards.forEach(function(card) {
-      var rect = card.getBoundingClientRect();
-      var centerY = rect.top + window.scrollY + rect.height / 2;
-      var frac = Math.min(Math.max(centerY / docH, 0), 1);
-      var tick = document.createElement('div');
-      tick.className = 'scroll-ind-tick';
-      tick.style.top = Math.round(frac * indH) + 'px';
-      ind.appendChild(tick);
-    });
 
     updateVp(docH, indH);
   }
