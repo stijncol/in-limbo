@@ -506,6 +506,8 @@ async function renderPublic(req, res, config) {
     letter-spacing: 0.03em;
     color: #aaa;
     white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
   }
   .card .thumb {
     position: relative;
@@ -647,7 +649,7 @@ async function renderPublic(req, res, config) {
     white-space: nowrap;
   }
   .card .card-year:hover { color: #1e40af; }
-  .card:hover .card-duration { color: #1e40af; }
+  .card:hover .card-duration { opacity: 1; color: #1e40af; }
   .card:hover .card-title { text-decoration: underline; color: #1e40af; }
   .card:hover .card-year { color: #1e40af; }
   .card:hover .tags span { color: #555; }
