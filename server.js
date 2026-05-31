@@ -692,7 +692,7 @@ async function renderPublic(req, res, config) {
     font-size: inherit;
     border: none;
     border-bottom: 1px solid #aac0e8;
-    background: #fff;
+    background: transparent;
     outline: none;
     color: #1e40af;
     width: 180px;
