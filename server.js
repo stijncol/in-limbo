@@ -314,7 +314,7 @@ async function renderPublic(req, res, config) {
   * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
-    background: #fff;
+    background: #f4f7ff;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
@@ -683,20 +683,20 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text a.year-filter:hover { text-decoration: underline; }
   .intro-block .intro-text a.year-filter.active { text-decoration: underline; }
-  .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; }
-  .inline-search-wrap::before { content: none; }
-  .inline-search-wrap::after { content: none; }
-  .inline-search-icon { width: 13px; height: 13px; flex-shrink: 0; color: #1e40af; vertical-align: middle; }
+  .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; vertical-align: middle; }
+  .inline-search-wrap::before { content: "["; color: #999; }
+  .inline-search-wrap::after { content: "]"; color: #999; }
+  .inline-search-icon { width: 13px; height: 13px; flex-shrink: 0; color: #1e40af; vertical-align: middle; margin-right: 3px; }
   .inline-search-input {
     font-family: inherit;
     font-size: inherit;
     border: none;
     border-bottom: 1px solid #aac0e8;
-    background: transparent;
+    background: #fff;
     outline: none;
     color: #1e40af;
     width: 180px;
-    padding: 0 3px;
+    padding: 0 5px 1px;
     vertical-align: baseline;
   }
   .inline-search-input::placeholder { color: #aac0e8; }
