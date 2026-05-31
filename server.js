@@ -589,8 +589,10 @@ async function renderPublic(req, res, config) {
     transition: color 0.2s ease;
   }
   .card .tags span:hover { color: #1e40af; }
+  .card .tags span.active { color: #1e40af; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
   .card .tags span.tag-medium { font-style: italic; }
+  .card .tags:has(span.active) { opacity: 1; pointer-events: auto; }
   .card .card-right {
     display: flex;
     align-items: baseline;
@@ -2129,8 +2131,12 @@ ${archiveCards}
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
     document.querySelectorAll('.card-year').forEach(y => {
-      y.style.color = (activeType === 'year' && y.dataset.year === value) ? '#111' : '';
+      y.style.color = (activeType === 'year' && y.dataset.year === value) ? '#1e40af' : '';
     });
+    document.querySelectorAll('.card .tags span[data-tag]').forEach(s => s.classList.remove('active'));
+    if (value !== 'all' && type === 'tag') {
+      document.querySelectorAll('.card .tags span[data-tag="' + value + '"]').forEach(s => s.classList.add('active'));
+    }
 
     // Show/hide intro and logos
     const isFiltered = value !== 'all';
