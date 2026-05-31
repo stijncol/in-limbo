@@ -48,6 +48,7 @@ async function initDB() {
   try { await pool.query("UPDATE videos SET tags_theme = tags WHERE tags_theme = '' AND tags != ''"); } catch(e) {}
   try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_data BYTEA"); } catch(e) {}
   try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_settings JSONB"); } catch(e) {}
+  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_sharp BYTEA"); } catch(e) {}
 }
 
 async function getVideoRows() {
@@ -97,14 +98,30 @@ app.get('/thumb/:id', async (req, res) => {
   } catch(e) { res.status(500).send('Error'); }
 });
 
+app.get('/thumb/:id/sharp', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT thumb_sharp FROM videos WHERE id=$1', [req.params.id]);
+    if (!result.rows[0] || !result.rows[0].thumb_sharp) return res.status(404).send('Not found');
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=604800');
+    res.send(result.rows[0].thumb_sharp);
+  } catch(e) { res.status(500).send('Error'); }
+});
+
 app.post('/thumb/:id', requireAuth, async (req, res) => {
   try {
-    const { imageData, settings } = req.body;
-    if (!imageData) return res.status(400).json({ error: 'imageData required' });
-    const base64 = imageData.replace(/^data:image\/png;base64,/, '');
-    const buf = Buffer.from(base64, 'base64');
-    await pool.query('UPDATE videos SET thumb_data=$1, thumb_settings=$2 WHERE id=$3',
-      [buf, settings ? JSON.stringify(settings) : null, req.params.id]);
+    const { blurData, sharpData, imageData, settings } = req.body;
+    const blurBase64 = (blurData || imageData || '').replace(/^data:image\/png;base64,/, '');
+    if (!blurBase64) return res.status(400).json({ error: 'blurData required' });
+    const blurBuf = Buffer.from(blurBase64, 'base64');
+    if (sharpData) {
+      const sharpBuf = Buffer.from(sharpData.replace(/^data:image\/png;base64,/, ''), 'base64');
+      await pool.query('UPDATE videos SET thumb_data=$1, thumb_sharp=$2, thumb_settings=$3 WHERE id=$4',
+        [blurBuf, sharpBuf, settings ? JSON.stringify(settings) : null, req.params.id]);
+    } else {
+      await pool.query('UPDATE videos SET thumb_data=$1, thumb_settings=$2 WHERE id=$3',
+        [blurBuf, settings ? JSON.stringify(settings) : null, req.params.id]);
+    }
     res.json({ ok: true });
   } catch(e) { console.error('POST /thumb error:', e.message); res.status(500).json({ error: e.message }); }
 });
@@ -245,7 +262,7 @@ async function renderPublic(req, res, config) {
     const videoId = v.video_id || v.vimeo_id;
     const videoType = v.video_type || 'vimeo';
     const thumbHtml = v.has_thumb
-      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" loading="lazy" class="baked-thumb" alt="${esc(v.title)}"><div class="paper-tint"></div></div>`
+      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""><div class="paper-tint"></div></div>`
       : `<div class="thumb"><img alt=""><div class="paper-tint"></div></div>`;
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
@@ -512,19 +529,23 @@ async function renderPublic(req, res, config) {
     inset: 0;
     width: 100%; height: 100%;
   }
-  .card .thumb .baked-thumb {
+  .card .thumb .baked-blur {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
   }
-  .card .thumb[data-baked] canvas {
+  .card .thumb .baked-sharp {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
-    display: none;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
+  .card .thumb[data-baked] canvas { display: none; }
   .card .thumb .paper-tint {
     position: absolute;
     inset: 0;
@@ -1793,56 +1814,26 @@ ${archiveCards}
     });
   }
 
-  // Lazy pixel-noise shimmer for baked thumbnails
-  function setupBakedShimmer(thumb, bakedImg) {
-    let canvas = null, ctx = null, origData = null;
-    let shimmerActive = false, shimmerRaf = null;
-    let initialized = false;
-
-    function init() {
-      if (initialized) return true;
-      canvas = document.createElement('canvas');
-      canvas.width = bakedImg.naturalWidth || 596;
-      canvas.height = bakedImg.naturalHeight || 335;
-      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.13)';
-      thumb.appendChild(canvas);
-      ctx = canvas.getContext('2d');
-      try {
-        ctx.drawImage(bakedImg, 0, 0, canvas.width, canvas.height);
-        origData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        initialized = true;
-        return true;
-      } catch(e) { return false; }
-    }
-
-    function shimmerTick() {
-      if (!shimmerActive || !origData) return;
-      const id = new ImageData(new Uint8ClampedArray(origData.data), origData.width, origData.height);
-      const d = id.data, n = origData.width * origData.height;
-      const swaps = Math.floor(n * 0.015);
-      for (let k = 0; k < swaps; k++) {
-        const i = Math.floor(Math.random() * n) * 4;
-        const j = Math.floor(Math.random() * n) * 4;
-        const r = d[i], g = d[i+1], b = d[i+2];
-        d[i] = d[j]; d[i+1] = d[j+1]; d[i+2] = d[j+2];
-        d[j] = r; d[j+1] = g; d[j+2] = b;
-      }
-      ctx.putImageData(id, 0, 0);
-      setTimeout(() => { shimmerRaf = requestAnimationFrame(shimmerTick); }, 120);
-    }
-
+  // Hover handler for baked thumbnails: shows sharp version on hover
+  function setupBakedHover(thumb) {
+    const sharp = thumb.querySelector('.baked-sharp');
+    if (!sharp) return;
     thumb.addEventListener('mouseenter', () => {
-      if (!init()) return;
-      shimmerActive = true;
-      canvas.style.display = 'block';
-      shimmerTick();
+      if (sharp.naturalWidth) sharp.style.opacity = '1';
     });
     thumb.addEventListener('mouseleave', () => {
-      shimmerActive = false;
-      if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
-      if (canvas) canvas.style.display = 'none';
+      sharp.style.opacity = '0';
     });
   }
+
+  // After page load, preload all sharp images in background
+  function preloadSharpImages() {
+    document.querySelectorAll('.baked-sharp[data-sharp]').forEach(img => {
+      if (!img.src) img.src = img.dataset.sharp;
+    });
+  }
+  if (document.readyState === 'complete') { preloadSharpImages(); }
+  else { window.addEventListener('load', preloadSharpImages); }
 
   let videoIndex = 0;
   document.querySelectorAll('.card[data-video-id]').forEach(card => {
@@ -1850,17 +1841,17 @@ ${archiveCards}
     const type = card.dataset.videoType;
     const thumb = card.querySelector('.thumb');
     const isBaked = !!(thumb && thumb.dataset.baked === 'true');
-    const img = card.querySelector('img');
+    const img = card.querySelector('.baked-blur') || card.querySelector('img');
     img.crossOrigin = 'anonymous';
     const myIndex = videoIndex++;
 
     if (isBaked) {
-      // Baked: fade in + set up shimmer when thumbnail loads
+      // Baked: fade in blur on load, set up sharp hover
       img.style.opacity = '0';
       img.style.transition = 'opacity 0.5s ease';
       const revealBaked = () => requestAnimationFrame(() => requestAnimationFrame(() => {
         img.style.opacity = '1';
-        setupBakedShimmer(thumb, img);
+        setupBakedHover(thumb);
       }));
       if (img.complete && img.naturalWidth) {
         revealBaked();
@@ -3809,12 +3800,31 @@ function bakeCard(card,auth){
     if(!canvas){resolve({ok:false,reason:'no canvas'});return}
     var id=card.dataset.id;
     if(!id){resolve({ok:false,reason:'no id'});return}
-    var imageData=canvas.toDataURL('image/png');
-    var settings=readCfg();
+    var img=card.querySelector('img');
+    if(!img||!img.complete||!img.naturalWidth){resolve({ok:false,reason:'no image'});return}
+
+    // Capture blur version (current render)
+    var blurData=canvas.toDataURL('image/png');
+
+    // Render sharp version (blur=0, same everything else)
+    var cfg=readCfg();
+    var sharpCfg=JSON.parse(JSON.stringify(cfg));
+    sharpCfg.image.blur=0;
+    var w=sharpCfg.dither.width,h=Math.round(w*9/16);
+    var sd=sampleCard(card,img,w,h);
+    var pal=buildPalette(sharpCfg,sd.samples);
+    renderCard(card,sharpCfg,pal);
+    var sharpData=canvas.toDataURL('image/png');
+
+    // Restore blur render
+    var origSd=sampleCard(card,img,cfg.dither.width,Math.round(cfg.dither.width*9/16));
+    var origPal=buildPalette(cfg,origSd.samples);
+    renderCard(card,cfg,origPal);
+
     fetch('/thumb/'+id,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':auth},
-      body:JSON.stringify({imageData:imageData,settings:settings})
+      body:JSON.stringify({blurData:blurData,sharpData:sharpData,settings:cfg})
     }).then(function(r){return r.json()}).then(function(data){
       if(data.ok){
         var dot=card.querySelector('.ldot');
