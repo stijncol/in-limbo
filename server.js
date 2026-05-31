@@ -2364,13 +2364,13 @@ app.get('/', async (req, res) => {
     }
     #medium-axis {
       flex: 0 0 auto;
-      width: 36px;
-      padding-left: 12px;
-      padding-top: 4px;
+      width: fit-content;
+      padding-left: 8px;
+      padding-top: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0;
+      gap: 8px;
       position: sticky;
       top: 24px;
     }
@@ -2379,7 +2379,7 @@ app.get('/', async (req, res) => {
       color: #bbb;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 2px;
       font-family: inherit;
       writing-mode: vertical-rl;
     }
@@ -2388,8 +2388,8 @@ app.get('/', async (req, res) => {
       border-radius: 0;
       background: transparent;
       color: #888;
-      padding: 4px 2px;
-      font-size: 13px;
+      padding: 6px 4px;
+      font-size: 14px;
       font-family: inherit;
       font-weight: 300;
       cursor: pointer;
@@ -2398,6 +2398,7 @@ app.get('/', async (req, res) => {
       white-space: nowrap;
       writing-mode: vertical-rl;
       text-align: center;
+      letter-spacing: 0.02em;
     }
     #medium-axis button::before { content: "["; opacity: 0.4; margin-bottom: 1px; }
     #medium-axis button::after { content: "]"; opacity: 0.4; margin-top: 1px; }
