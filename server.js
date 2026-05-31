@@ -2280,10 +2280,10 @@ ${archiveCards}
 <style>
   .scroll-ind {
     position: fixed;
-    right: 12px;
+    right: 24px;
     top: 10vh;
     height: 80vh;
-    width: 8px;
+    width: 10px;
     pointer-events: none;
     z-index: 50;
   }
@@ -2291,26 +2291,26 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     top: 0; bottom: 0;
-    width: 1px;
-    background: rgba(0,0,0,0.15);
+    width: 2px;
+    background: #000;
     transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: rgba(0,0,0,0.4);
+    background: #000;
     transform: translate(-50%, -50%);
     transition: top 0.1s ease-out;
   }
   .scroll-ind-tick {
     position: absolute;
     left: 50%;
-    width: 6px;
-    height: 1px;
-    background: rgba(0,0,0,0.4);
+    width: 8px;
+    height: 2px;
+    background: #000;
     transform: translateX(-50%);
   }
   @media (max-width: 768px) { .scroll-ind { display: none !important; } }
