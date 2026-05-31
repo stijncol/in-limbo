@@ -2382,7 +2382,6 @@ app.get('/', async (req, res) => {
       margin-bottom: 10px;
       font-family: inherit;
       writing-mode: vertical-rl;
-      transform: rotate(180deg);
     }
     #medium-axis button {
       border: none;
@@ -2398,16 +2397,18 @@ app.get('/', async (req, res) => {
       position: relative;
       white-space: nowrap;
       writing-mode: vertical-rl;
-      transform: rotate(180deg);
       text-align: center;
     }
-    #medium-axis button::before { content: none; }
-    #medium-axis button::after { content: none; }
+    #medium-axis button::before { content: "["; opacity: 0.4; margin-bottom: 1px; }
+    #medium-axis button::after { content: "]"; opacity: 0.4; margin-top: 1px; }
     #medium-axis button:hover { color: #1e40af; background: transparent; }
+    #medium-axis button:hover::before, #medium-axis button:hover::after { opacity: 0.7; }
     #medium-axis button.active {
       color: #1e40af; background: transparent;
       text-decoration: underline; text-underline-offset: 3px;
     }
+    #medium-axis button.active::before { opacity: 1; }
+    #medium-axis button.active::after { opacity: 1; }
     @media (max-width: 768px) {
       #grid-area { flex-direction: column; }
       #medium-axis { display: none !important; }
