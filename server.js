@@ -2281,9 +2281,7 @@ ${archiveCards}
   .scroll-ind {
     position: fixed;
     right: 24px;
-    top: 10vh;
-    height: 80vh;
-    width: 10px;
+    width: 8px;
     pointer-events: none;
     z-index: 50;
   }
@@ -2291,15 +2289,15 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     top: 0; bottom: 0;
-    width: 2px;
+    width: 1px;
     background: #000;
     transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 8px;
-    height: 8px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: #000;
     transform: translate(-50%, -50%);
@@ -2309,7 +2307,7 @@ ${archiveCards}
     position: absolute;
     left: 50%;
     width: 8px;
-    height: 2px;
+    height: 1px;
     background: #000;
     transform: translateX(-50%);
   }
@@ -2339,10 +2337,18 @@ ${archiveCards}
     var docH = Math.max(document.body.scrollHeight, 1);
     var vpH = window.innerHeight;
     if (docH <= vpH) { ind.style.visibility = 'hidden'; return; }
+
+    var cards = visibleCards();
+    if (!cards.length) { ind.style.visibility = 'hidden'; return; }
     ind.style.visibility = '';
 
+    // Align top of indicator with top of first card (viewport position at scrollY=0)
+    var firstRect = cards[0].getBoundingClientRect();
+    var indTop = Math.round(firstRect.top + window.scrollY);
+    ind.style.top = indTop + 'px';
+    ind.style.height = Math.max(vpH - indTop * 2, 40) + 'px';
+
     var indH = ind.offsetHeight;
-    var cards = visibleCards();
 
     // Remove old ticks
     var old = ind.querySelectorAll('.scroll-ind-tick');
