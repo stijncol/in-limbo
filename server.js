@@ -297,7 +297,7 @@ async function renderPublic(req, res, config) {
   * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
-    background: #f5f5f5;
+    background: #fff;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
@@ -495,11 +495,20 @@ async function renderPublic(req, res, config) {
     object-fit: cover;
     display: block;
   }
+  .card .thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0,0,0,0.14);
+    z-index: 10;
+    pointer-events: none;
+  }
   .card .thumb canvas {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.13);
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
   .card .thumb .baked-thumb {
     position: absolute;
@@ -507,7 +516,8 @@ async function renderPublic(req, res, config) {
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.13);
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
   .card .thumb[data-baked] canvas {
     position: absolute;
@@ -1742,6 +1752,7 @@ ${archiveCards}
     dither(0, 0, 0);
     canvas.style.imageRendering = 'pixelated';
     thumb.appendChild(canvas);
+    requestAnimationFrame(() => { canvas.style.opacity = '1'; });
 
     // Shimmer on hover — whole thumbnail
     let shimmerActive = false;
@@ -1829,11 +1840,12 @@ ${archiveCards}
     const myIndex = videoIndex++;
 
     if (isBaked) {
-      // Baked: set up shimmer when thumbnail loads (may already be complete)
+      // Baked: fade in + set up shimmer when thumbnail loads
+      const revealBaked = () => { img.style.opacity = '1'; setupBakedShimmer(thumb, img); };
       if (img.complete && img.naturalWidth) {
-        setupBakedShimmer(thumb, img);
+        revealBaked();
       } else {
-        img.addEventListener('load', () => setupBakedShimmer(thumb, img));
+        img.addEventListener('load', revealBaked);
       }
     } else {
       img.addEventListener('load', () => {
