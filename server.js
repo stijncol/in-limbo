@@ -1853,7 +1853,8 @@ ${archiveCards}
 
     thumb.addEventListener('mouseenter', () => {
       sharp.style.opacity = '1';
-      if (initShimmer()) {
+      if (!canvas) initShimmer();
+      if (canvas && origData) {
         shimmerActive = true;
         canvas.style.display = 'block';
         shimmerTick();
