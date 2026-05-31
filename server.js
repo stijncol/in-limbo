@@ -2301,10 +2301,6 @@ app.get('/', async (req, res) => {
       var axis = document.getElementById('medium-axis');
       var srcBtns = document.querySelectorAll('.filters-medium .medium-tags button[data-filter]');
       if (axis && srcBtns.length) {
-        var label = document.createElement('span');
-        label.className = 'axis-label';
-        label.textContent = 'medium';
-        axis.appendChild(label);
         srcBtns.forEach(function(src) {
           var btn = document.createElement('button');
           btn.dataset.filter = src.dataset.filter;
@@ -2373,15 +2369,6 @@ app.get('/', async (req, res) => {
       gap: 8px;
       position: sticky;
       top: 24px;
-    }
-    #medium-axis .axis-label {
-      font-size: 9px;
-      color: #bbb;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-      font-family: inherit;
-      writing-mode: vertical-rl;
     }
     #medium-axis button {
       border: none;
