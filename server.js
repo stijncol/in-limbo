@@ -3537,31 +3537,23 @@ document.querySelectorAll('.lc').forEach(function(card){
   var img=document.createElement('img');
   img.crossOrigin='anonymous';
   card.querySelector('.lt').appendChild(img);
-  var ytSizes=['maxresdefault.jpg','sddefault.jpg','hqdefault.jpg'];
   img.addEventListener('load',function(){
-    if(vtype==='youtube'&&img.naturalWidth<200){
-      var cur=img.src.replace(/.*\//,'');
-      var idx=ytSizes.indexOf(cur);
-      if(idx>=0&&idx+1<ytSizes.length){img.src='https://img.youtube.com/vi/'+vid+'/'+ytSizes[idx+1];return}
-    }
     var cfg=readCfg();
     var sd=sampleCard(card,img,cfg.dither.width,Math.round(cfg.dither.width*9/16));
     var pal=buildPalette(cfg,sd.samples);
     renderCard(card,cfg,pal);
   });
-  setTimeout(function(){
-    if(vtype==='youtube'){
-      img.src='https://img.youtube.com/vi/'+vid+'/'+ytSizes[0];
-    }else{
-      fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
-        .then(function(r){return r.json()})
-        .then(function(data){
-          var u=data.thumbnail_url||'';
-          img.src=u.replace(/_[0-9]+x[0-9]+/,'_1280')||('https://vumbnail.com/'+vid+'.jpg');
-        })
-        .catch(function(){img.src='https://vumbnail.com/'+vid+'.jpg'});
-    }
-  },0);
+  if(vtype==='youtube'){
+    img.src='https://img.youtube.com/vi/'+vid+'/hqdefault.jpg';
+  }else{
+    fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
+      .then(function(r){return r.json()})
+      .then(function(data){
+        var u=data.thumbnail_url||'';
+        img.src=u.replace(/_[0-9]+x[0-9]+/,'_640')||(('https://vumbnail.com/'+vid+'.jpg'));
+      })
+      .catch(function(){img.src='https://vumbnail.com/'+vid+'.jpg'});
+  }
 });
 
 // ── UI wiring ─────────────────────────────────────────────
