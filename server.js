@@ -929,8 +929,9 @@ async function renderPublic(req, res, config) {
     .filters-search-wrap { padding-top: 0; }
     .filters-search-input { width: 160px; }
 
-    /* Intro text */
-    .intro-block .intro-text { font-size: 18px; }
+    /* Intro text: moved before filters via JS, reset grid padding */
+    .intro-block { padding: 0 0 24px; }
+    .intro-block .intro-text { font-size: 20px; }
 
     /* Footer: stack vertically */
     .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 20px 40px; }
@@ -939,8 +940,8 @@ async function renderPublic(req, res, config) {
     .page { padding: 20px 14px 48px; }
     /* Single column; gap is simple row space between cards (meta is already in flow) */
     .grid { grid-template-columns: 1fr; gap: 28px; }
-    /* Intro text smaller on small phones */
-    .intro-block .intro-text { font-size: 15px; }
+    /* Intro text slightly smaller on small phones */
+    .intro-block .intro-text { font-size: 18px; }
     /* Lightbox: reduce horizontal padding so video fills screen */
     .lightbox .lb-inner { padding: 0 12px; }
     .lightbox .lb-close { left: 12px; top: -32px; }
@@ -2322,6 +2323,16 @@ ${archiveCards}
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
   });
+  // On mobile: move intro block above the filter tags so reading order is
+  // intro → tags → cards instead of tags → intro → cards
+  if (window.innerWidth <= 768) {
+    var introBlock = document.getElementById('intro-block');
+    var filters = document.getElementById('filters');
+    if (introBlock && filters) {
+      filters.parentNode.insertBefore(introBlock, filters);
+    }
+  }
+
   ${cfg.extraJS || ''}
 </script>
 
