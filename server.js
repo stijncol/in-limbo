@@ -2325,12 +2325,8 @@ ${archiveCards}
   });
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
-  if (window.innerWidth <= 768) {
-    var introBlock = document.getElementById('intro-block');
-    var filters = document.getElementById('filters');
-    if (introBlock && filters) {
-      filters.parentNode.insertBefore(introBlock, filters);
-    }
+  if (window.innerWidth <= 768 && introBlock && filtersBar) {
+    filtersBar.parentNode.insertBefore(introBlock, filtersBar);
   }
 
   ${cfg.extraJS || ''}
