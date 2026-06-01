@@ -890,16 +890,64 @@ async function renderPublic(req, res, config) {
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
-    .grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
   }
   @media (max-width: 768px) {
+    /* Lightbox */
     .lightbox .lb-inner { padding: 0 20px; }
     .lightbox .lb-close { top: -36px; left: 20px; }
+    .lightbox .lb-desc-wrap p { column-count: 1; max-height: 180px; }
+
+    /* Screen frame: ::before inside overflow:hidden breaks on mobile browsers;
+       use card::after instead (sits outside overflow clipping) */
+    .card .thumb::before { display: none; }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(0,0,0,0.35);
+      pointer-events: none;
+      z-index: 10;
+      transition: border-color 0.2s ease;
+    }
+    .card:hover::after { border-color: #1e40af; }
+
+    /* Card meta: pull into normal flow so it doesn't lap the next card */
+    .card .meta { position: static; padding: 6px 0 0; }
+    /* Tags: always visible on touch devices (no hover) */
+    .card .tags { opacity: 1; pointer-events: auto; }
+    /* Title: allow wrapping on narrow columns */
+    .card .card-title { white-space: normal; }
+    /* Duration label positioned at left:-16px would bleed off-screen; hide it */
+    .card-duration { display: none; }
+
+    /* Filters: stack search below tags */
+    .filters { flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .filters-search-wrap { padding-top: 0; }
+    .filters-search-input { width: 160px; }
+
+    /* Intro text */
+    .intro-block .intro-text { font-size: 18px; }
+
+    /* Footer: stack vertically */
+    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 20px 40px; }
   }
   @media (max-width: 540px) {
-    .page { padding: 24px 16px 60px; }
-    .grid { grid-template-columns: 1fr; gap: 12px; }
+    .page { padding: 20px 14px 48px; }
+    /* Single column; gap is simple row space between cards (meta is already in flow) */
+    .grid { grid-template-columns: 1fr; gap: 28px; }
+    /* Intro text smaller on small phones */
+    .intro-block .intro-text { font-size: 15px; }
+    /* Lightbox: reduce horizontal padding so video fills screen */
+    .lightbox .lb-inner { padding: 0 12px; }
+    .lightbox .lb-close { left: 12px; top: -32px; }
+    /* Footer */
+    .site-footer { padding: 20px 14px 32px; }
+    /* Archive toggle label: clip overflow on narrow screens */
+    .archive-toggle-label { display: none; }
   }
   ${cfg.extraCSS || ''}
 </style>
