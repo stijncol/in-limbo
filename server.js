@@ -678,22 +678,14 @@ async function renderPublic(req, res, config) {
     margin-bottom: 16px;
   }
   .intro-block .intro-text a {
-    color: #111;
+    color: inherit;
     text-decoration: underline;
     text-decoration-color: #1e40af;
     text-underline-offset: 3px;
-    font-weight: 400;
   }
-  .intro-block .intro-text a:hover { color: #1e40af; }
   .intro-block .intro-text a.year-filter {
-    font-weight: 400;
     cursor: pointer;
-    color: #111;
-    text-decoration: underline;
-    text-decoration-color: #1e40af;
-    text-underline-offset: 3px;
   }
-  .intro-block .intro-text a.year-filter:hover { color: #1e40af; }
   .intro-block .intro-text a.year-filter.active { color: #1e40af; }
   .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; vertical-align: middle; }
   .inline-search-wrap::before { content: "["; color: #999; }
