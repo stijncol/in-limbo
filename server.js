@@ -2392,6 +2392,18 @@ ${archiveCards}
       .filter(c => getComputedStyle(c).display !== 'none');
     const firstRects = cards.map(c => c.getBoundingClientRect());
 
+    // Intro block going away: remove from flow NOW so lastRects are correct.
+    // (Deferring display:none causes a mid-animation reflow that breaks the FLIP.)
+    if (introBlock && idx !== 0 && prev === 0) {
+      introBlock.style.display = 'none';
+    }
+    // Intro block coming back: put it in the DOM before recording lastRects
+    // so cards land in their correct final positions with the block present.
+    if (introBlock && idx === 0 && prev !== 0) {
+      introBlock.style.opacity = '0';
+      introBlock.style.display = '';
+    }
+
     // Apply grid change instantly
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
@@ -2399,19 +2411,13 @@ ${archiveCards}
     if (scaleDown) scaleDown.disabled = idx === 0;
     if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
 
-    // Intro block: fade out/in while cards animate
-    if (introBlock) {
-      if (idx === 0 && prev !== 0) {
-        introBlock.style.display = '';
-        requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
-      } else if (idx !== 0 && prev === 0) {
-        introBlock.style.opacity = '0';
-        setTimeout(() => { introBlock.style.display = 'none'; }, 500);
-      }
-    }
-
     // FLIP — Last: read new positions (forces reflow so layout is committed)
     const lastRects = cards.map(c => c.getBoundingClientRect());
+
+    // Fade intro in after positions are captured
+    if (introBlock && idx === 0 && prev !== 0) {
+      requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
+    }
 
     // FLIP — Invert + Play via Web Animations API:
     // animate FROM the old position/size TO the new one (fill:none = no style pollution)
