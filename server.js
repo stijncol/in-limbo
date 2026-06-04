@@ -486,7 +486,6 @@ async function renderPublic(req, res, config) {
     grid-template-columns: repeat(3, 1fr);
     grid-auto-flow: dense;
     gap: 28px;
-    transition: grid-template-columns 0.45s ease, gap 0.45s ease;
   }
   .card {
     position: relative;
@@ -2387,22 +2386,61 @@ ${archiveCards}
   function applyScale(idx) {
     const prev = scaleIndex;
     scaleIndex = idx;
+
+    // FLIP — First: snapshot every visible card's position and size
+    const cards = Array.from(grid.querySelectorAll('.card:not(.hidden)'))
+      .filter(c => getComputedStyle(c).display !== 'none');
+    const firstRects = cards.map(c => c.getBoundingClientRect());
+
+    // Apply grid change instantly (no CSS transition — FLIP handles motion)
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
     if (scaleValEl) scaleValEl.textContent = scaleSteps[idx];
     if (scaleDown) scaleDown.disabled = idx === 0;
     if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
+
+    // Intro block: fade out/in while cards animate
     if (introBlock) {
       if (idx === 0 && prev !== 0) {
-        // Fade back in: restore display, then let CSS transition animate opacity
         introBlock.style.display = '';
         requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
       } else if (idx !== 0 && prev === 0) {
-        // Fade out, then remove from flow after transition completes
         introBlock.style.opacity = '0';
         setTimeout(() => { introBlock.style.display = 'none'; }, 270);
       }
     }
+
+    // FLIP — Last + Invert: read new positions, apply inverse transforms
+    // so each card visually appears to still be in its old spot
+    const lastRects = cards.map(c => c.getBoundingClientRect());
+    cards.forEach((card, i) => {
+      const f = firstRects[i], l = lastRects[i];
+      if (!l.width) return;
+      const dx = f.left - l.left;
+      const dy = f.top  - l.top;
+      const sx = f.width  / l.width;
+      const sy = f.height / l.height;
+      card.style.transformOrigin = '0 0';
+      card.style.transition = 'none';
+      card.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')';
+    });
+
+    // FLIP — Play: release transforms so cards animate to their new positions
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      cards.forEach(card => {
+        card.style.transition = 'transform 0.55s cubic-bezier(0.4,0,0.2,1)';
+        card.style.transform  = 'none';
+      });
+    }));
+
+    // Cleanup inline styles once animation is done
+    setTimeout(() => {
+      cards.forEach(card => {
+        card.style.transition = '';
+        card.style.transform  = '';
+        card.style.transformOrigin = '';
+      });
+    }, 600);
   }
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
