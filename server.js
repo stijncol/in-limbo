@@ -887,33 +887,55 @@ async function renderPublic(req, res, config) {
     width: auto;
     opacity: 1;
   }
-  .scale-ctrl {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    padding-top: 6px;
-  }
-  .scale-btn {
-    width: 24px; height: 24px;
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    background: transparent;
-    color: #555;
-    cursor: pointer;
-    font-size: 15px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+  /* Margin controls — [about] left, scale right, desktop only */
+  .margin-about {
+    position: fixed;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
     font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 100;
+    transition: color 0.2s;
+    user-select: none;
   }
-  .scale-btn:hover:not(:disabled) { border-color: #1e40af; color: #1e40af; }
-  .scale-btn:active:not(:disabled) { transform: scale(0.85); }
-  .scale-btn:disabled { opacity: 0.25; cursor: default; }
+  .margin-about.active { color: #111; }
+  .margin-about:hover { color: #111; }
+  .margin-scale {
+    position: fixed;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+  }
+  .margin-scale-btn {
+    writing-mode: vertical-rl;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+  }
+  .margin-scale-btn:hover:not(:disabled) { color: #111; }
+  .margin-scale-btn:disabled { opacity: 0.25; cursor: default; }
   .scale-val {
+    writing-mode: vertical-rl;
     font-size: 11px;
     color: #aaa;
     letter-spacing: 0.03em;
@@ -939,7 +961,7 @@ async function renderPublic(req, res, config) {
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
     .grid { grid-template-columns: repeat(2, 1fr); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
-    .scale-ctrl { display: none; }
+    .margin-about, .margin-scale { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -1022,11 +1044,6 @@ async function renderPublic(req, res, config) {
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       <input type="text" class="filters-search-input" placeholder="">
     </div>
-    <div class="scale-ctrl" id="scale-ctrl">
-      <button class="scale-btn" id="scale-down" title="zoom out" disabled>−</button>
-      <span class="scale-val">3</span>
-      <button class="scale-btn" id="scale-up" title="zoom in">+</button>
-    </div>
   </div>
   <div id="grid-area">
   <div class="grid">
@@ -1046,6 +1063,13 @@ ${archiveCards}
     <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     <span class="archive-toggle-label">load the complete archive</span>
   </div>
+</div>
+
+<button class="margin-about active" id="about-btn">[about]</button>
+<div class="margin-scale" id="scale-ctrl">
+  <button class="margin-scale-btn" id="scale-up">[+]</button>
+  <span class="scale-val">3</span>
+  <button class="margin-scale-btn" id="scale-down" disabled>[−]</button>
 </div>
 
 <div class="site-footer">
@@ -2300,7 +2324,7 @@ ${archiveCards}
 
     // Show/hide intro and logos
     const isFiltered = value !== 'all';
-    if (introBlock) introBlock.style.display = isFiltered ? 'none' : '';
+    if (introBlock) introBlock.style.display = (isFiltered || !aboutActive || scaleIndex > 0) ? 'none' : '';
     if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
@@ -2353,7 +2377,7 @@ ${archiveCards}
       e.preventDefault();
       applyFilter(link.dataset.year, 'year');
       // Keep intro visible when filtering from text
-      if (introBlock) introBlock.style.display = '';
+      if (introBlock && aboutActive && scaleIndex === 0) introBlock.style.display = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
@@ -2381,6 +2405,7 @@ ${archiveCards}
   const scaleValEl = document.querySelector('.scale-val');
   const scaleSteps = [3, 5, 7];
   let scaleIndex = 0;
+  var aboutActive = true;
 
   function applyScale(idx) {
     const prev = scaleIndex;
@@ -2398,7 +2423,7 @@ ${archiveCards}
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
-    if (introBlock && idx === 0 && prev !== 0) {
+    if (introBlock && idx === 0 && prev !== 0 && aboutActive) {
       introBlock.style.opacity = '0';
       introBlock.style.display = '';
     }
@@ -2414,7 +2439,7 @@ ${archiveCards}
     const lastRects = cards.map(c => c.getBoundingClientRect());
 
     // Fade intro in after positions are captured
-    if (introBlock && idx === 0 && prev !== 0) {
+    if (introBlock && idx === 0 && prev !== 0 && aboutActive) {
       requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
     }
 
@@ -2439,6 +2464,24 @@ ${archiveCards}
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
   if (scaleUp) scaleUp.addEventListener('click', () => applyScale(Math.min(scaleSteps.length - 1, scaleIndex + 1)));
+
+  // About toggle — hides/shows intro block
+  var aboutBtn = document.getElementById('about-btn');
+  if (aboutBtn) {
+    aboutBtn.addEventListener('click', function() {
+      aboutActive = !aboutActive;
+      aboutBtn.classList.toggle('active', aboutActive);
+      if (introBlock) {
+        if (aboutActive && scaleIndex === 0) {
+          introBlock.style.opacity = '0';
+          introBlock.style.display = '';
+          requestAnimationFrame(function() { introBlock.style.opacity = '1'; });
+        } else {
+          introBlock.style.display = 'none';
+        }
+      }
+    });
+  }
 
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
