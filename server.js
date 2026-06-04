@@ -887,12 +887,58 @@ async function renderPublic(req, res, config) {
     width: auto;
     opacity: 1;
   }
+  .scale-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-top: 6px;
+  }
+  .scale-btn {
+    width: 24px; height: 24px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .scale-btn:hover:not(:disabled) { border-color: #1e40af; color: #1e40af; }
+  .scale-btn:disabled { opacity: 0.25; cursor: default; }
+  .scale-val {
+    font-size: 11px;
+    color: #aaa;
+    letter-spacing: 0.03em;
+    min-width: 10px;
+    text-align: center;
+  }
+  .grid.grid-cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px 10px;
+  }
+  .grid.grid-cols-7 {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px 6px;
+  }
+  .grid.grid-cols-5 .card-title,
+  .grid.grid-cols-5 .card-year { font-size: 10px; }
+  .grid.grid-cols-7 .card .meta { display: none; }
+  .grid.grid-cols-5 .card-duration,
+  .grid.grid-cols-7 .card-duration { display: none; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
     .grid { grid-template-columns: repeat(2, 1fr); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
+    .scale-ctrl { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -974,6 +1020,11 @@ async function renderPublic(req, res, config) {
     <div class="filters-search-wrap">
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       <input type="text" class="filters-search-input" placeholder="">
+    </div>
+    <div class="scale-ctrl" id="scale-ctrl">
+      <button class="scale-btn" id="scale-down" title="zoom out" disabled>−</button>
+      <span class="scale-val">3</span>
+      <button class="scale-btn" id="scale-up" title="zoom in">+</button>
     </div>
   </div>
   <div id="grid-area">
@@ -2323,6 +2374,26 @@ ${archiveCards}
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
     }
   });
+  // Grid scale control (desktop only — hidden on mobile via CSS)
+  const scaleDown = document.getElementById('scale-down');
+  const scaleUp = document.getElementById('scale-up');
+  const scaleValEl = document.querySelector('.scale-val');
+  const scaleSteps = [3, 5, 7];
+  let scaleIndex = 0;
+
+  function applyScale(idx) {
+    scaleIndex = idx;
+    grid.classList.toggle('grid-cols-5', idx === 1);
+    grid.classList.toggle('grid-cols-7', idx === 2);
+    if (scaleValEl) scaleValEl.textContent = scaleSteps[idx];
+    if (scaleDown) scaleDown.disabled = idx === 0;
+    if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
+    if (introBlock) introBlock.style.display = idx === 0 ? '' : 'none';
+  }
+
+  if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
+  if (scaleUp) scaleUp.addEventListener('click', () => applyScale(Math.min(scaleSteps.length - 1, scaleIndex + 1)));
+
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
   if (window.innerWidth <= 768 && introBlock && filtersBar) {
