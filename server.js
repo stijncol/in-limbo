@@ -486,6 +486,7 @@ async function renderPublic(req, res, config) {
     grid-template-columns: repeat(3, 1fr);
     grid-auto-flow: dense;
     gap: 28px;
+    transition: grid-template-columns 0.45s ease, gap 0.45s ease;
   }
   .card {
     position: relative;
@@ -663,6 +664,7 @@ async function renderPublic(req, res, config) {
     flex-direction: column;
     justify-content: flex-start;
     padding: 0 20px 0 0;
+    transition: opacity 0.25s ease;
   }
   .intro-block .intro-text {
     font-family: inherit;
@@ -911,6 +913,7 @@ async function renderPublic(req, res, config) {
     font-family: inherit;
   }
   .scale-btn:hover:not(:disabled) { border-color: #1e40af; color: #1e40af; }
+  .scale-btn:active:not(:disabled) { transform: scale(0.85); }
   .scale-btn:disabled { opacity: 0.25; cursor: default; }
   .scale-val {
     font-size: 11px;
@@ -2382,13 +2385,24 @@ ${archiveCards}
   let scaleIndex = 0;
 
   function applyScale(idx) {
+    const prev = scaleIndex;
     scaleIndex = idx;
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
     if (scaleValEl) scaleValEl.textContent = scaleSteps[idx];
     if (scaleDown) scaleDown.disabled = idx === 0;
     if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
-    if (introBlock) introBlock.style.display = idx === 0 ? '' : 'none';
+    if (introBlock) {
+      if (idx === 0 && prev !== 0) {
+        // Fade back in: restore display, then let CSS transition animate opacity
+        introBlock.style.display = '';
+        requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
+      } else if (idx !== 0 && prev === 0) {
+        // Fade out, then remove from flow after transition completes
+        introBlock.style.opacity = '0';
+        setTimeout(() => { introBlock.style.display = 'none'; }, 270);
+      }
+    }
   }
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
