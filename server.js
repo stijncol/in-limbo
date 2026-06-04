@@ -2392,7 +2392,7 @@ ${archiveCards}
       .filter(c => getComputedStyle(c).display !== 'none');
     const firstRects = cards.map(c => c.getBoundingClientRect());
 
-    // Apply grid change instantly (no CSS transition — FLIP handles motion)
+    // Apply grid change instantly
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
     if (scaleValEl) scaleValEl.textContent = scaleSteps[idx];
@@ -2406,41 +2406,30 @@ ${archiveCards}
         requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
       } else if (idx !== 0 && prev === 0) {
         introBlock.style.opacity = '0';
-        setTimeout(() => { introBlock.style.display = 'none'; }, 270);
+        setTimeout(() => { introBlock.style.display = 'none'; }, 500);
       }
     }
 
-    // FLIP — Last + Invert: read new positions, apply inverse transforms
-    // so each card visually appears to still be in its old spot
+    // FLIP — Last: read new positions (forces reflow so layout is committed)
     const lastRects = cards.map(c => c.getBoundingClientRect());
-    cards.forEach((card, i) => {
+
+    // FLIP — Invert + Play via Web Animations API:
+    // animate FROM the old position/size TO the new one (fill:none = no style pollution)
+    cards.forEach(function(card, i) {
       const f = firstRects[i], l = lastRects[i];
       if (!l.width) return;
       const dx = f.left - l.left;
       const dy = f.top  - l.top;
       const sx = f.width  / l.width;
       const sy = f.height / l.height;
-      card.style.transformOrigin = '0 0';
-      card.style.transition = 'none';
-      card.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')';
+      card.animate(
+        [
+          { transformOrigin: '0 0', transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')' },
+          { transformOrigin: '0 0', transform: 'none' }
+        ],
+        { duration: 600, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'none' }
+      );
     });
-
-    // FLIP — Play: release transforms so cards animate to their new positions
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      cards.forEach(card => {
-        card.style.transition = 'transform 0.55s cubic-bezier(0.4,0,0.2,1)';
-        card.style.transform  = 'none';
-      });
-    }));
-
-    // Cleanup inline styles once animation is done
-    setTimeout(() => {
-      cards.forEach(card => {
-        card.style.transition = '';
-        card.style.transform  = '';
-        card.style.transformOrigin = '';
-      });
-    }, 600);
   }
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
