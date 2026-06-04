@@ -530,7 +530,7 @@ async function renderPublic(req, res, config) {
     content: '';
     position: absolute;
     inset: 0;
-    border: 1px solid rgba(0,0,0,0.35);
+    border: 1px solid rgba(0,0,0,0.65);
     z-index: 10;
     pointer-events: none;
     transition: border-color 0.2s ease;
@@ -977,7 +977,7 @@ async function renderPublic(req, res, config) {
       position: absolute;
       top: 0; left: 0; right: 0;
       aspect-ratio: 16 / 9;
-      border: 1px solid rgba(0,0,0,0.35);
+      border: 1px solid rgba(0,0,0,0.65);
       pointer-events: none;
       z-index: 10;
       transition: border-color 0.2s ease;
