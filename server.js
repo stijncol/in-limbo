@@ -320,9 +320,12 @@ async function renderPublic(req, res, config) {
     font-weight: ${cfg.bodyWeight};
     color: #111;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     -webkit-font-smoothing: antialiased;
   }
   .page {
+    flex: 1;
     max-width: 1400px;
     margin: 0 auto;
     padding: 40px 40px 120px;
@@ -675,19 +678,23 @@ async function renderPublic(req, res, config) {
     margin-bottom: 16px;
   }
   .intro-block .intro-text a {
-    color: #1e40af;
-    text-decoration: none;
+    color: #111;
+    text-decoration: underline;
+    text-decoration-color: #1e40af;
+    text-underline-offset: 3px;
     font-weight: 400;
   }
-  .intro-block .intro-text a:hover { text-decoration: underline; }
+  .intro-block .intro-text a:hover { color: #1e40af; }
   .intro-block .intro-text a.year-filter {
     font-weight: 400;
-    text-decoration: none;
     cursor: pointer;
-    color: #1e40af;
+    color: #111;
+    text-decoration: underline;
+    text-decoration-color: #1e40af;
+    text-underline-offset: 3px;
   }
-  .intro-block .intro-text a.year-filter:hover { text-decoration: underline; }
-  .intro-block .intro-text a.year-filter.active { text-decoration: underline; }
+  .intro-block .intro-text a.year-filter:hover { color: #1e40af; }
+  .intro-block .intro-text a.year-filter.active { color: #1e40af; }
   .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; vertical-align: middle; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
@@ -1033,7 +1040,7 @@ async function renderPublic(req, res, config) {
   <div class="grid">
     <div class="intro-block" id="intro-block">
       <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/" style="text-decoration:none;">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
+        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
         <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><svg class="inline-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg><input type="text" id="search-input" class="inline-search-input" placeholder=""></span></p>
       </div>
