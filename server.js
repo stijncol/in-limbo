@@ -486,7 +486,7 @@ async function renderPublic(req, res, config) {
   .filters-search-input:focus { border-bottom-color: #1e40af; }
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-flow: dense;
     gap: 28px;
   }
@@ -943,11 +943,11 @@ async function renderPublic(req, res, config) {
     text-align: center;
   }
   .grid.grid-cols-5 {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 20px 10px;
   }
   .grid.grid-cols-7 {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 12px 6px;
   }
   .grid.grid-cols-5 .card-title,
@@ -959,7 +959,7 @@ async function renderPublic(req, res, config) {
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
-    .grid { grid-template-columns: repeat(2, 1fr); gap: 36px 14px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
     .margin-about, .margin-scale { display: none; }
   }
