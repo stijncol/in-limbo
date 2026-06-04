@@ -326,9 +326,11 @@ async function renderPublic(req, res, config) {
   }
   .page {
     flex: 1;
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
     padding: 40px 40px 120px;
+    box-sizing: border-box;
   }
   .filters {
     display: flex;
