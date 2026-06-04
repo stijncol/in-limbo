@@ -660,12 +660,8 @@ async function renderPublic(req, res, config) {
   .card-logos .thumb::after { display: none; }
   .card-logos .thumb:hover img { transform: none; }
   .intro-block {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 0 20px 0 0;
+    width: calc((100% - 56px) / 3);
+    padding: 0 20px 28px 0;
     transition: opacity 0.25s ease;
   }
   .intro-block .intro-text {
@@ -960,8 +956,7 @@ async function renderPublic(req, res, config) {
     .page { padding: 32px 20px 80px; }
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 14px; }
-    .intro-block { grid-column: 1 / -1; grid-row: auto; }
-    .margin-about, .margin-scale { display: none; }
+.margin-about, .margin-scale { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -998,8 +993,8 @@ async function renderPublic(req, res, config) {
     .filters-search-wrap { padding-top: 0; }
     .filters-search-input { width: 160px; }
 
-    /* Intro text: moved before filters via JS, reset grid padding */
-    .intro-block { padding: 0 0 24px; }
+    /* Intro text: moved before filters via JS; reset width for mobile */
+    .intro-block { width: auto; padding: 0 0 24px; }
     .intro-block .intro-text { font-size: 20px; }
 
     /* Footer: stack vertically */
@@ -1046,14 +1041,14 @@ async function renderPublic(req, res, config) {
     </div>
   </div>
   <div id="grid-area">
-  <div class="grid">
-    <div class="intro-block" id="intro-block">
-      <div class="intro-text">
-        <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
-        <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><svg class="inline-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg><input type="text" id="search-input" class="inline-search-input" placeholder=""></span></p>
-      </div>
+  <div class="intro-block" id="intro-block">
+    <div class="intro-text">
+      <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
+      <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
+      <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><svg class="inline-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg><input type="text" id="search-input" class="inline-search-input" placeholder=""></span></p>
     </div>
+  </div>
+  <div class="grid">
 ${featuredCards}
 ${archiveCards}
   </div>
