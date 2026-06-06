@@ -1029,14 +1029,13 @@ async function renderPublic(req, res) {
   }
   #dvd-logo {
     position: absolute;
-    cursor: grab;
+    cursor: default;
     z-index: 50;
     user-select: none;
     touch-action: none;
     border-radius: 50%;
     pointer-events: auto;
   }
-  #dvd-logo:active { cursor: grabbing; }
   #dvd-logo img {
     position: absolute;
     top: 0; left: 0;
@@ -1912,21 +1911,17 @@ ${archiveCards}
       logoSel.style.transition = 'opacity ' + (duration || 0.5) + 's';
       logoSel.style.opacity = sel ? '1' : '0';
       isSelected = sel;
-      wrap.style.cursor = sel ? 'pointer' : 'grab';
+      wrap.style.cursor = sel ? 'pointer' : 'default';
     }
 
     wrap.addEventListener('mousemove', function(e) {
-      if (dragging) return;
       var rect = wrap.getBoundingClientRect();
       var dx = e.clientX - (rect.left + rect.width / 2);
       var dy = e.clientY - (rect.top  + rect.height / 2);
       var inCenter = Math.sqrt(dx*dx + dy*dy) < rect.width * 0.32;
       if (inCenter !== isSelected) fadeTo(inCenter, 0.5);
     });
-    wrap.addEventListener('mouseleave', function() {
-      if (dragging) return;
-      fadeTo(false, 0.5);
-    });
+    wrap.addEventListener('mouseleave', function() { fadeTo(false, 0.5); });
     wrap.addEventListener('click', function() {
       if (!isSelected) return;
       if (typeof aboutActive !== 'undefined' && !aboutActive) {
@@ -1951,12 +1946,7 @@ ${archiveCards}
     var vx = speed;
     var vy = speed * 0.65;
 
-    var dragging = false;
     var hovering = false;
-    var dragOffX = 0, dragOffY = 0;
-    var lastDragX = 0, lastDragY = 0;
-    var dragVX = 0, dragVY = 0;
-
     var hoverTimer = null;
     function setHover(state) {
       if (state) { clearTimeout(hoverTimer); hovering = true; }
@@ -1970,20 +1960,8 @@ ${archiveCards}
     var lastScrollTime = Date.now();
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
 
-    function applyThrow(dvx, dvy) {
-      fadeTo(false, 1.0);
-      var throwScale = 6;
-      var tx = dvx * throwScale;
-      var ty = dvy * throwScale;
-      var throwSpeed = Math.sqrt(tx * tx + ty * ty);
-      var maxThrow = 22;
-      if (throwSpeed > maxThrow) { tx *= maxThrow / throwSpeed; ty *= maxThrow / throwSpeed; }
-      vx = tx; vy = ty;
-      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
-    }
-
     function tick() {
-      if (!dragging && !hovering) {
+      if (!hovering) {
         x += vx;
         y += vy;
         var maxX = document.documentElement.scrollWidth - size;
@@ -1995,63 +1973,14 @@ ${archiveCards}
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
         if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-        var cur = Math.sqrt(vx * vx + vy * vy);
-        if (cur > speed + 0.05) {
-          vx *= 0.982; vy *= 0.982;
-        } else if (cur < speed - 0.05) {
-          vx *= 1.03; vy *= 1.03;
-        }
+        // clamp in case boundaries shifted while hovering
+        x = Math.min(Math.max(x, 0), maxX);
+        y = Math.min(Math.max(y, 0), maxY);
       }
       wrap.style.left = Math.round(x) + 'px';
       wrap.style.top  = Math.round(y) + 'px';
       requestAnimationFrame(tick);
     }
-
-    wrap.addEventListener('mousedown', function(e) {
-      dragging = true;
-      dragOffX = (e.clientX + window.scrollX) - x;
-      dragOffY = (e.clientY + window.scrollY) - y;
-      lastDragX = e.clientX; lastDragY = e.clientY;
-      dragVX = 0; dragVY = 0;
-      e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-      if (!dragging) return;
-      dragVX = e.clientX - lastDragX;
-      dragVY = e.clientY - lastDragY;
-      lastDragX = e.clientX; lastDragY = e.clientY;
-      x = (e.clientX + window.scrollX) - dragOffX;
-      y = (e.clientY + window.scrollY) - dragOffY;
-    });
-    document.addEventListener('mouseup', function() {
-      if (!dragging) return;
-      dragging = false;
-      applyThrow(dragVX, dragVY);
-    });
-
-    wrap.addEventListener('touchstart', function(e) {
-      var t = e.touches[0];
-      dragging = true;
-      dragOffX = (t.clientX + window.scrollX) - x;
-      dragOffY = (t.clientY + window.scrollY) - y;
-      lastDragX = t.clientX; lastDragY = t.clientY;
-      dragVX = 0; dragVY = 0;
-      e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      var t = e.touches[0];
-      dragVX = t.clientX - lastDragX;
-      dragVY = t.clientY - lastDragY;
-      lastDragX = t.clientX; lastDragY = t.clientY;
-      x = (t.clientX + window.scrollX) - dragOffX;
-      y = (t.clientY + window.scrollY) - dragOffY;
-    }, { passive: false });
-    document.addEventListener('touchend', function() {
-      if (!dragging) return;
-      dragging = false;
-      applyThrow(dragVX, dragVY);
-    });
 
     tick();
   })();
