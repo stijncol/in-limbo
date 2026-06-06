@@ -2024,7 +2024,7 @@ ${archiveCards}
     width: 12px;
     min-height: 24px;
     border-radius: 6px;
-    border: 1px solid #000;
+    border: 0.5px solid #000;
     background: none;
     transform: translateX(-50%);
     transition: top 0.1s ease-out, height 0.1s ease-out;
