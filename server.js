@@ -1010,7 +1010,7 @@ async function renderPublic(req, res) {
     .archive-toggle-label { display: none; }
   }
   #dvd-logo {
-    position: fixed;
+    position: absolute;
     cursor: grab;
     z-index: 50;
     user-select: none;
@@ -1807,11 +1807,11 @@ ${archiveCards}
     logo.style.width = size + 'px';
     logo.style.height = size + 'px';
 
-    // Start near intro block, top-left with margin
+    // Start near intro block in page coordinates
     var margin = 24;
     var startRect = introEl ? introEl.getBoundingClientRect() : { left: 40, top: 120 };
-    var x = startRect.left + margin;
-    var y = startRect.top + margin;
+    var x = startRect.left + window.scrollX + margin;
+    var y = startRect.top  + window.scrollY + margin;
 
     // Base speed 1.3× faster; vx/vy decay back to base after a throw
     var speed = 0.78;
@@ -1839,8 +1839,8 @@ ${archiveCards}
       if (!dragging) {
         x += vx;
         y += vy;
-        var maxX = window.innerWidth - size;
-        var maxY = window.innerHeight - size;
+        var maxX = document.documentElement.scrollWidth  - size;
+        var maxY = document.documentElement.scrollHeight - size;
         if (x <= 0)    { x = 0;    vx =  Math.abs(vx); }
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
@@ -1860,10 +1860,9 @@ ${archiveCards}
 
     logo.addEventListener('mousedown', function(e) {
       dragging = true;
-      dragOffX = e.clientX - x;
-      dragOffY = e.clientY - y;
-      lastDragX = e.clientX;
-      lastDragY = e.clientY;
+      dragOffX = (e.clientX + window.scrollX) - x;
+      dragOffY = (e.clientY + window.scrollY) - y;
+      lastDragX = e.clientX; lastDragY = e.clientY;
       dragVX = 0; dragVY = 0;
       e.preventDefault();
     });
@@ -1871,10 +1870,9 @@ ${archiveCards}
       if (!dragging) return;
       dragVX = e.clientX - lastDragX;
       dragVY = e.clientY - lastDragY;
-      lastDragX = e.clientX;
-      lastDragY = e.clientY;
-      x = e.clientX - dragOffX;
-      y = e.clientY - dragOffY;
+      lastDragX = e.clientX; lastDragY = e.clientY;
+      x = (e.clientX + window.scrollX) - dragOffX;
+      y = (e.clientY + window.scrollY) - dragOffY;
     });
     document.addEventListener('mouseup', function() {
       if (!dragging) return;
@@ -1886,10 +1884,9 @@ ${archiveCards}
     logo.addEventListener('touchstart', function(e) {
       var t = e.touches[0];
       dragging = true;
-      dragOffX = t.clientX - x;
-      dragOffY = t.clientY - y;
-      lastDragX = t.clientX;
-      lastDragY = t.clientY;
+      dragOffX = (t.clientX + window.scrollX) - x;
+      dragOffY = (t.clientY + window.scrollY) - y;
+      lastDragX = t.clientX; lastDragY = t.clientY;
       dragVX = 0; dragVY = 0;
       e.preventDefault();
     }, { passive: false });
@@ -1898,10 +1895,9 @@ ${archiveCards}
       var t = e.touches[0];
       dragVX = t.clientX - lastDragX;
       dragVY = t.clientY - lastDragY;
-      lastDragX = t.clientX;
-      lastDragY = t.clientY;
-      x = t.clientX - dragOffX;
-      y = t.clientY - dragOffY;
+      lastDragX = t.clientX; lastDragY = t.clientY;
+      x = (t.clientX + window.scrollX) - dragOffX;
+      y = (t.clientY + window.scrollY) - dragOffY;
     }, { passive: false });
     document.addEventListener('touchend', function() {
       if (!dragging) return;
