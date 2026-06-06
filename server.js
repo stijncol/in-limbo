@@ -1801,9 +1801,9 @@ ${archiveCards}
     logo.draggable = false;
     document.body.appendChild(logo);
 
-    // Size: half the intro block width
+    // Size: 7/8 of half the intro block width
     var introEl = document.getElementById('intro-block');
-    var size = introEl ? Math.round(introEl.offsetWidth / 2) : 180;
+    var size = introEl ? Math.round(introEl.offsetWidth * 7 / 16) : 158;
     logo.style.width = size + 'px';
     logo.style.height = size + 'px';
 
@@ -1813,8 +1813,8 @@ ${archiveCards}
     var x = startRect.left + margin;
     var y = startRect.top + margin;
 
-    // Velocity in px/frame (~60fps) — gentle drift
-    var speed = 0.6;
+    // Base speed 1.3× faster; vx/vy decay back to base after a throw
+    var speed = 0.78;
     var vx = speed;
     var vy = speed * 0.65;
 
@@ -1822,6 +1822,18 @@ ${archiveCards}
     var dragOffX = 0, dragOffY = 0;
     var lastDragX = 0, lastDragY = 0;
     var dragVX = 0, dragVY = 0;
+
+    function applyThrow(dvx, dvy) {
+      // Scale drag delta into a throw — capped so it doesn't fly off instantly
+      var throwScale = 5;
+      var tx = dvx * throwScale;
+      var ty = dvy * throwScale;
+      var throwSpeed = Math.sqrt(tx * tx + ty * ty);
+      var maxThrow = 18;
+      if (throwSpeed > maxThrow) { tx *= maxThrow / throwSpeed; ty *= maxThrow / throwSpeed; }
+      vx = tx; vy = ty;
+      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
+    }
 
     function tick() {
       if (!dragging) {
@@ -1833,6 +1845,13 @@ ${archiveCards}
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
         if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
+        // Gradually decay back to base speed after a throw
+        var cur = Math.sqrt(vx * vx + vy * vy);
+        if (cur > speed + 0.05) {
+          vx *= 0.97; vy *= 0.97;
+        } else if (cur < speed - 0.05) {
+          vx *= 1.03; vy *= 1.03;
+        }
       }
       logo.style.left = Math.round(x) + 'px';
       logo.style.top  = Math.round(y) + 'px';
@@ -1845,6 +1864,7 @@ ${archiveCards}
       dragOffY = e.clientY - y;
       lastDragX = e.clientX;
       lastDragY = e.clientY;
+      dragVX = 0; dragVY = 0;
       e.preventDefault();
     });
     document.addEventListener('mousemove', function(e) {
@@ -1859,12 +1879,7 @@ ${archiveCards}
     document.addEventListener('mouseup', function() {
       if (!dragging) return;
       dragging = false;
-      // Resume bouncing with the velocity from the drag gesture
-      var norm = Math.sqrt(dragVX * dragVX + dragVY * dragVY) || 1;
-      vx = (dragVX / norm) * speed;
-      vy = (dragVY / norm) * speed;
-      // Fall back to default direction if drag was stationary
-      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
+      applyThrow(dragVX, dragVY);
     });
 
     // Touch support
@@ -1875,6 +1890,7 @@ ${archiveCards}
       dragOffY = t.clientY - y;
       lastDragX = t.clientX;
       lastDragY = t.clientY;
+      dragVX = 0; dragVY = 0;
       e.preventDefault();
     }, { passive: false });
     document.addEventListener('touchmove', function(e) {
@@ -1890,10 +1906,7 @@ ${archiveCards}
     document.addEventListener('touchend', function() {
       if (!dragging) return;
       dragging = false;
-      var norm = Math.sqrt(dragVX * dragVX + dragVY * dragVY) || 1;
-      vx = (dragVX / norm) * speed;
-      vy = (dragVY / norm) * speed;
-      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
+      applyThrow(dragVX, dragVY);
     });
 
     tick();
