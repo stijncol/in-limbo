@@ -1019,6 +1019,13 @@ async function renderPublic(req, res) {
     pointer-events: auto;
   }
   #dvd-logo:active { cursor: grabbing; }
+  #dvd-logo img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: block;
+    pointer-events: none;
+  }
   @media (max-width: 900px) { #dvd-logo { display: none; } }
 </style>
 </head>
@@ -1795,35 +1802,51 @@ ${archiveCards}
 
   // DVD screensaver logo
   (function() {
-    var logo = document.createElement('img');
-    logo.id = 'dvd-logo';
-    logo.src = '/public/inlimbo-logo2.png';
-    logo.draggable = false;
-    document.body.appendChild(logo);
+    var wrap = document.createElement('div');
+    wrap.id = 'dvd-logo';
+    document.body.appendChild(wrap);
+
+    var logoBase = document.createElement('img');
+    logoBase.src = '/public/inlimbo-logo2.png';
+    logoBase.draggable = false;
+    logoBase.style.opacity = '1';
+    logoBase.style.transition = 'opacity 0.5s';
+
+    var logoSel = document.createElement('img');
+    logoSel.src = '/public/inlimbo-logo2_selected.png';
+    logoSel.draggable = false;
+    logoSel.style.opacity = '0';
+    logoSel.style.transition = 'opacity 0.5s';
+
+    wrap.appendChild(logoBase);
+    wrap.appendChild(logoSel);
 
     var isSelected = false;
 
-    logo.addEventListener('mousemove', function(e) {
+    function fadeTo(sel, duration) {
+      var d = (duration || 0.5) + 's';
+      logoBase.style.transition = 'opacity ' + d;
+      logoSel.style.transition  = 'opacity ' + d;
+      logoBase.style.opacity = sel ? '0' : '1';
+      logoSel.style.opacity  = sel ? '1' : '0';
+      isSelected = sel;
+      wrap.style.cursor = sel ? 'pointer' : 'grab';
+    }
+
+    wrap.addEventListener('mousemove', function(e) {
       if (dragging) return;
-      var rect = logo.getBoundingClientRect();
+      var rect = wrap.getBoundingClientRect();
       var dx = e.clientX - (rect.left + rect.width / 2);
       var dy = e.clientY - (rect.top  + rect.height / 2);
       var inCenter = Math.sqrt(dx*dx + dy*dy) < rect.width * 0.32;
-      if (inCenter !== isSelected) {
-        isSelected = inCenter;
-        logo.src = isSelected ? '/public/inlimbo-logo2_selected.png' : '/public/inlimbo-logo2.png';
-        logo.style.cursor = isSelected ? 'pointer' : 'grab';
-      }
+      if (inCenter !== isSelected) fadeTo(inCenter, 0.5);
     });
-    logo.addEventListener('mouseleave', function() {
+    wrap.addEventListener('mouseleave', function() {
       if (dragging) return;
-      isSelected = false;
-      logo.src = '/public/inlimbo-logo2.png';
-      logo.style.cursor = 'grab';
+      fadeTo(false, 0.5);
     });
-    logo.addEventListener('click', function() {
+    wrap.addEventListener('click', function() {
       if (!isSelected) return;
-      // Reset to home: show intro, clear filters, scroll to top
       if (typeof aboutActive !== 'undefined' && !aboutActive) {
         var btn = document.getElementById('about-btn');
         if (btn) btn.click();
@@ -1832,19 +1855,16 @@ ${archiveCards}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Size: 7/8 of half the intro block width
     var introEl = document.getElementById('intro-block');
     var size = introEl ? Math.round(introEl.offsetWidth * 7 / 16) : 158;
-    logo.style.width = size + 'px';
-    logo.style.height = size + 'px';
+    wrap.style.width  = size + 'px';
+    wrap.style.height = size + 'px';
 
-    // Start near intro block in page coordinates
     var margin = 24;
     var startRect = introEl ? introEl.getBoundingClientRect() : { left: 40, top: 120 };
     var x = startRect.left + window.scrollX + margin;
     var y = startRect.top  + window.scrollY + margin;
 
-    // Base speed 1.3× faster; vx/vy decay back to base after a throw
     var speed = 0.78;
     var vx = speed;
     var vy = speed * 0.65;
@@ -1854,11 +1874,11 @@ ${archiveCards}
     var lastDragX = 0, lastDragY = 0;
     var dragVX = 0, dragVY = 0;
 
-    // When the page has been still for 2s, viewport bottom becomes a wall too
     var lastScrollTime = Date.now();
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
 
     function applyThrow(dvx, dvy) {
+      fadeTo(false, 1.0);
       var throwScale = 6;
       var tx = dvx * throwScale;
       var ty = dvy * throwScale;
@@ -1882,7 +1902,6 @@ ${archiveCards}
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
         if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-        // Slowly decay back to base speed — keep the throw alive longer
         var cur = Math.sqrt(vx * vx + vy * vy);
         if (cur > speed + 0.05) {
           vx *= 0.982; vy *= 0.982;
@@ -1890,12 +1909,12 @@ ${archiveCards}
           vx *= 1.03; vy *= 1.03;
         }
       }
-      logo.style.left = Math.round(x) + 'px';
-      logo.style.top  = Math.round(y) + 'px';
+      wrap.style.left = Math.round(x) + 'px';
+      wrap.style.top  = Math.round(y) + 'px';
       requestAnimationFrame(tick);
     }
 
-    logo.addEventListener('mousedown', function(e) {
+    wrap.addEventListener('mousedown', function(e) {
       dragging = true;
       dragOffX = (e.clientX + window.scrollX) - x;
       dragOffY = (e.clientY + window.scrollY) - y;
@@ -1917,8 +1936,7 @@ ${archiveCards}
       applyThrow(dragVX, dragVY);
     });
 
-    // Touch support
-    logo.addEventListener('touchstart', function(e) {
+    wrap.addEventListener('touchstart', function(e) {
       var t = e.touches[0];
       dragging = true;
       dragOffX = (t.clientX + window.scrollX) - x;
