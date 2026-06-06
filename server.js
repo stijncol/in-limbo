@@ -2014,34 +2014,25 @@ ${archiveCards}
 <style>
   .scroll-ind {
     position: fixed;
-    width: 22px;
+    width: 20px;
     pointer-events: none;
     z-index: 50;
-  }
-  .scroll-ind-line {
-    position: absolute;
-    left: 50%;
-    top: 0; bottom: 0;
-    width: 1px;
-    background: #ccc;
-    transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 14px;
-    height: 26px;
-    border-radius: 7px;
+    width: 12px;
+    min-height: 24px;
+    border-radius: 6px;
     border: 1px solid #000;
     background: none;
-    transform: translate(-50%, -50%);
-    transition: top 0.12s ease-out;
+    transform: translateX(-50%);
+    transition: top 0.1s ease-out, height 0.1s ease-out;
   }
   @media (max-width: 768px) { .scroll-ind { display: none !important; } }
 </style>
 
 <div class="scroll-ind" id="scroll-ind">
-  <div class="scroll-ind-line"></div>
   <div class="scroll-ind-vp" id="scroll-ind-vp"></div>
 </div>
 
@@ -2087,9 +2078,13 @@ ${archiveCards}
   function updateVp(docH, indH) {
     docH = docH || Math.max(document.body.scrollHeight, 1);
     indH = indH || ind.offsetHeight;
-    var centerY = window.scrollY + window.innerHeight / 2;
-    var frac = Math.min(Math.max(centerY / docH, 0), 1);
-    vpEl.style.top = Math.round(frac * indH) + 'px';
+    var vpH = window.innerHeight;
+    var thumbH = Math.max(Math.round(indH * vpH / docH), 24);
+    var maxScroll = docH - vpH;
+    var frac = maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0;
+    var thumbTop = Math.round((indH - thumbH) * frac);
+    vpEl.style.height = thumbH + 'px';
+    vpEl.style.top = thumbTop + 'px';
   }
 
   function onScroll() {
