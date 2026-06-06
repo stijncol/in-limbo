@@ -1082,7 +1082,7 @@ ${archiveCards}
 <button class="margin-about active" id="about-btn">[about]</button>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
-    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
   <div class="scale-grid-icons">
     <button class="scale-grid-icon active" data-scale="0" title="3 columns">
@@ -1096,7 +1096,7 @@ ${archiveCards}
     </button>
   </div>
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
-    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
 </div>
 
@@ -1728,14 +1728,13 @@ ${archiveCards}
 
   function positionScaleCtrl() {
     var ctrl = document.getElementById('scale-ctrl');
-    var pageEl = document.querySelector('.page');
-    if (!ctrl || !pageEl || window.innerWidth <= 900) return;
-    var pageRect = pageEl.getBoundingClientRect();
-    var rightGap = window.innerWidth - pageRect.right;
+    var gridEl = document.querySelector('.grid');
+    if (!ctrl || !gridEl || window.innerWidth <= 900) return;
+    var gridRect = gridEl.getBoundingClientRect();
+    var rightGap = window.innerWidth - gridRect.right;
     var ctrlW = ctrl.offsetWidth;
-    var ctrlH = ctrl.offsetHeight;
     ctrl.style.right = Math.max(4, Math.round((rightGap - ctrlW) / 2)) + 'px';
-    ctrl.style.top = Math.round((window.innerHeight - ctrlH) / 2) + 'px';
+    ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
