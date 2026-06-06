@@ -1957,8 +1957,15 @@ ${archiveCards}
     var lastDragX = 0, lastDragY = 0;
     var dragVX = 0, dragVY = 0;
 
-    wrap.addEventListener('mouseenter', function() { hovering = true; });
-    wrap.addEventListener('mouseleave', function() { hovering = false; });
+    var hoverTimer = null;
+    function setHover(state) {
+      if (state) { clearTimeout(hoverTimer); hovering = true; }
+      else { hoverTimer = setTimeout(function() { hovering = false; }, 80); }
+    }
+    wrap.addEventListener('mouseenter', function() { setHover(true); });
+    wrap.addEventListener('mouseleave', function() { setHover(false); });
+    closeBtn.addEventListener('mouseenter', function() { setHover(true); });
+    closeBtn.addEventListener('mouseleave', function() { setHover(false); });
 
     var lastScrollTime = Date.now();
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
