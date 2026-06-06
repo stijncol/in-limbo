@@ -315,7 +315,7 @@ async function renderPublic(req, res, config) {
   html { scroll-behavior: smooth; scrollbar-width: none; }
   html::-webkit-scrollbar { display: none; }
   body {
-    background: #f2f3f5;
+    background: #ffffff;
     font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
     font-weight: ${cfg.bodyWeight};
     color: #111;
