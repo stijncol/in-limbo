@@ -665,6 +665,7 @@ async function renderPublic(req, res) {
     text-decoration-style: dotted;
     text-decoration-color: #1e40af;
     text-underline-offset: 4px;
+    cursor: pointer;
     transition: color 0.15s, text-decoration-style 0.15s;
   }
   .intro-block .intro-text a:hover,
