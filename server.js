@@ -1051,11 +1051,12 @@ async function renderPublic(req, res) {
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 2;
     line-height: 0;
   }
-  #dvd-logo:hover #dvd-logo-close { opacity: 1; pointer-events: auto; }
+  #dvd-logo:hover #dvd-logo-close,
+  #dvd-logo-close:hover { opacity: 1; }
   @media (max-width: 900px) { #dvd-logo { display: none; } }
 </style>
 </head>
@@ -1950,7 +1951,7 @@ ${archiveCards}
     var hoverTimer = null;
     function setHover(state) {
       if (state) { clearTimeout(hoverTimer); hovering = true; }
-      else { hoverTimer = setTimeout(function() { hovering = false; }, 80); }
+      else { hoverTimer = setTimeout(function() { hovering = false; }, 150); }
     }
     wrap.addEventListener('mouseenter', function() { setHover(true); });
     wrap.addEventListener('mouseleave', function() { setHover(false); });
@@ -1964,7 +1965,7 @@ ${archiveCards}
       if (!hovering) {
         x += vx;
         y += vy;
-        var maxX = document.documentElement.scrollWidth - size;
+        var maxX = window.innerWidth - size;
         var pageStill = (Date.now() - lastScrollTime) > 2000;
         var maxY = pageStill
           ? window.scrollY + window.innerHeight - size
