@@ -1046,7 +1046,7 @@ async function renderPublic(req, res) {
   }
   #dvd-logo-close {
     position: absolute;
-    top: 0; right: 0;
+    top: 8px; right: 8px;
     transform: translate(50%, -50%);
     width: 26px; height: 26px;
     cursor: pointer;
@@ -1952,9 +1952,13 @@ ${archiveCards}
     var vy = speed * 0.65;
 
     var dragging = false;
+    var hovering = false;
     var dragOffX = 0, dragOffY = 0;
     var lastDragX = 0, lastDragY = 0;
     var dragVX = 0, dragVY = 0;
+
+    wrap.addEventListener('mouseenter', function() { hovering = true; });
+    wrap.addEventListener('mouseleave', function() { hovering = false; });
 
     var lastScrollTime = Date.now();
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
@@ -1972,7 +1976,7 @@ ${archiveCards}
     }
 
     function tick() {
-      if (!dragging) {
+      if (!dragging && !hovering) {
         x += vx;
         y += vy;
         var maxX = document.documentElement.scrollWidth - size;
