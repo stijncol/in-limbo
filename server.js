@@ -1859,12 +1859,11 @@ ${archiveCards}
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
 
     function applyThrow(dvx, dvy) {
-      // Scale drag delta into a throw — capped so it doesn't fly off instantly
-      var throwScale = 5;
+      var throwScale = 7;
       var tx = dvx * throwScale;
       var ty = dvy * throwScale;
       var throwSpeed = Math.sqrt(tx * tx + ty * ty);
-      var maxThrow = 18;
+      var maxThrow = 28;
       if (throwSpeed > maxThrow) { tx *= maxThrow / throwSpeed; ty *= maxThrow / throwSpeed; }
       vx = tx; vy = ty;
       if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
@@ -1883,10 +1882,10 @@ ${archiveCards}
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
         if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-        // Gradually decay back to base speed after a throw
+        // Slowly decay back to base speed — keep the throw alive longer
         var cur = Math.sqrt(vx * vx + vy * vy);
         if (cur > speed + 0.05) {
-          vx *= 0.97; vy *= 0.97;
+          vx *= 0.994; vy *= 0.994;
         } else if (cur < speed - 0.05) {
           vx *= 1.03; vy *= 1.03;
         }
