@@ -2642,7 +2642,8 @@ app.get('/', async (req, res) => {
       border: none;
       border-radius: 0;
       background: transparent;
-      color: #888;
+      color: #000;
+      font-weight: 400;
       padding: 6px 4px;
       position: relative;
     }
@@ -2671,9 +2672,9 @@ app.get('/', async (req, res) => {
     .filters-medium button { border: none; background: transparent; }
     .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
     .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
-    .tag-expand { border: none; background: transparent; border-radius: 0; color: #888; }
+    .tag-expand { border: none; background: transparent; border-radius: 0; color: #000; }
     .tag-expand:hover { border: none; background: transparent; color: #1e40af; }
-    .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #888; }
+    .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #000; }
     .filters-extra .tag-close:hover { border: none; background: transparent; color: #1e40af; }
   ` });
 });
