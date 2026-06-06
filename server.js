@@ -1739,6 +1739,7 @@ ${archiveCards}
     var ctrlW = ctrl.offsetWidth;
     ctrl.style.right = Math.max(4, Math.round((rightGap - ctrlW) / 2)) + 'px';
     ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
+    window.dispatchEvent(new CustomEvent('scale-ctrl-positioned'));
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
@@ -2016,31 +2017,24 @@ ${archiveCards}
     width: 16px;
     pointer-events: none;
     z-index: 50;
-    display: none;
   }
   .scroll-ind-line {
     position: absolute;
     left: 50%;
     top: 0; bottom: 0;
     width: 1px;
-    background: repeating-linear-gradient(
-      to bottom,
-      #000 0px,
-      #000 5px,
-      transparent 5px,
-      transparent 11px
-    );
+    background: #ddd;
     transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #000;
+    width: 5px;
+    height: 10px;
+    border: 0.5px solid #000;
+    background: none;
     transform: translate(-50%, -50%);
-    transition: top 0.1s ease-out;
+    transition: top 0.12s ease-out;
   }
   @media (max-width: 768px) { .scroll-ind { display: none !important; } }
 </style>
@@ -2067,28 +2061,24 @@ ${archiveCards}
   function recalc() {
     var docH = Math.max(document.body.scrollHeight, 1);
     var vpH = window.innerHeight;
-    if (docH <= vpH) { ind.style.visibility = 'hidden'; return; }
+    if (docH <= vpH || window.innerWidth <= 900) { ind.style.visibility = 'hidden'; return; }
 
     var cards = visibleCards();
     if (!cards.length) { ind.style.visibility = 'hidden'; return; }
+
+    var scaleCtrl = document.getElementById('scale-ctrl');
+    if (!scaleCtrl) { ind.style.visibility = 'hidden'; return; }
     ind.style.visibility = '';
 
-    // Align top of indicator with top of first card, plus 1/3 extra margin each side
-    var firstRect = cards[0].getBoundingClientRect();
-    var baseMargin = Math.round(firstRect.top + window.scrollY);
-    var indTop = baseMargin * 2;
+    // Position below the scale control, horizontally centered on it
+    var ctrlRect = scaleCtrl.getBoundingClientRect();
+    var indTop = Math.round(ctrlRect.bottom + 16);
+    var indH = Math.max(vpH - indTop - 40, 40);
     ind.style.top = indTop + 'px';
-    ind.style.height = Math.max(vpH - indTop * 2, 40) + 'px';
+    ind.style.height = indH + 'px';
 
-    // Center horizontally between grid right edge and viewport right edge
-    var grid = document.querySelector('.grid');
-    if (grid) {
-      var gridRight = grid.getBoundingClientRect().right;
-      var midRight = Math.round((window.innerWidth - gridRight) / 2 - 8);
-      ind.style.right = Math.max(midRight, 8) + 'px';
-    }
-
-    var indH = ind.offsetHeight;
+    var scaleCenterFromRight = window.innerWidth - (ctrlRect.left + ctrlRect.width / 2);
+    ind.style.right = Math.round(scaleCenterFromRight - ind.offsetWidth / 2) + 'px';
 
     updateVp(docH, indH);
   }
@@ -2109,6 +2099,7 @@ ${archiveCards}
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', recalc);
+  window.addEventListener('scale-ctrl-positioned', recalc);
 
   // Watch card class/style changes (filter + archive toggle)
   var mo = new MutationObserver(recalc);
