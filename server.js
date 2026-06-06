@@ -896,6 +896,10 @@ async function renderPublic(req, res) {
   }
   .margin-about.active { color: #111; }
   .margin-about:hover { color: #111; }
+  .about-icon { display: block; margin-top: 14px; }
+  .about-vline { transition: opacity 0.2s; }
+  .margin-about.active .about-vline { opacity: 0; }
+  .margin-about:not(.active) .about-vline { opacity: 1; }
   .margin-scale {
     position: fixed;
     display: flex;
@@ -1081,7 +1085,7 @@ ${archiveCards}
   </div>
 </div>
 
-<button class="margin-about active" id="about-btn">[about]</button>
+<button class="margin-about active" id="about-btn">[about]<svg class="about-icon" width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/><line class="about-vline" x1="8" y1="4.5" x2="8" y2="11.5"/></svg></button>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
     <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
