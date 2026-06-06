@@ -662,18 +662,21 @@ async function renderPublic(req, res) {
   .intro-block .intro-text a {
     color: inherit;
     text-decoration: underline;
-    text-decoration-style: dashed;
+    text-decoration-style: dotted;
     text-decoration-color: #1e40af;
     text-underline-offset: 4px;
+    transition: color 0.15s, text-decoration-style 0.15s;
   }
-  /* Show all 4 styles for comparison — pick one and apply to all */
-  .intro-block .intro-text a[data-year="2023"] { text-decoration-style: dotted; }
-  .intro-block .intro-text a[data-year="2024"] { text-decoration-style: wavy; text-underline-offset: 5px; }
-  .intro-block .intro-text a[data-year="2025"] { text-decoration-style: double; }
+  .intro-block .intro-text a:hover,
+  .intro-block .intro-text a:focus,
+  .intro-block .intro-text a.year-filter.active {
+    color: #1e40af;
+    text-decoration-style: solid;
+  }
   .intro-block .intro-text a.year-filter {
     cursor: pointer;
   }
-  .intro-block .intro-text a.year-filter.active { color: #1e40af; }
+  .intro-block .intro-text a.year-filter.active { color: #1e40af; text-decoration-style: solid; }
   .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; vertical-align: middle; }
   .inline-search-wrap::before { content: "["; color: #999; }
   .inline-search-wrap::after { content: "]"; color: #999; }
