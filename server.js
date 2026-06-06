@@ -1810,7 +1810,6 @@ ${archiveCards}
     logoBase.src = '/public/inlimbo-logo2.png';
     logoBase.draggable = false;
     logoBase.style.opacity = '1';
-    logoBase.style.transition = 'opacity 0.5s';
 
     var logoSel = document.createElement('img');
     logoSel.src = '/public/inlimbo-logo2_selected.png';
@@ -1824,11 +1823,8 @@ ${archiveCards}
     var isSelected = false;
 
     function fadeTo(sel, duration) {
-      var d = (duration || 0.5) + 's';
-      logoBase.style.transition = 'opacity ' + d;
-      logoSel.style.transition  = 'opacity ' + d;
-      logoBase.style.opacity = sel ? '0' : '1';
-      logoSel.style.opacity  = sel ? '1' : '0';
+      logoSel.style.transition = 'opacity ' + (duration || 0.5) + 's';
+      logoSel.style.opacity = sel ? '1' : '0';
       isSelected = sel;
       wrap.style.cursor = sel ? 'pointer' : 'grab';
     }
