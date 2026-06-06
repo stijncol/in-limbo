@@ -900,38 +900,47 @@ async function renderPublic(req, res) {
   .margin-about:hover { color: #111; }
   .margin-scale {
     position: fixed;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     z-index: 100;
   }
-  .margin-scale-btn {
-    writing-mode: vertical-rl;
+  .scale-icon-btn {
     background: none;
     border: none;
-    padding: 0;
-    font-family: inherit;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: #aaa;
+    padding: 3px;
     cursor: pointer;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
     transition: color 0.2s;
     user-select: none;
   }
-  .margin-scale-btn:hover:not(:disabled) { color: #111; }
-  .margin-scale-btn:disabled { opacity: 0.25; cursor: default; }
-  .scale-val {
-    writing-mode: vertical-rl;
-    font-size: 11px;
-    color: #aaa;
-    letter-spacing: 0.03em;
-    min-width: 10px;
-    text-align: center;
+  .scale-icon-btn:hover:not(:disabled) { color: #000; }
+  .scale-icon-btn:disabled { color: #e8e8e8; cursor: default; }
+  .scale-grid-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 0;
   }
+  .scale-grid-icon {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: #ccc;
+    display: block;
+    line-height: 0;
+    transition: color 0.2s;
+    user-select: none;
+  }
+  .scale-grid-icon:hover { color: #555; }
+  .scale-grid-icon.active { color: #000; }
   .grid.grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 20px 10px;
@@ -1072,9 +1081,23 @@ ${archiveCards}
 
 <button class="margin-about active" id="about-btn">[about]</button>
 <div class="margin-scale" id="scale-ctrl">
-  <button class="margin-scale-btn" id="scale-up">[+]</button>
-  <span class="scale-val">3</span>
-  <button class="margin-scale-btn" id="scale-down" disabled>[−]</button>
+  <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+  </button>
+  <div class="scale-grid-icons">
+    <button class="scale-grid-icon active" data-scale="0" title="3 columns">
+      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="3.5" height="3.5"/><rect x="5.75" y="0" width="3.5" height="3.5"/><rect x="11.5" y="0" width="3.5" height="3.5"/><rect x="0" y="6.5" width="3.5" height="3.5"/><rect x="5.75" y="6.5" width="3.5" height="3.5"/><rect x="11.5" y="6.5" width="3.5" height="3.5"/></svg>
+    </button>
+    <button class="scale-grid-icon" data-scale="1" title="5 columns">
+      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="2" height="3.5"/><rect x="3.25" y="0" width="2" height="3.5"/><rect x="6.5" y="0" width="2" height="3.5"/><rect x="9.75" y="0" width="2" height="3.5"/><rect x="13" y="0" width="2" height="3.5"/><rect x="0" y="6.5" width="2" height="3.5"/><rect x="3.25" y="6.5" width="2" height="3.5"/><rect x="6.5" y="6.5" width="2" height="3.5"/><rect x="9.75" y="6.5" width="2" height="3.5"/><rect x="13" y="6.5" width="2" height="3.5"/></svg>
+    </button>
+    <button class="scale-grid-icon" data-scale="2" title="7 columns">
+      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="1.25" height="3.5"/><rect x="2.3" y="0" width="1.25" height="3.5"/><rect x="4.6" y="0" width="1.25" height="3.5"/><rect x="6.9" y="0" width="1.25" height="3.5"/><rect x="9.2" y="0" width="1.25" height="3.5"/><rect x="11.5" y="0" width="1.25" height="3.5"/><rect x="13.75" y="0" width="1.25" height="3.5"/><rect x="0" y="6.5" width="1.25" height="3.5"/><rect x="2.3" y="6.5" width="1.25" height="3.5"/><rect x="4.6" y="6.5" width="1.25" height="3.5"/><rect x="6.9" y="6.5" width="1.25" height="3.5"/><rect x="9.2" y="6.5" width="1.25" height="3.5"/><rect x="11.5" y="6.5" width="1.25" height="3.5"/><rect x="13.75" y="6.5" width="1.25" height="3.5"/></svg>
+    </button>
+  </div>
+  <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+  </button>
 </div>
 
 <div class="site-footer">
@@ -1699,10 +1722,25 @@ ${archiveCards}
   // Grid scale control (desktop only — hidden on mobile via CSS)
   const scaleDown = document.getElementById('scale-down');
   const scaleUp = document.getElementById('scale-up');
-  const scaleValEl = document.querySelector('.scale-val');
   const scaleSteps = [3, 5, 7];
   let scaleIndex = 0;
   var aboutActive = true;
+
+  function positionScaleCtrl() {
+    var ctrl = document.getElementById('scale-ctrl');
+    var pageEl = document.querySelector('.page');
+    var gridEl = document.querySelector('.grid');
+    if (!ctrl || !pageEl || !gridEl || window.innerWidth <= 900) return;
+    var pageRect = pageEl.getBoundingClientRect();
+    var gridRect = gridEl.getBoundingClientRect();
+    var rightGap = window.innerWidth - pageRect.right;
+    var ctrlW = ctrl.offsetWidth;
+    ctrl.style.right = Math.max(4, Math.round((rightGap - ctrlW) / 2)) + 'px';
+    ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
+  }
+  window.addEventListener('resize', positionScaleCtrl);
+  window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
+  requestAnimationFrame(positionScaleCtrl);
 
   function applyScale(idx) {
     const prev = scaleIndex;
@@ -1728,9 +1766,12 @@ ${archiveCards}
     // Apply grid change instantly
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
-    if (scaleValEl) scaleValEl.textContent = scaleSteps[idx];
+    document.querySelectorAll('.scale-grid-icon').forEach(function(btn, i) {
+      btn.classList.toggle('active', i === idx);
+    });
     if (scaleDown) scaleDown.disabled = idx === 0;
     if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
+    requestAnimationFrame(positionScaleCtrl);
 
     // FLIP — Last: read new positions (forces reflow so layout is committed)
     const lastRects = cards.map(c => c.getBoundingClientRect());
@@ -1761,6 +1802,9 @@ ${archiveCards}
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
   if (scaleUp) scaleUp.addEventListener('click', () => applyScale(Math.min(scaleSteps.length - 1, scaleIndex + 1)));
+  document.querySelectorAll('.scale-grid-icon').forEach(function(btn) {
+    btn.addEventListener('click', function() { applyScale(parseInt(btn.dataset.scale, 10)); });
+  });
 
   // About toggle — hides/shows intro block
   var aboutBtn = document.getElementById('about-btn');
@@ -1772,9 +1816,13 @@ ${archiveCards}
         if (aboutActive && scaleIndex === 0) {
           introBlock.style.opacity = '0';
           introBlock.style.display = '';
-          requestAnimationFrame(function() { introBlock.style.opacity = '1'; });
+          requestAnimationFrame(function() {
+            introBlock.style.opacity = '1';
+            requestAnimationFrame(positionScaleCtrl);
+          });
         } else {
           introBlock.style.display = 'none';
+          requestAnimationFrame(positionScaleCtrl);
         }
       }
     });
