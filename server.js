@@ -2014,7 +2014,7 @@ ${archiveCards}
 <style>
   .scroll-ind {
     position: fixed;
-    width: 16px;
+    width: 22px;
     pointer-events: none;
     z-index: 50;
   }
@@ -2023,15 +2023,16 @@ ${archiveCards}
     left: 50%;
     top: 0; bottom: 0;
     width: 1px;
-    background: #ddd;
+    background: #ccc;
     transform: translateX(-50%);
   }
   .scroll-ind-vp {
     position: absolute;
     left: 50%;
-    width: 5px;
-    height: 10px;
-    border: 0.5px solid #000;
+    width: 14px;
+    height: 26px;
+    border-radius: 7px;
+    border: 1px solid #000;
     background: none;
     transform: translate(-50%, -50%);
     transition: top 0.12s ease-out;
