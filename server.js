@@ -1854,6 +1854,10 @@ ${archiveCards}
     var lastDragX = 0, lastDragY = 0;
     var dragVX = 0, dragVY = 0;
 
+    // When the page has been still for 2s, viewport bottom becomes a wall too
+    var lastScrollTime = Date.now();
+    window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
+
     function applyThrow(dvx, dvy) {
       // Scale drag delta into a throw — capped so it doesn't fly off instantly
       var throwScale = 5;
@@ -1870,8 +1874,11 @@ ${archiveCards}
       if (!dragging) {
         x += vx;
         y += vy;
-        var maxX = document.documentElement.scrollWidth  - size;
-        var maxY = document.documentElement.scrollHeight - size;
+        var maxX = document.documentElement.scrollWidth - size;
+        var pageStill = (Date.now() - lastScrollTime) > 2000;
+        var maxY = pageStill
+          ? window.scrollY + window.innerHeight - size
+          : document.documentElement.scrollHeight - size;
         if (x <= 0)    { x = 0;    vx =  Math.abs(vx); }
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
