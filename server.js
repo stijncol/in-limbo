@@ -425,7 +425,7 @@ async function renderPublic(req, res, config) {
     border: 1px solid #ccc;
     border-radius: 100px;
     background: transparent;
-    color: #555;
+    color: #111;
     cursor: pointer;
     transition: all 0.2s ease;
   }
@@ -449,7 +449,7 @@ async function renderPublic(req, res, config) {
     border: 1px solid #ccc;
     border-radius: 100px;
     background: transparent;
-    color: #555;
+    color: #111;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
