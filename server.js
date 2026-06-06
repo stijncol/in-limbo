@@ -1082,21 +1082,21 @@ ${archiveCards}
 <button class="margin-about active" id="about-btn">[about]</button>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
   <div class="scale-grid-icons">
     <button class="scale-grid-icon active" data-scale="0" title="3 columns">
-      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="3.5" height="3.5"/><rect x="5.75" y="0" width="3.5" height="3.5"/><rect x="11.5" y="0" width="3.5" height="3.5"/><rect x="0" y="6.5" width="3.5" height="3.5"/><rect x="5.75" y="6.5" width="3.5" height="3.5"/><rect x="11.5" y="6.5" width="3.5" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="3.5" height="3.5"/><rect x="5.75" y="0" width="3.5" height="3.5"/><rect x="11.5" y="0" width="3.5" height="3.5"/><rect x="0" y="6.5" width="3.5" height="3.5"/><rect x="5.75" y="6.5" width="3.5" height="3.5"/><rect x="11.5" y="6.5" width="3.5" height="3.5"/></svg>
     </button>
     <button class="scale-grid-icon" data-scale="1" title="5 columns">
-      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="2" height="3.5"/><rect x="3.25" y="0" width="2" height="3.5"/><rect x="6.5" y="0" width="2" height="3.5"/><rect x="9.75" y="0" width="2" height="3.5"/><rect x="13" y="0" width="2" height="3.5"/><rect x="0" y="6.5" width="2" height="3.5"/><rect x="3.25" y="6.5" width="2" height="3.5"/><rect x="6.5" y="6.5" width="2" height="3.5"/><rect x="9.75" y="6.5" width="2" height="3.5"/><rect x="13" y="6.5" width="2" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="2" height="3.5"/><rect x="3.25" y="0" width="2" height="3.5"/><rect x="6.5" y="0" width="2" height="3.5"/><rect x="9.75" y="0" width="2" height="3.5"/><rect x="13" y="0" width="2" height="3.5"/><rect x="0" y="6.5" width="2" height="3.5"/><rect x="3.25" y="6.5" width="2" height="3.5"/><rect x="6.5" y="6.5" width="2" height="3.5"/><rect x="9.75" y="6.5" width="2" height="3.5"/><rect x="13" y="6.5" width="2" height="3.5"/></svg>
     </button>
     <button class="scale-grid-icon" data-scale="2" title="7 columns">
-      <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="1.25" height="3.5"/><rect x="2.3" y="0" width="1.25" height="3.5"/><rect x="4.6" y="0" width="1.25" height="3.5"/><rect x="6.9" y="0" width="1.25" height="3.5"/><rect x="9.2" y="0" width="1.25" height="3.5"/><rect x="11.5" y="0" width="1.25" height="3.5"/><rect x="13.75" y="0" width="1.25" height="3.5"/><rect x="0" y="6.5" width="1.25" height="3.5"/><rect x="2.3" y="6.5" width="1.25" height="3.5"/><rect x="4.6" y="6.5" width="1.25" height="3.5"/><rect x="6.9" y="6.5" width="1.25" height="3.5"/><rect x="9.2" y="6.5" width="1.25" height="3.5"/><rect x="11.5" y="6.5" width="1.25" height="3.5"/><rect x="13.75" y="6.5" width="1.25" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="1.25" height="3.5"/><rect x="2.3" y="0" width="1.25" height="3.5"/><rect x="4.6" y="0" width="1.25" height="3.5"/><rect x="6.9" y="0" width="1.25" height="3.5"/><rect x="9.2" y="0" width="1.25" height="3.5"/><rect x="11.5" y="0" width="1.25" height="3.5"/><rect x="13.75" y="0" width="1.25" height="3.5"/><rect x="0" y="6.5" width="1.25" height="3.5"/><rect x="2.3" y="6.5" width="1.25" height="3.5"/><rect x="4.6" y="6.5" width="1.25" height="3.5"/><rect x="6.9" y="6.5" width="1.25" height="3.5"/><rect x="9.2" y="6.5" width="1.25" height="3.5"/><rect x="11.5" y="6.5" width="1.25" height="3.5"/><rect x="13.75" y="6.5" width="1.25" height="3.5"/></svg>
     </button>
   </div>
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
 </div>
 
@@ -1729,14 +1729,13 @@ ${archiveCards}
   function positionScaleCtrl() {
     var ctrl = document.getElementById('scale-ctrl');
     var pageEl = document.querySelector('.page');
-    var gridEl = document.querySelector('.grid');
-    if (!ctrl || !pageEl || !gridEl || window.innerWidth <= 900) return;
+    if (!ctrl || !pageEl || window.innerWidth <= 900) return;
     var pageRect = pageEl.getBoundingClientRect();
-    var gridRect = gridEl.getBoundingClientRect();
     var rightGap = window.innerWidth - pageRect.right;
     var ctrlW = ctrl.offsetWidth;
+    var ctrlH = ctrl.offsetHeight;
     ctrl.style.right = Math.max(4, Math.round((rightGap - ctrlW) / 2)) + 'px';
-    ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
+    ctrl.style.top = Math.round((window.innerHeight - ctrlH) / 2) + 'px';
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
