@@ -231,8 +231,7 @@ app.get('/api/vimeo/:id', (req, res) => {
 });
 
 // --- Public frontend ---
-async function renderPublic(req, res, config) {
-  const cfg = config || { bodyWeight: 300, titleWeight: 500, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '' };
+async function renderPublic(req, res) {
   const allVideos = (await getVideoRows()).filter(v => v.status === 'approved' || !v.status);
   let featured = allVideos.filter(v => v.featured && !v.archived);
   let archive = allVideos.filter(v => v.archived || !v.featured);
@@ -262,8 +261,8 @@ async function renderPublic(req, res, config) {
     const videoId = v.video_id || v.vimeo_id;
     const videoType = v.video_type || 'vimeo';
     const thumbHtml = v.has_thumb
-      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""><div class="paper-tint"></div></div>`
-      : `<div class="thumb"><img alt=""><div class="paper-tint"></div></div>`;
+      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
+      : `<div class="thumb"><img alt=""></div>`;
     return `
     <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
@@ -301,7 +300,7 @@ async function renderPublic(req, res, config) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>in limbo</title>
-<link href="${cfg.fontImport || 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap'}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   @font-face {
     font-family: 'Univers';
@@ -316,8 +315,8 @@ async function renderPublic(req, res, config) {
   html::-webkit-scrollbar { display: none; }
   body {
     background: #ffffff;
-    font-family: ${cfg.font || "'IBM Plex Sans'"}, Helvetica, Arial, sans-serif;
-    font-weight: ${cfg.bodyWeight};
+    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-weight: 300;
     color: #111;
     min-height: 100vh;
     display: flex;
@@ -375,7 +374,6 @@ async function renderPublic(req, res, config) {
     display: none;
     margin-top: 20px;
   }
-  .filters-medium.visible,
   .filters.show-all .filters-medium {
     display: grid;
     grid-template-columns: 52px 1fr;
@@ -390,9 +388,6 @@ async function renderPublic(req, res, config) {
     flex-wrap: wrap;
     gap: 8px;
   }
-  .filters-medium button {
-    border-style: dashed;
-  }
   .filters-extra {
     display: none;
     flex-wrap: wrap;
@@ -401,37 +396,43 @@ async function renderPublic(req, res, config) {
     margin-top: 6px;
   }
   .filters.show-all .filters-extra { display: flex; }
-  .filters-extra .tag-close {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 100px;
-    background: transparent;
-    color: #555;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-  .filters-extra .tag-close:hover { border-color: #1e40af; color: #1e40af; }
   .filters button {
     font-family: inherit;
     font-size: 14px;
     font-weight: 400;
     letter-spacing: 0.02em;
-    padding: 6px 15px;
-    border: 1px solid #ccc;
-    border-radius: 100px;
+    padding: 6px 4px;
+    border: none;
+    border-radius: 0;
     background: transparent;
     color: #000;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
   }
-  .filters button:hover { border-color: #1e40af; color: #1e40af; }
-  .filters button.active { background: #1e40af; border-color: #1e40af; color: #fff; }
+  .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
+  .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
+  .filters button:hover { color: #1e40af; }
+  .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+  .filters button.active {
+    color: #1e40af;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .filters button.active::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, -7px);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #1e40af;
+    margin: 0;
+    opacity: 1;
+  }
+  .filters button.active::after { content: ""; margin: 0; opacity: 0; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -447,8 +448,7 @@ async function renderPublic(req, res, config) {
     width: 32px;
     height: 32px;
     padding: 0;
-    border: 1px solid #ccc;
-    border-radius: 100px;
+    border: none;
     background: transparent;
     color: #000;
     cursor: pointer;
@@ -457,13 +457,14 @@ async function renderPublic(req, res, config) {
     align-items: center;
     justify-content: center;
   }
-  .tag-expand:hover { border-color: #1e40af; color: #1e40af; }
+  .tag-expand:hover { color: #1e40af; }
   .filters.show-all .tag-expand { display: none; }
   /* Prevent phantom flex items in default (row) layout */
   .filters::before, .filters::after { display: none; }
+  /* Filter-bar search is hidden on the main view; the inline intro search is used instead */
   .filters-search-wrap {
+    display: none;
     flex-shrink: 0;
-    display: flex;
     align-items: center;
     gap: 5px;
     padding-top: 7px;
@@ -563,18 +564,6 @@ async function renderPublic(req, res, config) {
     transition: opacity 0.45s ease-in-out;
   }
   .card .thumb[data-baked] canvas { display: none; }
-  .card .thumb .paper-tint {
-    position: absolute;
-    inset: 0;
-    background: rgb(255, 253, 244);
-    mix-blend-mode: multiply;
-    pointer-events: none;
-    z-index: 2;
-    display: none;
-  }
-  .paper-tint-active .card .thumb .paper-tint {
-    display: block;
-  }
   .card .thumb::after {
     content: "";
     position: absolute;
@@ -622,7 +611,7 @@ async function renderPublic(req, res, config) {
   .card .tags span {
     font-size: 11px;
     letter-spacing: 0.03em;
-    color: ${cfg.tagColor};
+    color: #777;
     cursor: pointer;
     transition: color 0.2s ease;
   }
@@ -641,27 +630,17 @@ async function renderPublic(req, res, config) {
     font-size: 11px;
     letter-spacing: 0.03em;
     color: #111;
-    font-weight: ${cfg.titleWeight};
+    font-weight: 400;
     text-align: left;
     white-space: nowrap;
     flex-shrink: 0;
     transition: color 0.2s ease;
   }
-  .card .card-year {
-    font-size: 11px;
-    letter-spacing: 0.03em;
-    color: #777;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    white-space: nowrap;
-  }
-  .card .card-year:hover { color: #1e40af; }
+  /* Year is shown inside .card-duration (prepended via JS); the standalone label is hidden */
+  .card .card-year { display: none; }
   .card:hover .card-duration { opacity: 1; color: #1e40af; }
   .card:hover .card-title { text-decoration: underline; color: #1e40af; }
-  .card:hover .card-year { color: #1e40af; }
   .card:hover .tags span { color: #555; }
-  .card-logos .thumb::after { display: none; }
-  .card-logos .thumb:hover img { transform: none; }
   .intro-block {
     grid-column: 1;
     grid-row: 1 / 3;
@@ -673,7 +652,7 @@ async function renderPublic(req, res, config) {
   }
   .intro-block .intro-text {
     font-family: inherit;
-    font-size: ${cfg.introSize || '22px'};
+    font-size: 19px;
     line-height: 1.55;
     color: #111;
   }
@@ -730,7 +709,6 @@ async function renderPublic(req, res, config) {
   .labo-hover:hover .labo-logo-hover {
     opacity: 1;
   }
-  .kuleuven-hover { display: none; }
   .archive-toggle {
     display: flex;
     justify-content: center;
@@ -1022,12 +1000,10 @@ async function renderPublic(req, res, config) {
     /* Archive toggle label: clip overflow on narrow screens */
     .archive-toggle-label { display: none; }
   }
-  ${cfg.extraCSS || ''}
 </style>
 </head>
-<body class="${cfg.paperTint ? 'paper-tint-active' : ''}">
+<body>
 <div class="page">
-  ${cfg.label ? '<div style="position:fixed;top:10px;right:10px;font-size:11px;color:#aaa;z-index:999;">' + cfg.label + '</div>' : ''}
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row" style="grid-template-columns:1fr">
@@ -1060,7 +1036,6 @@ async function renderPublic(req, res, config) {
 ${featuredCards}
 ${archiveCards}
   </div>
-  <div id="medium-axis"></div>
   </div>
   <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
     <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
@@ -1099,304 +1074,9 @@ ${archiveCards}
 </div>
 
 <script>
-  window.__ditherMode = '${cfg.ditherMode || 'default'}';
-  // Thumbnails + dithering
-  function getDominantColor(ctx, w, h) {
-    const d = ctx.getImageData(0, 0, w, h).data;
-    // Build hue histogram from saturated pixels
-    const hueBuckets = new Array(360).fill(0);
-    for (let i = 0; i < d.length; i += 16) {
-      const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      const delta = max - min;
-      if (delta < 0.08) continue; // skip grays
-      const lum = (max + min) / 2;
-      if (lum < 0.1 || lum > 0.9) continue; // skip very dark/bright
-      let hue = 0;
-      if (max === r) hue = ((g - b) / delta) % 6;
-      else if (max === g) hue = (b - r) / delta + 2;
-      else hue = (r - g) / delta + 4;
-      hue = Math.round(hue * 60);
-      if (hue < 0) hue += 360;
-      hueBuckets[hue]++;
-    }
-    // Find dominant hue
-    let maxCount = 0, domHue = 0;
-    // Smooth the histogram
-    for (let h = 0; h < 360; h++) {
-      let sum = 0;
-      for (let j = -15; j <= 15; j++) sum += hueBuckets[(h + j + 360) % 360];
-      if (sum > maxCount) { maxCount = sum; domHue = h; }
-    }
-
-    // Map hue to palette (tinted whites from pastel yellow, cyan, red):
-    const palette = [
-      { color: [245, 240, 220], hue: 50 },     // tinted white yellow
-      { color: [220, 242, 242], hue: 180 },     // tinted white cyan
-      { color: [245, 225, 225], hue: 0 },       // tinted white red
-    ];
-
-    let best = palette[0].color, bestDist = Infinity;
-    for (const p of palette) {
-      let dist = Math.abs(domHue - p.hue);
-      if (dist > 180) dist = 360 - dist; // wrap around
-      if (dist < bestDist) { bestDist = dist; best = p.color; }
-    }
-    return best;
-  }
-
-  // Dither configurations for test routes
-  const ditherConfigs = {
-    default: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
-    t1:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'bw' },
-    t2:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_yellow' },
-    t3:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_cyan' },
-    t4:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'mono_red' },
-    t5:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted' },
-    t6:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'inverted_tint' },
-    t7:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'sepia' },
-    t8:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'cool' },
-    t9:  { w: 500, threshold: 160, contrast: 1.0, colorMode: 'green' },
-    t10: { w: 500, threshold: 160, contrast: 1.0, colorMode: 'newspaper' },
-    t11: { w: 200, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
-    t12: { w: 700, threshold: 160, contrast: 1.0, colorMode: 'tinted' },
-    t13: { w: 500, threshold: 80,  contrast: 1.0, colorMode: 'tinted' },
-    t14: { w: 500, threshold: 200, contrast: 1.0, colorMode: 'tinted' },
-    t15: { w: 500, threshold: 160, contrast: 1.8, colorMode: 'tinted' },
-    t16: { w: 500, threshold: 160, contrast: 0.6, colorMode: 'tinted' },
-    t17: { w: 300, threshold: 100, contrast: 1.3, colorMode: 'bw' },
-    t18: { w: 700, threshold: 180, contrast: 0.8, colorMode: 'tinted' },
-    t19: { w: 400, threshold: 140, contrast: 1.2, colorMode: 'inverted' },
-    t20: { w: 500, threshold: 150, contrast: 1.1, colorMode: 'mono_yellow' },
-    d1:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [180,50,50],   bgColor: [255,255,255] },  // red dots on white
-    d2:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,50,180],   bgColor: [255,255,255] },  // blue dots on white
-    d3:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [50,130,80],   bgColor: [255,255,255] },  // green dots on white
-    d4:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [180,120,50],  bgColor: [255,255,255] },  // orange dots on white
-    d5:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [100,100,100], bgColor: [245,242,235] },  // grey dots on cream
-    d6:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [60,60,120],   bgColor: [240,240,250] },  // navy dots on lavender
-    d7:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [120,40,40],   bgColor: [250,240,235] },  // burgundy dots on blush
-    d8:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [40,90,70],    bgColor: [240,250,245] },  // forest dots on mint
-    d9:  { w: 500, threshold: 160, contrast: 1.0, dotColor: [80,80,80],    bgColor: [255,255,255] },  // dark grey dots on white
-    d10: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },  // black dots on warm cream
-    d11: { w: 300, threshold: 140, contrast: 1.2, dotColor: [180,50,50],   bgColor: [255,255,255] },  // chunky red dots
-    d12: { w: 700, threshold: 170, contrast: 0.9, dotColor: [50,50,180],   bgColor: [250,250,255] },  // hires soft blue
-    d13: { w: 500, threshold: 120, contrast: 1.0, dotColor: [50,130,80],   bgColor: [255,255,255] },  // dark green, more dots
-    d14: { w: 500, threshold: 190, contrast: 0.8, dotColor: [100,100,100], bgColor: [255,255,255] },  // very light grey, airy
-    d15: { w: 500, threshold: 160, contrast: 1.4, dotColor: [0,0,0],       bgColor: [255,255,255] },  // high contrast pure b&w
-    d16: { w: 400, threshold: 150, contrast: 1.0, dotColor: [140,80,30],   bgColor: [255,250,240] },  // brown/terracotta on warm white
-    d17: { w: 500, threshold: 160, contrast: 1.0, dotColor: [100,60,120],  bgColor: [250,245,255] },  // purple dots on lilac
-    d18: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [220,242,242] },  // black on cyan bg
-    d19: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,225,225] },  // black on blush bg
-    d20: { w: 500, threshold: 160, contrast: 1.0, dotColor: [0,0,0],       bgColor: [245,240,220] },
-    c1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
-    ]},
-    c2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [120,45,55],  bg: [255,248,248], hue: 0 }
-    ]},
-    c3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [150,90,95],  bg: [255,248,248], hue: 0 }
-    ]},
-    c4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [160,120,40], bg: [255,252,242], hue: 0 }
-    ]},
-    c5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [90,60,110],  bg: [252,248,255], hue: 0 }
-    ]},
-    c6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [80,80,80],   bg: [255,255,255], hue: 0 }
-    ]},
-    c7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [110,80,50],  bg: [255,252,248], hue: 0 }
-    ]},
-    c8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [150,60,40],  bg: [255,248,245], hue: 0 }
-    ]},
-    c9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [100,50,80],  bg: [255,248,252], hue: 0 }
-    ]},
-    c10: { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [140,75,45],  bg: [255,250,245], hue: 0 }
-    ]},
-    r1:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [180,100,100],bg: [255,248,248], hue: 0 }
-    ]},
-    r2:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [150,55,45],  bg: [255,248,245], hue: 0 }
-    ]},
-    r3:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [180,120,105],bg: [255,250,248], hue: 0 }
-    ]},
-    r4:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [140,85,90],  bg: [252,248,248], hue: 0 }
-    ]},
-    r5:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [160,80,50],  bg: [255,250,245], hue: 0 }
-    ]},
-    r6:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [170,110,70], bg: [255,252,248], hue: 0 }
-    ]},
-    r7:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    r8:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [160,100,80], bg: [255,252,250], hue: 0 }
-    ]},
-    r9:  { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,80,100], bg: [252,248,252], hue: 0 }
-    ]},
-    r10: { w: 500, threshold: 160, contrast: 1.0, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [170,130,50], bg: [255,253,245], hue: 0 }
-    ]},
-    b1:  { w: 500, threshold: 140, contrast: 1.0, targetLum: 130, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b2:  { w: 500, threshold: 180, contrast: 1.0, targetLum: 170, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b3:  { w: 500, threshold: 160, contrast: 1.2, targetLum: 150, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b4:  { w: 500, threshold: 160, contrast: 0.8, targetLum: 150, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b5:  { w: 500, threshold: 170, contrast: 1.0, targetLum: 160, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b6:  { w: 500, threshold: 150, contrast: 1.0, targetLum: 140, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    blue_only: { w: 650, threshold: 140, contrast: 1.1, targetLum: 150, dotColor: [60, 60, 120], bgColor: [248, 248, 255] },
-    b7:  { w: 650, threshold: 155, contrast: 1.0, targetLum: 185, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b7lo:{ w: 400, threshold: 155, contrast: 1.0, targetLum: 185, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b8:  { w: 500, threshold: 180, contrast: 0.9, targetLum: 160, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b9:  { w: 500, threshold: 165, contrast: 1.05, targetLum: 155, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    b10: { w: 500, threshold: 155, contrast: 0.95, targetLum: 145, combo: [
-      { dot: [60,60,120],  bg: [248,248,255], hue: 50 },
-      { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-      { dot: [130,65,45],  bg: [255,250,248], hue: 0 }
-    ]},
-    // g-series: risograph effect — grey base + hue-matched accent in saturated regions
-    // g1-g3: option A (blur saturation map, soft blend zone, relative threshold)
-    // g4-g5: option B (two-pass Floyd-Steinberg on saturation layer)
-    g1: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
-      mode: 'blur', blurRadius: 8,  thresholdBias: 0.5, blendZone: 0.2,
-      greyDot: [100,100,100], greyBg: [245,245,245],
-      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
-                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
-    g2: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
-      mode: 'blur', blurRadius: 15, thresholdBias: 0.5, blendZone: 0.2,
-      greyDot: [100,100,100], greyBg: [245,245,245],
-      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
-                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
-    g3: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
-      mode: 'blur', blurRadius: 20, thresholdBias: 1.0, blendZone: 0.2,
-      greyDot: [100,100,100], greyBg: [245,245,245],
-      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
-                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
-    g4: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
-      mode: 'twopass', thresholdBias: 0.5,
-      greyDot: [100,100,100], greyBg: [245,245,245],
-      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
-                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
-    g5: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, greyAccent: {
-      mode: 'twopass', thresholdBias: 1.0,
-      greyDot: [100,100,100], greyBg: [245,245,245],
-      accents: [ { dot: [60,60,120],  tintBg: [234,234,250], hue: 50  },
-                 { dot: [40,90,70],   tintBg: [234,250,241], hue: 180 },
-                 { dot: [130,65,45],  tintBg: [250,240,234], hue: 0   } ] } },
-    // g1a-g1c: strict 3-colour dither (single FS pass → 3 levels → 3 palette entries)
-    g1a: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
-      mode: 'fixed', threshold2: 205,
-      dark:  [60,60,120], mid: [130,65,45], light: [255,252,245]
-    }},
-    g1b: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
-      mode: 'monofamily', threshold2: 205,
-      accents: [ { dark: [60,60,120],  mid: [154,154,188], light: [248,248,255], hue: 50  },
-                 { dark: [40,90,70],   mid: [144,173,160], light: [248,255,250], hue: 180 },
-                 { dark: [130,65,45],  mid: [193,158,147], light: [255,250,248], hue: 0   } ]
-    }},
-    g1c: { w: 500, threshold: 155, contrast: 1.0, targetLum: 185, threeColor: {
-      mode: 'twofamily', threshold2: 205,
-      accents: [ { dot: [60,60,120],  bg: [248,248,255], hue: 50  },
-                 { dot: [40,90,70],   bg: [248,255,250], hue: 180 },
-                 { dot: [130,65,45],  bg: [255,250,248], hue: 0   } ]
-    }},
-    m1: { w: 800, mono: true }
-  };
-  const activeDitherConfig = ditherConfigs[window.__ditherMode || 'default'] || ditherConfigs.default;
+  // Thumbnails + dithering (m1: mono-blue palette via Floyd-Steinberg in Lab space).
+  // Unbaked thumbs only — baked thumbs skip this path and stream the pre-rendered PNG.
+  const M1_WIDTH = 800;
 
   function hslToRgb(h, s, l) {
     const c = (1 - Math.abs(2 * l - 1)) * s;
@@ -1449,10 +1129,9 @@ ${archiveCards}
   const M1_PALETTE = buildMonoPalette();
   const M1_PALETTE_LAB = M1_PALETTE.map(c => rgbToLab(c[0], c[1], c[2]));
 
-  function ditherImage(img, thumb, variation) {
-    const cfg = activeDitherConfig;
+  function ditherImage(img, thumb) {
     const canvas = document.createElement('canvas');
-    const w = cfg.w;
+    const w = M1_WIDTH;
     const h = Math.round(w * (9/16));
     canvas.width = w;
     canvas.height = h;
@@ -1469,493 +1148,93 @@ ${archiveCards}
     }
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 
-    if (cfg.mono) {
-      const mw = w;
-      const mh = h;
-
-      const raw = ctx.getImageData(0, 0, mw, mh);
-      const pd = raw.data;
-      for (let i = 0; i < pd.length; i += 4) {
-        let pr = pd[i], pg = pd[i+1], pb = pd[i+2];
-        // 1. Shadows lift +60
-        pr = 60 + pr * 195 / 255; pg = 60 + pg * 195 / 255; pb = 60 + pb * 195 / 255;
-        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
-        // 2. Brightness +40
-        pr += 40; pg += 40; pb += 40;
-        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
-        // 3. Gamma 1.4
-        pr = 255 * Math.pow(pr / 255, 1 / 1.4); pg = 255 * Math.pow(pg / 255, 1 / 1.4); pb = 255 * Math.pow(pb / 255, 1 / 1.4);
-        pr = Math.max(0, Math.min(255, pr)); pg = Math.max(0, Math.min(255, pg)); pb = Math.max(0, Math.min(255, pb));
-        // 4. Contrast 0.8
-        pr = ((pr / 255 - 0.5) * 0.8 + 0.5) * 255;
-        pg = ((pg / 255 - 0.5) * 0.8 + 0.5) * 255;
-        pb = ((pb / 255 - 0.5) * 0.8 + 0.5) * 255;
-        pd[i]   = Math.max(0, Math.min(255, pr));
-        pd[i+1] = Math.max(0, Math.min(255, pg));
-        pd[i+2] = Math.max(0, Math.min(255, pb));
-      }
-
-      const preProc = new Float32Array(mw * mh * 3);
-      for (let i = 0; i < mw * mh; i++) {
-        preProc[i*3]   = pd[i*4];
-        preProc[i*3+1] = pd[i*4+1];
-        preProc[i*3+2] = pd[i*4+2];
-      }
-
-      function ditherM1(noiseX, noiseY, noiseRadius) {
-        const rd = new Float32Array(preProc);
-        if (noiseRadius === -1) {
-          for (let i = 0; i < mw * mh; i++) {
-            const n = (Math.random() - 0.5) * 20;
-            rd[i*3] += n; rd[i*3+1] += n; rd[i*3+2] += n;
-          }
-        } else if (noiseRadius > 0) {
-          for (let y = 0; y < mh; y++) {
-            for (let x = 0; x < mw; x++) {
-              const dist = Math.sqrt((x - noiseX) ** 2 + (y - noiseY) ** 2);
-              if (dist < noiseRadius) {
-                const n = (Math.random() - 0.5) * (1 - dist / noiseRadius) * 40;
-                const i = y * mw + x;
-                rd[i*3] += n; rd[i*3+1] += n; rd[i*3+2] += n;
-              }
-            }
-          }
-        }
-        const outImg = ctx.createImageData(mw, mh);
-        for (let y = 0; y < mh; y++) {
-          for (let x = 0; x < mw; x++) {
-            const idx = y * mw + x;
-            const qr = Math.max(0, Math.min(255, rd[idx*3]));
-            const qg = Math.max(0, Math.min(255, rd[idx*3+1]));
-            const qb = Math.max(0, Math.min(255, rd[idx*3+2]));
-            const pxLab = rgbToLab(qr, qg, qb);
-            let bestIdx = 0, bestDist = Infinity;
-            for (let p = 0; p < M1_PALETTE_LAB.length; p++) {
-              const d = labDist(pxLab, M1_PALETTE_LAB[p]);
-              if (d < bestDist) { bestDist = d; bestIdx = p; }
-            }
-            const [nr, ng, nb] = M1_PALETTE[bestIdx];
-            const er = qr - nr, eg = qg - ng, eb = qb - nb;
-            if (x + 1 < mw) {
-              rd[(idx+1)*3] += er*7/16; rd[(idx+1)*3+1] += eg*7/16; rd[(idx+1)*3+2] += eb*7/16;
-            }
-            if (y + 1 < mh && x > 0) {
-              rd[(idx+mw-1)*3] += er*3/16; rd[(idx+mw-1)*3+1] += eg*3/16; rd[(idx+mw-1)*3+2] += eb*3/16;
-            }
-            if (y + 1 < mh) {
-              rd[(idx+mw)*3] += er*5/16; rd[(idx+mw)*3+1] += eg*5/16; rd[(idx+mw)*3+2] += eb*5/16;
-            }
-            if (y + 1 < mh && x + 1 < mw) {
-              rd[(idx+mw+1)*3] += er*1/16; rd[(idx+mw+1)*3+1] += eg*1/16; rd[(idx+mw+1)*3+2] += eb*1/16;
-            }
-            outImg.data[idx*4]   = nr;
-            outImg.data[idx*4+1] = ng;
-            outImg.data[idx*4+2] = nb;
-            outImg.data[idx*4+3] = 255;
-          }
-        }
-        ctx.putImageData(outImg, 0, 0);
-      }
-
-      ditherM1(0, 0, 0);
-      canvas.style.imageRendering = 'pixelated';
-      thumb.appendChild(canvas);
-
-      let shimmerActive = false;
-      let shimmerFrame = null;
-      function shimmerLoopM1() {
-        if (!shimmerActive) return;
-        ditherM1(0, 0, -1);
-        setTimeout(() => { shimmerFrame = requestAnimationFrame(shimmerLoopM1); }, 120);
-      }
-      thumb.addEventListener('mouseenter', () => { shimmerActive = true; shimmerLoopM1(); });
-      thumb.addEventListener('mouseleave', () => {
-        shimmerActive = false;
-        if (shimmerFrame) cancelAnimationFrame(shimmerFrame);
-        ditherM1(0, 0, 0);
-      });
-      return;
+    // Preprocess: shadow lift, brightness, gamma, contrast
+    const raw = ctx.getImageData(0, 0, w, h);
+    const pd = raw.data;
+    for (let i = 0; i < pd.length; i += 4) {
+      let pr = pd[i], pg = pd[i+1], pb = pd[i+2];
+      pr = 60 + pr * 195 / 255; pg = 60 + pg * 195 / 255; pb = 60 + pb * 195 / 255;
+      pr += 40; pg += 40; pb += 40;
+      pr = 255 * Math.pow(Math.max(0, Math.min(255, pr)) / 255, 1 / 1.4);
+      pg = 255 * Math.pow(Math.max(0, Math.min(255, pg)) / 255, 1 / 1.4);
+      pb = 255 * Math.pow(Math.max(0, Math.min(255, pb)) / 255, 1 / 1.4);
+      pr = ((pr / 255 - 0.5) * 0.8 + 0.5) * 255;
+      pg = ((pg / 255 - 0.5) * 0.8 + 0.5) * 255;
+      pb = ((pb / 255 - 0.5) * 0.8 + 0.5) * 255;
+      pd[i]   = Math.max(0, Math.min(255, pr));
+      pd[i+1] = Math.max(0, Math.min(255, pg));
+      pd[i+2] = Math.max(0, Math.min(255, pb));
     }
 
-    const [cr, cg, cb] = getDominantColor(ctx, w, h);
-
-    // If combo palette, pick dot+bg colors using same hue detection as main page
-    let finalDotColor = cfg.dotColor || null;
-    let finalBgColor = cfg.bgColor || null;
-    if (cfg.combo) {
-      // getDominantColor already computes domHue internally - let's just replicate its palette matching
-      // but with combo colors instead of tinted whites
-      const d = ctx.getImageData(0, 0, w, h).data;
-      const hueBuckets = new Array(360).fill(0);
-      for (let i = 0; i < d.length; i += 16) {
-        const rv = d[i]/255, gv = d[i+1]/255, bv = d[i+2]/255;
-        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-        const delta = mx - mn;
-        if (delta < 0.08) continue;
-        const lum = (mx + mn) / 2;
-        if (lum < 0.1 || lum > 0.9) continue;
-        let hue = 0;
-        if (mx === rv) hue = ((gv - bv) / delta) % 6;
-        else if (mx === gv) hue = (bv - rv) / delta + 2;
-        else hue = (rv - gv) / delta + 4;
-        hue = Math.round(hue * 60);
-        if (hue < 0) hue += 360;
-        hueBuckets[hue]++;
-      }
-      let maxCount = 0, domHue = 0;
-      for (let hh = 0; hh < 360; hh++) {
-        let sum = 0;
-        for (let j = -15; j <= 15; j++) sum += hueBuckets[(hh + j + 360) % 360];
-        if (sum > maxCount) { maxCount = sum; domHue = hh; }
-      }
-      let bestCombo = cfg.combo[0], bestDist = Infinity;
-      for (const c of cfg.combo) {
-        let dist = Math.abs(domHue - c.hue);
-        if (dist > 180) dist = 360 - dist;
-        if (dist < bestDist) { bestDist = dist; bestCombo = c; }
-      }
-      finalDotColor = bestCombo.dot;
-      finalBgColor = bestCombo.bg;
-    }
-    const applyCfg = { ...cfg, dotColor: finalDotColor, bgColor: finalBgColor };
-
-    const origData = ctx.getImageData(0, 0, w, h);
-    const gray = new Float32Array(w * h);
-    
-    // First pass: compute average luminance
-    let totalLum = 0;
-    for (let i = 0; i < origData.data.length; i += 4) {
-      totalLum += origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
-    }
-    const avgLum = totalLum / (w * h);
-    
-    // Auto-normalize: target configurable (default 150)
-    const targetLum = cfg.targetLum || 150;
-    let brightnessBoost = 0;
-    if (avgLum < targetLum) {
-      brightnessBoost = (targetLum - avgLum) * 0.20;
-    }
-    
-    // Second pass: apply normalization + contrast
-    for (let i = 0; i < origData.data.length; i += 4) {
-      let lum = origData.data[i] * 0.299 + origData.data[i+1] * 0.587 + origData.data[i+2] * 0.114;
-      lum = lum + brightnessBoost;
-      lum = ((lum / 255 - 0.5) * cfg.contrast + 0.5) * 255;
-      lum = Math.max(0, Math.min(255, lum));
-      gray[i/4] = lum;
-    }
-    const threshold = cfg.threshold;
-
-    // Pre-compute greyAccent data: saturation map, accent colors, blur/twopass state
-    let satBlurred = null;     // option A: blurred saturation map
-    let satThreshLo = 0;       // option A: blend zone lower bound
-    let satThreshHi = 1;       // option A: blend zone upper bound
-    let outSat = null;         // option B: pre-computed FS on saturation layer
-    let accentDotColor = null;
-    let accentBgColor = null;
-
-    if (cfg.greyAccent) {
-      const ga = cfg.greyAccent;
-
-      // Raw HSV saturation per pixel
-      const rawSat = new Float32Array(w * h);
-      for (let i = 0; i < w * h; i++) {
-        const rv = origData.data[i*4]/255, gv = origData.data[i*4+1]/255, bv = origData.data[i*4+2]/255;
-        const mx = Math.max(rv, gv, bv);
-        rawSat[i] = mx > 0 ? (mx - Math.min(rv, gv, bv)) / mx : 0;
-      }
-
-      // Dominant hue detection (same as combo block) → pick accent colors
-      const hb = new Array(360).fill(0);
-      for (let i = 0; i < origData.data.length; i += 16) {
-        const rv = origData.data[i]/255, gv = origData.data[i+1]/255, bv = origData.data[i+2]/255;
-        const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-        const delta = mx - mn;
-        if (delta < 0.08) continue;
-        const lum = (mx + mn) / 2;
-        if (lum < 0.1 || lum > 0.9) continue;
-        let hue = 0;
-        if (mx === rv) hue = ((gv - bv) / delta) % 6;
-        else if (mx === gv) hue = (bv - rv) / delta + 2;
-        else hue = (rv - gv) / delta + 4;
-        hue = Math.round(hue * 60);
-        if (hue < 0) hue += 360;
-        hb[hue]++;
-      }
-      let mc = 0, dh = 0;
-      for (let hh = 0; hh < 360; hh++) {
-        let sum = 0;
-        for (let j = -15; j <= 15; j++) sum += hb[(hh + j + 360) % 360];
-        if (sum > mc) { mc = sum; dh = hh; }
-      }
-      let bestAcc = ga.accents[0], bestDist = Infinity;
-      for (const a of ga.accents) {
-        let dist = Math.abs(dh - a.hue);
-        if (dist > 180) dist = 360 - dist;
-        if (dist < bestDist) { bestDist = dist; bestAcc = a; }
-      }
-      accentDotColor = bestAcc.dot;
-      accentBgColor = bestAcc.tintBg;
-
-      if (ga.mode === 'blur') {
-        // Separable box blur on saturation map
-        const r = ga.blurRadius || 12;
-        const tmp = new Float32Array(w * h);
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            let sum = 0, cnt = 0;
-            for (let dx = -r; dx <= r; dx++) {
-              const nx = x + dx;
-              if (nx >= 0 && nx < w) { sum += rawSat[y*w+nx]; cnt++; }
-            }
-            tmp[y*w+x] = sum/cnt;
-          }
-        }
-        satBlurred = new Float32Array(w * h);
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            let sum = 0, cnt = 0;
-            for (let dy = -r; dy <= r; dy++) {
-              const ny = y + dy;
-              if (ny >= 0 && ny < h) { sum += tmp[ny*w+x]; cnt++; }
-            }
-            satBlurred[y*w+x] = sum/cnt;
-          }
-        }
-        // Relative threshold: mean + bias * stddev of blurred saturation
-        let mean = 0;
-        for (let i = 0; i < w*h; i++) mean += satBlurred[i];
-        mean /= w*h;
-        let variance = 0;
-        for (let i = 0; i < w*h; i++) variance += (satBlurred[i]-mean)**2;
-        const stddev = Math.sqrt(variance / (w*h));
-        const thresh = mean + (ga.thresholdBias || 0.5) * stddev;
-        const bz = ga.blendZone || 0.2;
-        satThreshLo = thresh * (1 - bz);
-        satThreshHi = thresh * (1 + bz);
-
-      } else if (ga.mode === 'twopass') {
-        // Relative threshold from raw saturation distribution
-        let mean = 0;
-        for (let i = 0; i < w*h; i++) mean += rawSat[i];
-        mean /= w*h;
-        let variance = 0;
-        for (let i = 0; i < w*h; i++) variance += (rawSat[i]-mean)**2;
-        const stddev = Math.sqrt(variance / (w*h));
-        const satThreshNorm = Math.min(0.98, mean + (ga.thresholdBias || 0.5) * stddev);
-        // FS on inverted saturation: high sat → low value → dot (0)
-        const satFSThresh = (1 - satThreshNorm) * 255;
-        const sd = new Float32Array(w * h);
-        for (let i = 0; i < w*h; i++) sd[i] = (1 - rawSat[i]) * 255;
-        outSat = new Uint8Array(w * h);
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            const idx = y*w+x;
-            const old = sd[idx];
-            const nw = old > satFSThresh ? 255 : 0;
-            outSat[idx] = nw;
-            const err = old - nw;
-            if (x+1 < w) sd[idx+1] += err*7/16;
-            if (y+1 < h && x > 0) sd[idx+w-1] += err*3/16;
-            if (y+1 < h) sd[idx+w] += err*5/16;
-            if (y+1 < h && x+1 < w) sd[idx+w+1] += err*1/16;
-          }
-        }
-      }
+    const preProc = new Float32Array(w * h * 3);
+    for (let i = 0; i < w * h; i++) {
+      preProc[i*3]   = pd[i*4];
+      preProc[i*3+1] = pd[i*4+1];
+      preProc[i*3+2] = pd[i*4+2];
     }
 
-    // Pre-compute three-colour palette for threeColor mode
-    let tcDark = null, tcMid = null, tcLight = null;
-    if (cfg.threeColor) {
-      const tc = cfg.threeColor;
-      if (tc.mode === 'fixed') {
-        tcDark = tc.dark; tcMid = tc.mid; tcLight = tc.light;
-      } else {
-        // Compute smoothed hue histogram (same logic as combo/greyAccent blocks)
-        const hb2 = new Array(360).fill(0);
-        for (let i = 0; i < origData.data.length; i += 16) {
-          const rv = origData.data[i]/255, gv = origData.data[i+1]/255, bv = origData.data[i+2]/255;
-          const mx = Math.max(rv, gv, bv), mn = Math.min(rv, gv, bv);
-          const delta = mx - mn;
-          if (delta < 0.08) continue;
-          const lum = (mx + mn) / 2;
-          if (lum < 0.1 || lum > 0.9) continue;
-          let hue = 0;
-          if (mx === rv) hue = ((gv - bv) / delta) % 6;
-          else if (mx === gv) hue = (bv - rv) / delta + 2;
-          else hue = (rv - gv) / delta + 4;
-          hue = Math.round(hue * 60);
-          if (hue < 0) hue += 360;
-          hb2[hue]++;
-        }
-        let mc2 = 0, dh2 = 0;
-        for (let hh = 0; hh < 360; hh++) {
-          let sum = 0;
-          for (let j = -15; j <= 15; j++) sum += hb2[(hh + j + 360) % 360];
-          if (sum > mc2) { mc2 = sum; dh2 = hh; }
-        }
-        // Sort accents by distance to dominant hue (closest first)
-        const hueDist = (a) => { let d = Math.abs(dh2 - a.hue); return d > 180 ? 360 - d : d; };
-        const sorted = tc.accents.slice().sort((a, b) => hueDist(a) - hueDist(b));
-        if (tc.mode === 'monofamily') {
-          const best = sorted[0];
-          tcDark = best.dark; tcMid = best.mid; tcLight = best.light;
-        } else if (tc.mode === 'twofamily') {
-          tcDark = sorted[0].dot; tcMid = sorted[1].dot; tcLight = sorted[0].bg;
+    // Floyd-Steinberg in Lab space against M1_PALETTE.
+    // shimmer=true adds per-pixel noise for the hover loop.
+    function render(shimmer) {
+      const rd = new Float32Array(preProc);
+      if (shimmer) {
+        for (let i = 0; i < w * h; i++) {
+          const n = (Math.random() - 0.5) * 20;
+          rd[i*3] += n; rd[i*3+1] += n; rd[i*3+2] += n;
         }
       }
-    }
-
-    function applyColor(out, imageData) {
-      const dc = applyCfg.dotColor || null;
-      const bc = applyCfg.bgColor || null;
-      
-      for (let i = 0; i < out.length; i++) {
-        const v = out[i] / 255;
-        let r, g, b;
-
-        if (applyCfg.threeColor && tcDark) {
-          if (out[i] === 0)        { [r, g, b] = tcDark; }
-          else if (out[i] === 128) { [r, g, b] = tcMid; }
-          else                     { [r, g, b] = tcLight; }
-        } else if (applyCfg.greyAccent) {
-          const ga = applyCfg.greyAccent;
-          const isDot = out[i] === 0;
-          if (ga.mode === 'blur' && satBlurred) {
-            const sv = satBlurred[i];
-            if (sv <= satThreshLo) {
-              [r, g, b] = isDot ? ga.greyDot : ga.greyBg;
-            } else if (sv >= satThreshHi) {
-              [r, g, b] = isDot ? accentDotColor : accentBgColor;
-            } else {
-              const t = (sv - satThreshLo) / (satThreshHi - satThreshLo);
-              const from = isDot ? ga.greyDot : ga.greyBg;
-              const to   = isDot ? accentDotColor : accentBgColor;
-              r = Math.round(from[0] + t * (to[0] - from[0]));
-              g = Math.round(from[1] + t * (to[1] - from[1]));
-              b = Math.round(from[2] + t * (to[2] - from[2]));
-            }
-          } else if (ga.mode === 'twopass' && outSat) {
-            const isAccent = outSat[i] === 0;
-            if (isDot && isAccent)       { [r, g, b] = accentDotColor; }
-            else if (isDot)              { [r, g, b] = ga.greyDot; }
-            else if (isAccent)           { [r, g, b] = accentBgColor; }
-            else                         { [r, g, b] = ga.greyBg; }
-          } else {
-            [r, g, b] = isDot ? ga.greyDot : ga.greyBg;
-          }
-        } else if (dc && bc) {
-          // Custom dot + background colors
-          r = Math.round(dc[0] + v * (bc[0] - dc[0]));
-          g = Math.round(dc[1] + v * (bc[1] - dc[1]));
-          b = Math.round(dc[2] + v * (bc[2] - dc[2]));
-        } else {
-          switch(applyCfg.colorMode) {
-            case 'bw':
-              r = g = b = out[i]; break;
-            case 'mono_yellow':
-              r = Math.round(v * 245); g = Math.round(v * 240); b = Math.round(v * 220); break;
-            case 'mono_cyan':
-              r = Math.round(v * 220); g = Math.round(v * 242); b = Math.round(v * 242); break;
-            case 'mono_red':
-              r = Math.round(v * 245); g = Math.round(v * 225); b = Math.round(v * 225); break;
-            case 'inverted':
-              r = g = b = 255 - out[i]; break;
-            case 'inverted_tint':
-              const iv = (255 - out[i]) / 255;
-              r = Math.round(iv * cr); g = Math.round(iv * cg); b = Math.round(iv * cb); break;
-            case 'sepia':
-              r = Math.round(v * 240); g = Math.round(v * 220); b = Math.round(v * 190); break;
-            case 'cool':
-              r = Math.round(v * 210); g = Math.round(v * 220); b = Math.round(v * 235); break;
-            case 'green':
-              r = Math.round(v * 200); g = Math.round(v * 230); b = Math.round(v * 200); break;
-            case 'newspaper':
-              r = Math.round(v * 230); g = Math.round(v * 228); b = Math.round(v * 225); break;
-            case 'tinted': default:
-              r = Math.round(v * cr); g = Math.round(v * cg); b = Math.round(v * cb); break;
-          }
-        }
-        imageData.data[i*4] = r;
-        imageData.data[i*4+1] = g;
-        imageData.data[i*4+2] = b;
-        imageData.data[i*4+3] = 255;
-      }
-    }
-
-    function dither(noiseX, noiseY, noiseRadius) {
-      const d = new Float32Array(gray);
-      // Add noise
-      if (noiseRadius === -1) {
-        // Full thumbnail shimmer
-        for (let i = 0; i < d.length; i++) {
-          d[i] += (Math.random() - 0.5) * 20;
-        }
-      } else if (noiseRadius > 0) {
-        for (let y = 0; y < h; y++) {
-          for (let x = 0; x < w; x++) {
-            const dist = Math.sqrt((x - noiseX)**2 + (y - noiseY)**2);
-            if (dist < noiseRadius) {
-              const strength = (1 - dist / noiseRadius) * 40;
-              d[y * w + x] += (Math.random() - 0.5) * strength;
-            }
-          }
-        }
-      }
-
-      // Floyd-Steinberg
-      const out = new Uint8Array(w * h);
+      const outImg = ctx.createImageData(w, h);
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          const i = y * w + x;
-          const old = d[i];
-          const t2 = applyCfg.threeColor ? (applyCfg.threeColor.threshold2 || 205) : null;
-          const nw = t2 !== null ? (old > t2 ? 255 : old > threshold ? 128 : 0)
-                                 : (old > threshold ? 255 : 0);
-          out[i] = nw;
-          const err = old - nw;
-          if (x + 1 < w) d[i+1] += err * 7/16;
-          if (y + 1 < h && x > 0) d[i+w-1] += err * 3/16;
-          if (y + 1 < h) d[i+w] += err * 5/16;
-          if (y + 1 < h && x + 1 < w) d[i+w+1] += err * 1/16;
+          const idx = y * w + x;
+          const qr = Math.max(0, Math.min(255, rd[idx*3]));
+          const qg = Math.max(0, Math.min(255, rd[idx*3+1]));
+          const qb = Math.max(0, Math.min(255, rd[idx*3+2]));
+          const pxLab = rgbToLab(qr, qg, qb);
+          let bestIdx = 0, bestDist = Infinity;
+          for (let p = 0; p < M1_PALETTE_LAB.length; p++) {
+            const d = labDist(pxLab, M1_PALETTE_LAB[p]);
+            if (d < bestDist) { bestDist = d; bestIdx = p; }
+          }
+          const [nr, ng, nb] = M1_PALETTE[bestIdx];
+          const er = qr - nr, eg = qg - ng, eb = qb - nb;
+          if (x + 1 < w) {
+            rd[(idx+1)*3] += er*7/16; rd[(idx+1)*3+1] += eg*7/16; rd[(idx+1)*3+2] += eb*7/16;
+          }
+          if (y + 1 < h && x > 0) {
+            rd[(idx+w-1)*3] += er*3/16; rd[(idx+w-1)*3+1] += eg*3/16; rd[(idx+w-1)*3+2] += eb*3/16;
+          }
+          if (y + 1 < h) {
+            rd[(idx+w)*3] += er*5/16; rd[(idx+w)*3+1] += eg*5/16; rd[(idx+w)*3+2] += eb*5/16;
+          }
+          if (y + 1 < h && x + 1 < w) {
+            rd[(idx+w+1)*3] += er*1/16; rd[(idx+w+1)*3+1] += eg*1/16; rd[(idx+w+1)*3+2] += eb*1/16;
+          }
+          outImg.data[idx*4]   = nr;
+          outImg.data[idx*4+1] = ng;
+          outImg.data[idx*4+2] = nb;
+          outImg.data[idx*4+3] = 255;
         }
       }
-
-      // Apply to canvas
-      const imageData = ctx.createImageData(w, h);
-      applyColor(out, imageData);
-      ctx.putImageData(imageData, 0, 0);
+      ctx.putImageData(outImg, 0, 0);
     }
 
-    // Initial render
-    dither(0, 0, 0);
+    render(false);
     canvas.style.imageRendering = 'pixelated';
-    canvas.style.opacity = '0';
-    canvas.style.transition = 'opacity 0.5s ease';
     thumb.appendChild(canvas);
-    requestAnimationFrame(() => requestAnimationFrame(() => { canvas.style.opacity = '1'; }));
 
-    // Shimmer on hover — whole thumbnail
     let shimmerActive = false;
     let shimmerFrame = null;
-
     function shimmerLoop() {
       if (!shimmerActive) return;
-      dither(0, 0, -1);
-      setTimeout(() => {
-        shimmerFrame = requestAnimationFrame(shimmerLoop);
-      }, 120);
+      render(true);
+      setTimeout(() => { shimmerFrame = requestAnimationFrame(shimmerLoop); }, 120);
     }
-
-    thumb.addEventListener('mouseenter', () => {
-      shimmerActive = true;
-      shimmerLoop();
-    });
-
+    thumb.addEventListener('mouseenter', () => { shimmerActive = true; shimmerLoop(); });
     thumb.addEventListener('mouseleave', () => {
       shimmerActive = false;
       if (shimmerFrame) cancelAnimationFrame(shimmerFrame);
-      dither(0, 0, 0); // reset to clean
+      render(false);
     });
   }
 
@@ -2026,7 +1305,6 @@ ${archiveCards}
   if (document.readyState === 'complete') { preloadSharpImages(); }
   else { window.addEventListener('load', preloadSharpImages); }
 
-  let videoIndex = 0;
   document.querySelectorAll('.card[data-video-id]').forEach(card => {
     const id = card.dataset.videoId;
     const type = card.dataset.videoType;
@@ -2034,7 +1312,6 @@ ${archiveCards}
     const isBaked = !!(thumb && thumb.dataset.baked === 'true');
     const img = card.querySelector('.baked-blur') || card.querySelector('img');
     img.crossOrigin = 'anonymous';
-    const myIndex = videoIndex++;
 
     if (isBaked) {
       // Baked: fade in blur on load, set up sharp hover
@@ -2051,7 +1328,7 @@ ${archiveCards}
       }
     } else {
       img.addEventListener('load', () => {
-        try { ditherImage(img, thumb, myIndex); } catch(e) {}
+        try { ditherImage(img, thumb); } catch(e) {}
       });
     }
 
@@ -2130,8 +1407,6 @@ ${archiveCards}
         .catch(() => {});
     }
   });
-
-  // Lightbox
 
   // Trim tags to single line
   function trimTags() {
@@ -2227,7 +1502,6 @@ ${archiveCards}
   const grid = document.querySelector('.grid');
   const filtersBar = document.querySelector('.filters');
   const introBlock = document.getElementById('intro-block');
-  const logosCard = null;
   let activeFilter = 'all';
   let activeType = 'tag';
   let userArchiveOpen = false;
@@ -2247,7 +1521,7 @@ ${archiveCards}
     tagBtns.forEach(btn => {
       if (btn.dataset.filter === 'all') return;
       if (btn.offsetTop > firstTop) {
-        filtersExtra.insertBefore(btn, tagClose);
+        filtersExtra.appendChild(btn);
         hasOverflow = true;
       }
     });
@@ -2325,10 +1599,9 @@ ${archiveCards}
       document.querySelectorAll('.card .tags span[data-tag="' + value + '"]').forEach(s => s.classList.add('active'));
     }
 
-    // Show/hide intro and logos
+    // Show/hide intro block + archive toggle when filtering
     const isFiltered = value !== 'all';
     if (introBlock) introBlock.style.display = (isFiltered || !aboutActive || scaleIndex > 0) ? 'none' : '';
-    if (logosCard) logosCard.classList.toggle('hidden', isFiltered);
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
 
@@ -2349,12 +1622,6 @@ ${archiveCards}
         card.classList.toggle('hidden', !tags.split(',').includes(value));
       }
     });
-    const medAxis = document.getElementById('medium-axis');
-    if (medAxis) {
-      medAxis.querySelectorAll('button[data-filter]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === value);
-      });
-    }
   }
 
   filtersBar.addEventListener('click', e => {
@@ -2492,7 +1759,19 @@ ${archiveCards}
     filtersBar.parentNode.insertBefore(introBlock, filtersBar);
   }
 
-  ${cfg.extraJS || ''}
+  // Prepend year to duration label (year column is hidden on the main view)
+  (function() {
+    function prependYear(dur) {
+      const card = dur.closest('.card');
+      const year = card && card.dataset.year;
+      if (!year || !dur.textContent.trim() || dur.textContent.startsWith(year)) return;
+      dur.textContent = year + ' · ' + dur.textContent;
+    }
+    document.querySelectorAll('.card-duration').forEach(dur => {
+      prependYear(dur);
+      new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
+    });
+  })();
 </script>
 
 <style>
@@ -2610,64 +1889,8 @@ ${archiveCards}
 </html>`);
 }
 
-
-// Default: c7 style
 app.get('/', async (req, res) => {
-  await renderPublic(req, res, { bodyWeight: 300, titleWeight: 400, tagWeight: 300, filterWeight: 300, introWeight: 300, tagColor: '#777', label: '', font: "'IBM Plex Sans'", introSize: '19px', ditherMode: 'm1', extraJS: `
-    (function() {
-      function prependYear(dur) {
-        const card = dur.closest('.card');
-        const year = card && card.dataset.year;
-        if (!year || !dur.textContent.trim() || dur.textContent.startsWith(year)) return;
-        dur.textContent = year + ' · ' + dur.textContent;
-      }
-      document.querySelectorAll('.card-duration').forEach(dur => {
-        prependYear(dur);
-        new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
-      });
-    })();
-  `, extraCSS: `
-    .filters-search-wrap { display: none !important; }
-    .card .card-year { display: none !important; }
-    .filters button {
-      border: none;
-      border-radius: 0;
-      background: transparent;
-      color: #000;
-      font-weight: 400;
-      padding: 6px 4px;
-      position: relative;
-    }
-    .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
-    .filters button:hover { color: #1e40af; background: transparent; border: none; }
-    .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
-    .filters button.active {
-      color: #1e40af; background: transparent; border: none;
-      text-decoration: underline; text-underline-offset: 3px;
-    }
-    .filters button.active::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 0;
-      transform: translate(-50%, -7px);
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #1e40af;
-      margin: 0;
-      opacity: 1;
-    }
-    .filters button.active::after { content: ""; margin: 0; opacity: 0; }
-    .filters-medium button { border: none; background: transparent; }
-    .filters-medium button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-    .filters-medium button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
-    .tag-expand { border: none; background: transparent; border-radius: 0; color: #000; }
-    .tag-expand:hover { border: none; background: transparent; color: #1e40af; }
-    .filters-extra .tag-close { border: none; background: transparent; border-radius: 0; color: #000; }
-    .filters-extra .tag-close:hover { border: none; background: transparent; color: #1e40af; }
-  ` });
+  await renderPublic(req, res);
 });
 
 // --- Student submit page ---
