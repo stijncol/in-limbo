@@ -1009,6 +1009,17 @@ async function renderPublic(req, res) {
     /* Archive toggle label: clip overflow on narrow screens */
     .archive-toggle-label { display: none; }
   }
+  #dvd-logo {
+    position: fixed;
+    cursor: grab;
+    z-index: 50;
+    user-select: none;
+    touch-action: none;
+    border-radius: 50%;
+    pointer-events: auto;
+  }
+  #dvd-logo:active { cursor: grabbing; }
+  @media (max-width: 900px) { #dvd-logo { display: none; } }
 </style>
 </head>
 <body>
@@ -1780,6 +1791,112 @@ ${archiveCards}
       prependYear(dur);
       new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
     });
+  })();
+
+  // DVD screensaver logo
+  (function() {
+    var logo = document.createElement('img');
+    logo.id = 'dvd-logo';
+    logo.src = '/public/inlimbo-logo.png';
+    logo.draggable = false;
+    document.body.appendChild(logo);
+
+    // Size: half the intro block width
+    var introEl = document.getElementById('intro-block');
+    var size = introEl ? Math.round(introEl.offsetWidth / 2) : 180;
+    logo.style.width = size + 'px';
+    logo.style.height = size + 'px';
+
+    // Start near intro block, top-left with margin
+    var margin = 24;
+    var startRect = introEl ? introEl.getBoundingClientRect() : { left: 40, top: 120 };
+    var x = startRect.left + margin;
+    var y = startRect.top + margin;
+
+    // Velocity in px/frame (~60fps) — gentle drift
+    var speed = 0.6;
+    var vx = speed;
+    var vy = speed * 0.65;
+
+    var dragging = false;
+    var dragOffX = 0, dragOffY = 0;
+    var lastDragX = 0, lastDragY = 0;
+    var dragVX = 0, dragVY = 0;
+
+    function tick() {
+      if (!dragging) {
+        x += vx;
+        y += vy;
+        var maxX = window.innerWidth - size;
+        var maxY = window.innerHeight - size;
+        if (x <= 0)    { x = 0;    vx =  Math.abs(vx); }
+        if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
+        if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
+        if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
+      }
+      logo.style.left = Math.round(x) + 'px';
+      logo.style.top  = Math.round(y) + 'px';
+      requestAnimationFrame(tick);
+    }
+
+    logo.addEventListener('mousedown', function(e) {
+      dragging = true;
+      dragOffX = e.clientX - x;
+      dragOffY = e.clientY - y;
+      lastDragX = e.clientX;
+      lastDragY = e.clientY;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      dragVX = e.clientX - lastDragX;
+      dragVY = e.clientY - lastDragY;
+      lastDragX = e.clientX;
+      lastDragY = e.clientY;
+      x = e.clientX - dragOffX;
+      y = e.clientY - dragOffY;
+    });
+    document.addEventListener('mouseup', function() {
+      if (!dragging) return;
+      dragging = false;
+      // Resume bouncing with the velocity from the drag gesture
+      var norm = Math.sqrt(dragVX * dragVX + dragVY * dragVY) || 1;
+      vx = (dragVX / norm) * speed;
+      vy = (dragVY / norm) * speed;
+      // Fall back to default direction if drag was stationary
+      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
+    });
+
+    // Touch support
+    logo.addEventListener('touchstart', function(e) {
+      var t = e.touches[0];
+      dragging = true;
+      dragOffX = t.clientX - x;
+      dragOffY = t.clientY - y;
+      lastDragX = t.clientX;
+      lastDragY = t.clientY;
+      e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      var t = e.touches[0];
+      dragVX = t.clientX - lastDragX;
+      dragVY = t.clientY - lastDragY;
+      lastDragX = t.clientX;
+      lastDragY = t.clientY;
+      x = t.clientX - dragOffX;
+      y = t.clientY - dragOffY;
+    }, { passive: false });
+    document.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      var norm = Math.sqrt(dragVX * dragVX + dragVY * dragVY) || 1;
+      vx = (dragVX / norm) * speed;
+      vy = (dragVY / norm) * speed;
+      if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
+    });
+
+    tick();
   })();
 </script>
 
