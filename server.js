@@ -1944,6 +1944,31 @@ ${archiveCards}
 
     tick();
   })();
+
+  // Match horizontal page padding to top gap (distance from viewport top to first thumbnail row)
+  (function() {
+    var pageEl = document.querySelector('.page');
+    var gridEl = document.querySelector('.grid');
+    if (!pageEl || !gridEl) return;
+    function alignMargins() {
+      if (window.innerWidth <= 900) {
+        pageEl.style.paddingLeft = '';
+        pageEl.style.paddingRight = '';
+        return;
+      }
+      pageEl.style.paddingLeft = '';
+      pageEl.style.paddingRight = '';
+      var topGap = gridEl.getBoundingClientRect().top;
+      pageEl.style.paddingLeft  = topGap + 'px';
+      pageEl.style.paddingRight = topGap + 'px';
+    }
+    if (document.readyState === 'complete') {
+      requestAnimationFrame(alignMargins);
+    } else {
+      window.addEventListener('load', function() { requestAnimationFrame(alignMargins); });
+    }
+    window.addEventListener('resize', alignMargins);
+  })();
 </script>
 
 <style>
