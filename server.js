@@ -662,9 +662,14 @@ async function renderPublic(req, res) {
   .intro-block .intro-text a {
     color: inherit;
     text-decoration: underline;
+    text-decoration-style: dashed;
     text-decoration-color: #1e40af;
-    text-underline-offset: 3px;
+    text-underline-offset: 4px;
   }
+  /* Show all 4 styles for comparison — pick one and apply to all */
+  .intro-block .intro-text a[data-year="2023"] { text-decoration-style: dotted; }
+  .intro-block .intro-text a[data-year="2024"] { text-decoration-style: wavy; text-underline-offset: 5px; }
+  .intro-block .intro-text a[data-year="2025"] { text-decoration-style: double; }
   .intro-block .intro-text a.year-filter {
     cursor: pointer;
   }
