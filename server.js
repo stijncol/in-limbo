@@ -1797,9 +1797,40 @@ ${archiveCards}
   (function() {
     var logo = document.createElement('img');
     logo.id = 'dvd-logo';
-    logo.src = '/public/inlimbo-logo.png';
+    logo.src = '/public/inlimbo-logo2.png';
     logo.draggable = false;
     document.body.appendChild(logo);
+
+    var isSelected = false;
+
+    logo.addEventListener('mousemove', function(e) {
+      if (dragging) return;
+      var rect = logo.getBoundingClientRect();
+      var dx = e.clientX - (rect.left + rect.width / 2);
+      var dy = e.clientY - (rect.top  + rect.height / 2);
+      var inCenter = Math.sqrt(dx*dx + dy*dy) < rect.width * 0.32;
+      if (inCenter !== isSelected) {
+        isSelected = inCenter;
+        logo.src = isSelected ? '/public/inlimbo-logo2_selected.png' : '/public/inlimbo-logo2.png';
+        logo.style.cursor = isSelected ? 'pointer' : 'grab';
+      }
+    });
+    logo.addEventListener('mouseleave', function() {
+      if (dragging) return;
+      isSelected = false;
+      logo.src = '/public/inlimbo-logo2.png';
+      logo.style.cursor = 'grab';
+    });
+    logo.addEventListener('click', function() {
+      if (!isSelected) return;
+      // Reset to home: show intro, clear filters, scroll to top
+      if (typeof aboutActive !== 'undefined' && !aboutActive) {
+        var btn = document.getElementById('about-btn');
+        if (btn) btn.click();
+      }
+      if (typeof applyFilter === 'function') applyFilter('all', 'tag');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
     // Size: 7/8 of half the intro block width
     var introEl = document.getElementById('intro-block');
