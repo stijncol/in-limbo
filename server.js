@@ -880,12 +880,10 @@ async function renderPublic(req, res) {
   /* Margin controls — [about] left, scale right, desktop only */
   .margin-about {
     position: fixed;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
     writing-mode: vertical-rl;
+    transform: rotate(180deg);
     font-family: inherit;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 0.08em;
     color: #aaa;
     background: none;
@@ -1732,14 +1730,22 @@ ${archiveCards}
 
   function positionScaleCtrl() {
     var ctrl = document.getElementById('scale-ctrl');
+    var aboutBtn = document.getElementById('about-btn');
     var gridEl = document.querySelector('.grid');
-    if (!ctrl || !gridEl || window.innerWidth <= 900) return;
+    if (!gridEl || window.innerWidth <= 900) return;
     var gridRect = gridEl.getBoundingClientRect();
-    var rightGap = window.innerWidth - gridRect.right;
-    var ctrlW = ctrl.offsetWidth;
-    ctrl.style.right = Math.max(4, Math.round((rightGap - ctrlW) / 2)) + 'px';
-    ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
-    window.dispatchEvent(new CustomEvent('scale-ctrl-positioned'));
+    var gridTop = Math.round(gridRect.top + 10);
+
+    if (ctrl) {
+      var rightGap = window.innerWidth - gridRect.right;
+      ctrl.style.right = Math.max(4, Math.round((rightGap - ctrl.offsetWidth) / 2)) + 'px';
+      ctrl.style.top = gridTop + 'px';
+    }
+    if (aboutBtn) {
+      var leftGap = gridRect.left;
+      aboutBtn.style.left = Math.max(4, Math.round((leftGap - aboutBtn.offsetWidth) / 2)) + 'px';
+      aboutBtn.style.top = gridTop + 'px';
+    }
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
@@ -2011,103 +2017,6 @@ ${archiveCards}
   })();
 </script>
 
-<style>
-  .scroll-ind {
-    position: fixed;
-    width: 20px;
-    pointer-events: none;
-    z-index: 50;
-  }
-  .scroll-ind-vp {
-    position: absolute;
-    left: 50%;
-    width: 12px;
-    min-height: 24px;
-    border-radius: 6px;
-    border: 0.5px solid #000;
-    background: none;
-    transform: translateX(-50%);
-    transition: top 0.1s ease-out, height 0.1s ease-out;
-  }
-  @media (max-width: 768px) { .scroll-ind { display: none !important; } }
-</style>
-
-<div class="scroll-ind" id="scroll-ind">
-  <div class="scroll-ind-vp" id="scroll-ind-vp"></div>
-</div>
-
-<script>
-(function() {
-  var ind = document.getElementById('scroll-ind');
-  var vpEl = document.getElementById('scroll-ind-vp');
-  if (!ind || !vpEl) return;
-
-  var rafPending = false;
-
-  function visibleCards() {
-    return Array.from(document.querySelectorAll('.card[data-video-id]')).filter(function(c) {
-      return !c.classList.contains('hidden') && c.style.display !== 'none' && getComputedStyle(c).display !== 'none';
-    });
-  }
-
-  function recalc() {
-    var docH = Math.max(document.body.scrollHeight, 1);
-    var vpH = window.innerHeight;
-    if (docH <= vpH || window.innerWidth <= 900) { ind.style.visibility = 'hidden'; return; }
-
-    var cards = visibleCards();
-    if (!cards.length) { ind.style.visibility = 'hidden'; return; }
-
-    var scaleCtrl = document.getElementById('scale-ctrl');
-    if (!scaleCtrl) { ind.style.visibility = 'hidden'; return; }
-    ind.style.visibility = '';
-
-    // Position below the scale control, horizontally centered on it
-    var ctrlRect = scaleCtrl.getBoundingClientRect();
-    var indTop = Math.round(ctrlRect.bottom + 16);
-    var indH = Math.max(vpH - indTop - 40, 40);
-    ind.style.top = indTop + 'px';
-    ind.style.height = indH + 'px';
-
-    var scaleCenterFromRight = window.innerWidth - (ctrlRect.left + ctrlRect.width / 2);
-    ind.style.right = Math.round(scaleCenterFromRight - ind.offsetWidth / 2) + 'px';
-
-    updateVp(docH, indH);
-  }
-
-  function updateVp(docH, indH) {
-    docH = docH || Math.max(document.body.scrollHeight, 1);
-    indH = indH || ind.offsetHeight;
-    var vpH = window.innerHeight;
-    var thumbH = Math.max(Math.round(indH * vpH / docH), 24);
-    var maxScroll = docH - vpH;
-    var frac = maxScroll > 0 ? Math.min(Math.max(window.scrollY / maxScroll, 0), 1) : 0;
-    var thumbTop = Math.round((indH - thumbH) * frac);
-    vpEl.style.height = thumbH + 'px';
-    vpEl.style.top = thumbTop + 'px';
-  }
-
-  function onScroll() {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(function() { rafPending = false; updateVp(); });
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', recalc);
-  window.addEventListener('scale-ctrl-positioned', recalc);
-
-  // Watch card class/style changes (filter + archive toggle)
-  var mo = new MutationObserver(recalc);
-  document.querySelectorAll('.card[data-video-id]').forEach(function(c) {
-    mo.observe(c, { attributes: true, attributeFilter: ['class', 'style'] });
-  });
-
-  // Initial build — after cards animate in
-  if (document.readyState === 'complete') { setTimeout(recalc, 100); }
-  else { window.addEventListener('load', function() { setTimeout(recalc, 100); }); }
-})();
-</script>
 </body>
 </html>`);
 }
