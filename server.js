@@ -911,36 +911,40 @@ async function renderPublic(req, res) {
     border: none;
     padding: 3px;
     cursor: pointer;
-    color: #ccc;
+    color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
-    transition: color 0.2s;
     user-select: none;
   }
-  .scale-icon-btn:hover:not(:disabled) { color: #000; }
-  .scale-icon-btn:disabled { color: #e8e8e8; cursor: default; }
+  .scale-icon-btn:disabled { color: #ddd; cursor: default; }
   .scale-grid-icons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 0;
+    position: relative;
+    width: 30px;
+    height: 20px;
+    margin: 4px 0;
   }
   .scale-grid-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
     background: none;
     border: none;
-    padding: 2px;
+    padding: 0;
     cursor: pointer;
-    color: #ccc;
+    color: #000;
     display: block;
     line-height: 0;
-    transition: color 0.2s;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
     user-select: none;
   }
-  .scale-grid-icon:hover { color: #555; }
-  .scale-grid-icon.active { color: #000; }
+  .scale-grid-icon.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
   .grid.grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 20px 10px;
@@ -1081,22 +1085,22 @@ ${archiveCards}
 
 <button class="margin-about active" id="about-btn">[about]</button>
 <div class="margin-scale" id="scale-ctrl">
-  <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
-    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+  <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
   <div class="scale-grid-icons">
     <button class="scale-grid-icon active" data-scale="0" title="3 columns">
-      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="3.5" height="3.5"/><rect x="5.75" y="0" width="3.5" height="3.5"/><rect x="11.5" y="0" width="3.5" height="3.5"/><rect x="0" y="6.5" width="3.5" height="3.5"/><rect x="5.75" y="6.5" width="3.5" height="3.5"/><rect x="11.5" y="6.5" width="3.5" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="none" stroke="currentColor" stroke-width="0.5" overflow="visible"><rect x="0.25" y="0.25" width="3" height="3"/><rect x="6" y="0.25" width="3" height="3"/><rect x="11.75" y="0.25" width="3" height="3"/><rect x="0.25" y="6.75" width="3" height="3"/><rect x="6" y="6.75" width="3" height="3"/><rect x="11.75" y="6.75" width="3" height="3"/></svg>
     </button>
     <button class="scale-grid-icon" data-scale="1" title="5 columns">
-      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="2" height="3.5"/><rect x="3.25" y="0" width="2" height="3.5"/><rect x="6.5" y="0" width="2" height="3.5"/><rect x="9.75" y="0" width="2" height="3.5"/><rect x="13" y="0" width="2" height="3.5"/><rect x="0" y="6.5" width="2" height="3.5"/><rect x="3.25" y="6.5" width="2" height="3.5"/><rect x="6.5" y="6.5" width="2" height="3.5"/><rect x="9.75" y="6.5" width="2" height="3.5"/><rect x="13" y="6.5" width="2" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="none" stroke="currentColor" stroke-width="0.4" overflow="visible"><rect x="0.2" y="0.2" width="1.6" height="3.1"/><rect x="3.45" y="0.2" width="1.6" height="3.1"/><rect x="6.7" y="0.2" width="1.6" height="3.1"/><rect x="9.95" y="0.2" width="1.6" height="3.1"/><rect x="13.2" y="0.2" width="1.6" height="3.1"/><rect x="0.2" y="6.7" width="1.6" height="3.1"/><rect x="3.45" y="6.7" width="1.6" height="3.1"/><rect x="6.7" y="6.7" width="1.6" height="3.1"/><rect x="9.95" y="6.7" width="1.6" height="3.1"/><rect x="13.2" y="6.7" width="1.6" height="3.1"/></svg>
     </button>
     <button class="scale-grid-icon" data-scale="2" title="7 columns">
-      <svg width="30" height="20" viewBox="0 0 15 10" fill="currentColor"><rect x="0" y="0" width="1.25" height="3.5"/><rect x="2.3" y="0" width="1.25" height="3.5"/><rect x="4.6" y="0" width="1.25" height="3.5"/><rect x="6.9" y="0" width="1.25" height="3.5"/><rect x="9.2" y="0" width="1.25" height="3.5"/><rect x="11.5" y="0" width="1.25" height="3.5"/><rect x="13.75" y="0" width="1.25" height="3.5"/><rect x="0" y="6.5" width="1.25" height="3.5"/><rect x="2.3" y="6.5" width="1.25" height="3.5"/><rect x="4.6" y="6.5" width="1.25" height="3.5"/><rect x="6.9" y="6.5" width="1.25" height="3.5"/><rect x="9.2" y="6.5" width="1.25" height="3.5"/><rect x="11.5" y="6.5" width="1.25" height="3.5"/><rect x="13.75" y="6.5" width="1.25" height="3.5"/></svg>
+      <svg width="30" height="20" viewBox="0 0 15 10" fill="none" stroke="currentColor" stroke-width="0.35" overflow="visible"><rect x="0.18" y="0.18" width="0.9" height="3.14"/><rect x="2.48" y="0.18" width="0.9" height="3.14"/><rect x="4.78" y="0.18" width="0.9" height="3.14"/><rect x="7.08" y="0.18" width="0.9" height="3.14"/><rect x="9.38" y="0.18" width="0.9" height="3.14"/><rect x="11.68" y="0.18" width="0.9" height="3.14"/><rect x="13.98" y="0.18" width="0.9" height="3.14"/><rect x="0.18" y="6.68" width="0.9" height="3.14"/><rect x="2.48" y="6.68" width="0.9" height="3.14"/><rect x="4.78" y="6.68" width="0.9" height="3.14"/><rect x="7.08" y="6.68" width="0.9" height="3.14"/><rect x="9.38" y="6.68" width="0.9" height="3.14"/><rect x="11.68" y="6.68" width="0.9" height="3.14"/><rect x="13.98" y="6.68" width="0.9" height="3.14"/></svg>
     </button>
   </div>
-  <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
-    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
+  <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
+    <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
 </div>
 
