@@ -1044,6 +1044,19 @@ async function renderPublic(req, res) {
     display: block;
     pointer-events: none;
   }
+  #dvd-logo-close {
+    position: absolute;
+    top: 0; right: 0;
+    transform: translate(50%, -50%);
+    width: 26px; height: 26px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 2;
+    line-height: 0;
+  }
+  #dvd-logo:hover #dvd-logo-close { opacity: 1; pointer-events: auto; }
   @media (max-width: 900px) { #dvd-logo { display: none; } }
 </style>
 </head>
@@ -1885,6 +1898,13 @@ ${archiveCards}
 
     wrap.appendChild(logoBase);
     wrap.appendChild(logoSel);
+
+    var closeBtn = document.createElement('div');
+    closeBtn.id = 'dvd-logo-close';
+    closeBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7" fill="white"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>';
+    closeBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    closeBtn.addEventListener('click', function(e) { e.stopPropagation(); wrap.style.display = 'none'; });
+    wrap.appendChild(closeBtn);
 
     var isSelected = false;
 
