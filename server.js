@@ -1859,11 +1859,11 @@ ${archiveCards}
     window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
 
     function applyThrow(dvx, dvy) {
-      var throwScale = 7;
+      var throwScale = 6;
       var tx = dvx * throwScale;
       var ty = dvy * throwScale;
       var throwSpeed = Math.sqrt(tx * tx + ty * ty);
-      var maxThrow = 28;
+      var maxThrow = 22;
       if (throwSpeed > maxThrow) { tx *= maxThrow / throwSpeed; ty *= maxThrow / throwSpeed; }
       vx = tx; vy = ty;
       if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) { vx = speed; vy = speed * 0.65; }
@@ -1885,7 +1885,7 @@ ${archiveCards}
         // Slowly decay back to base speed — keep the throw alive longer
         var cur = Math.sqrt(vx * vx + vy * vy);
         if (cur > speed + 0.05) {
-          vx *= 0.994; vy *= 0.994;
+          vx *= 0.982; vy *= 0.982;
         } else if (cur < speed - 0.05) {
           vx *= 1.03; vy *= 1.03;
         }
