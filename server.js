@@ -652,7 +652,7 @@ async function renderPublic(req, res) {
   }
   .intro-block .intro-text {
     font-family: inherit;
-    font-size: 19px;
+    font-size: 18px;
     line-height: 1.55;
     color: #111;
   }
