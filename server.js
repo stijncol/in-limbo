@@ -420,6 +420,7 @@ async function renderPublic(req, res, config) {
   .filters button {
     font-family: inherit;
     font-size: 14px;
+    font-weight: 400;
     letter-spacing: 0.02em;
     padding: 6px 15px;
     border: 1px solid #ccc;
