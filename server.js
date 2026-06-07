@@ -931,12 +931,11 @@ async function renderPublic(req, res) {
   .margin-about.active { color: #111; }
   .margin-about:hover { color: #111; }
   #about-panel {
-    position: fixed;
+    position: absolute;
     background: #fff;
     border: 1px solid #000;
     padding: 0 20px 20px 20px;
     z-index: 150;
-    overflow-y: auto;
     box-sizing: border-box;
     display: none;
   }
@@ -1918,10 +1917,9 @@ ${archiveCards}
     if (!gridEl) return;
     var gridRect = gridEl.getBoundingClientRect();
     var colW = Math.round(gridRect.width / 3 - 14);
-    aboutPanel.style.left   = Math.round(gridRect.left) + 'px';
-    aboutPanel.style.top    = Math.round(gridRect.top) + 'px';
-    aboutPanel.style.width  = colW + 'px';
-    aboutPanel.style.maxHeight = Math.round(window.innerHeight - gridRect.top - 20) + 'px';
+    aboutPanel.style.left  = Math.round(gridRect.left + window.scrollX) + 'px';
+    aboutPanel.style.top   = Math.round(gridRect.top + window.scrollY) + 'px';
+    aboutPanel.style.width = colW + 'px';
   }
 
   // About toggle — floating panel in compact modes, in-grid block in 3-col
