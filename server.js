@@ -934,13 +934,19 @@ async function renderPublic(req, res) {
     position: fixed;
     background: #fff;
     border: 1px solid #000;
-    padding: 28px;
+    padding: 0 20px 20px 20px;
     z-index: 150;
     overflow-y: auto;
     box-sizing: border-box;
     display: none;
   }
   #about-panel.active { display: block; }
+  #about-panel .intro-block {
+    display: block;
+    padding: 20px 0 0 0;
+    grid-column: auto;
+    grid-row: auto;
+  }
   .margin-scale {
     position: fixed;
     display: flex;
@@ -1894,8 +1900,9 @@ ${archiveCards}
   // About panel (fixed overlay for compact grid modes)
   var aboutPanel = document.getElementById('about-panel');
   if (aboutPanel && introBlock) {
-    var introText = introBlock.querySelector('.intro-text');
-    if (introText) aboutPanel.innerHTML = introText.innerHTML;
+    var introClone = introBlock.cloneNode(true);
+    introClone.removeAttribute('id');
+    aboutPanel.appendChild(introClone);
   }
 
   function positionAboutPanel() {
