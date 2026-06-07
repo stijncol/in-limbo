@@ -351,7 +351,7 @@ async function renderPublic(req, res) {
   }
   .filters-row .filters-label {
     position: absolute;
-    left: -52px;
+    left: -57px;
     top: 7px;
     width: 44px;
     text-align: right;
@@ -380,7 +380,7 @@ async function renderPublic(req, res) {
   }
   .filters-medium .filters-label {
     position: absolute;
-    left: -52px;
+    left: -57px;
     top: 7px;
     width: 44px;
     text-align: right;
