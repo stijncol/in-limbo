@@ -1111,48 +1111,6 @@ async function renderPublic(req, res) {
   #dvd-logo-close:hover { opacity: 1; }
   @media (max-width: 900px) { #dvd-logo { display: none; } }
 
-  /* Night mode */
-  body.night-mode { background: #111; color: #e0e0e0; }
-  body.night-mode .filters button { color: #e0e0e0; }
-  body.night-mode .filters button:hover { color: #7ba7e8; }
-  body.night-mode .filters button.active { color: #7ba7e8; }
-  body.night-mode .filters button::before,
-  body.night-mode .filters button::after { color: #e0e0e0; }
-  body.night-mode .filters-label { color: #999; }
-  body.night-mode .tag-expand,
-  body.night-mode .tag-collapse { color: #e0e0e0; }
-  body.night-mode .tag-count { color: #999; }
-  body.night-mode .intro-block .intro-text { color: #e0e0e0; }
-  body.night-mode .intro-block .intro-text a { text-decoration-color: #7ba7e8; }
-  body.night-mode .intro-block .intro-text a:hover,
-  body.night-mode .intro-block .intro-text a.year-filter.active { color: #7ba7e8; }
-  body.night-mode .card-title { color: #e0e0e0; }
-  body.night-mode .card-year { color: #999; }
-  body.night-mode .card-duration { color: #999; }
-  body.night-mode .card .tags span { color: #888; }
-  body.night-mode .card .tags span[data-tag]:hover,
-  body.night-mode .card .tags span.active { color: #7ba7e8; }
-  body.night-mode .card .thumb::before { border-color: rgba(255,255,255,0.12); }
-  body.night-mode .margin-about { color: #999; }
-  body.night-mode .margin-about.active,
-  body.night-mode .margin-about:hover { color: #e0e0e0; }
-  body.night-mode .scale-icon-btn { color: #e0e0e0; }
-  body.night-mode .scale-icon-btn:disabled { color: #555; }
-  body.night-mode .scale-grid-icon { color: #666; }
-  body.night-mode .scale-grid-icon.active,
-  body.night-mode .scale-grid-icon:hover { color: #e0e0e0; }
-  body.night-mode #about-panel { background: #111; border-color: #333; }
-  body.night-mode #dvd-logo img { filter: invert(1); }
-  body.night-mode .site-footer { color: #777; }
-  body.night-mode .footer-logos img { filter: invert(1); opacity: 0.5; }
-  body.night-mode .inline-search-input { color: #7ba7e8; border-color: #4a6fa8; }
-  body.night-mode .filters-search-input { color: #7ba7e8; border-color: #4a6fa8; }
-  body.night-mode .inline-search-wrap::before,
-  body.night-mode .inline-search-wrap::after { color: #999; }
-  body.night-mode .archive-toggle-label { color: #999; }
-  body.night-mode #archive-btn { color: #e0e0e0; }
-  body.night-mode .labo-logo-hover { filter: invert(1); }
-  body.night-mode #dvd-logo-close svg circle { fill: #111; }
 </style>
 </head>
 <body>
@@ -1218,9 +1176,7 @@ ${archiveCards}
   <button class="scale-icon-btn" id="scale-up" title="Smaller thumbnails">
     <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
-  <button class="scale-icon-btn" id="night-mode-btn" title="Toggle night mode" style="margin-top:6px">
-    <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8A5 5 0 1 1 8 3a4 4 0 0 0 5 5z"/></svg>
-  </button>
+
 </div>
 
 <div class="site-footer">
@@ -1947,16 +1903,6 @@ ${archiveCards}
   document.querySelectorAll('.scale-grid-icon').forEach(function(btn) {
     btn.addEventListener('click', function() { applyScale(parseInt(btn.dataset.scale, 10)); });
   });
-
-  // Night mode
-  var nightBtn = document.getElementById('night-mode-btn');
-  if (localStorage.getItem('nightMode') === '1') document.body.classList.add('night-mode');
-  if (nightBtn) {
-    nightBtn.addEventListener('click', function() {
-      var on = document.body.classList.toggle('night-mode');
-      localStorage.setItem('nightMode', on ? '1' : '0');
-    });
-  }
 
   // About panel (fixed overlay for compact grid modes)
   var aboutPanel = document.getElementById('about-panel');
