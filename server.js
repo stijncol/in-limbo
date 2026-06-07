@@ -890,26 +890,19 @@ async function renderPublic(req, res) {
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 100;
+    z-index: 10;
     transition: color 0.2s;
     user-select: none;
   }
   .margin-about.active { color: #111; }
   .margin-about:hover { color: #111; }
-  .about-sign {
-    display: block;
-    margin-top: 10px;
-    font-size: 14px;
-    opacity: 0.5;
-    letter-spacing: 0;
-  }
   .margin-scale {
     position: fixed;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    z-index: 100;
+    z-index: 10;
   }
   .scale-icon-btn {
     background: none;
@@ -1030,7 +1023,7 @@ async function renderPublic(req, res) {
   #dvd-logo {
     position: absolute;
     cursor: default;
-    z-index: 50;
+    z-index: 200;
     user-select: none;
     touch-action: none;
     border-radius: 50%;
@@ -1101,7 +1094,7 @@ ${archiveCards}
   </div>
 </div>
 
-<button class="margin-about active" id="about-btn">[about]<span class="about-sign" id="about-sign">−</span></button>
+<button class="margin-about active" id="about-btn">[about]</button>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
     <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
@@ -1837,12 +1830,10 @@ ${archiveCards}
 
   // About toggle — hides/shows intro block
   var aboutBtn = document.getElementById('about-btn');
-  var aboutSign = document.getElementById('about-sign');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
       aboutBtn.classList.toggle('active', aboutActive);
-      if (aboutSign) aboutSign.textContent = aboutActive ? '−' : '+';
       if (introBlock) {
         if (aboutActive && scaleIndex === 0) {
           introBlock.style.opacity = '0';
@@ -1948,36 +1939,31 @@ ${archiveCards}
     var vy = speed * 0.65;
 
     var hovering = false;
-    var hoverTimer = null;
-    function setHover(state) {
-      if (state) { clearTimeout(hoverTimer); hovering = true; }
-      else { hoverTimer = setTimeout(function() { hovering = false; }, 150); }
-    }
-    wrap.addEventListener('mouseenter', function() { setHover(true); });
-    wrap.addEventListener('mouseleave', function() { setHover(false); });
-    closeBtn.addEventListener('mouseenter', function() { setHover(true); });
-    closeBtn.addEventListener('mouseleave', function() { setHover(false); });
-
-    var lastScrollTime = Date.now();
-    window.addEventListener('scroll', function() { lastScrollTime = Date.now(); }, { passive: true });
+    document.addEventListener('mousemove', function(e) {
+      if (wrap.style.display === 'none') return;
+      var rect = wrap.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      var dx = e.clientX - cx;
+      var dy = e.clientY - cy;
+      hovering = (dx*dx + dy*dy) < Math.pow(rect.width / 2 + 40, 2);
+    }, { passive: true });
 
     function tick() {
+      var minX = 0;
+      var maxX = Math.max(0, window.innerWidth - size);
+      var minY = window.scrollY;
+      var maxY = window.scrollY + window.innerHeight - size;
       if (!hovering) {
         x += vx;
         y += vy;
-        var maxX = window.innerWidth - size;
-        var pageStill = (Date.now() - lastScrollTime) > 2000;
-        var maxY = pageStill
-          ? window.scrollY + window.innerHeight - size
-          : document.documentElement.scrollHeight - size;
-        if (x <= 0)    { x = 0;    vx =  Math.abs(vx); }
+        if (x <= minX) { x = minX; vx =  Math.abs(vx); }
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
-        if (y <= 0)    { y = 0;    vy =  Math.abs(vy); }
+        if (y <= minY) { y = minY; vy =  Math.abs(vy); }
         if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-        // clamp in case boundaries shifted while hovering
-        x = Math.min(Math.max(x, 0), maxX);
-        y = Math.min(Math.max(y, 0), maxY);
       }
+      x = Math.min(Math.max(x, minX), maxX);
+      y = Math.min(Math.max(y, minY), maxY);
       wrap.style.left = Math.round(x) + 'px';
       wrap.style.top  = Math.round(y) + 'px';
       requestAnimationFrame(tick);
