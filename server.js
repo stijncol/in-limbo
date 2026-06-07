@@ -1845,7 +1845,7 @@ ${archiveCards}
     // (Deferring display:none causes a mid-animation reflow that breaks the FLIP.)
     if (introBlock && idx !== 0 && prev === 0) {
       introBlock.style.display = 'none';
-      if (aboutActive && aboutPanel) { positionAboutPanel(); aboutPanel.classList.add('active'); }
+      if (aboutPanel) aboutPanel.classList.remove('active');
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
