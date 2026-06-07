@@ -1846,6 +1846,9 @@ ${archiveCards}
     if (introBlock && idx !== 0 && prev === 0) {
       introBlock.style.display = 'none';
       if (aboutPanel) aboutPanel.classList.remove('active');
+      aboutActive = false;
+      var aboutBtn = document.getElementById('about-btn');
+      if (aboutBtn) aboutBtn.classList.remove('active');
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
