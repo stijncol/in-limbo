@@ -355,7 +355,9 @@ async function renderPublic(req, res) {
     top: 7px;
     width: 44px;
     text-align: right;
+    display: none;
   }
+  .filters.show-all .filters-row .filters-label { display: block; }
   .filters-row .theme-tags {
     display: flex;
     flex-wrap: wrap;
