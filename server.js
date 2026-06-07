@@ -1634,38 +1634,41 @@ ${archiveCards}
   let activeType = 'tag';
   let userArchiveOpen = false;
 
-  // Dynamically limit visible tags to what fits on the first line
+  // Dynamically limit visible tags so + always stays on the first line
   const filtersRow = document.getElementById('filters-row');
   const themeTags = filtersRow.querySelector('.theme-tags');
   const filtersExtra = document.getElementById('filters-extra');
-  const tagBtns = Array.from(themeTags.querySelectorAll('button[data-filter]'));
   const expandBtn = document.getElementById('tag-expand');
-  
-  // Wait for layout, then check which tags overflow to second line
-  setTimeout(() => {
-    if (tagBtns.length < 2) return;
-    const firstTop = tagBtns[0].offsetTop;
-    let hasOverflow = false;
-    tagBtns.forEach(btn => {
-      if (btn.dataset.filter === 'all') return;
-      if (btn.offsetTop > firstTop) {
-        filtersExtra.appendChild(btn);
-        hasOverflow = true;
-      }
+
+  function enforceFirstLine() {
+    if (filtersBar.classList.contains('show-all')) return;
+    // Reset: move all filtersExtra buttons back into themeTags before expandBtn
+    Array.from(filtersExtra.querySelectorAll('button[data-filter]')).forEach(btn => {
+      themeTags.insertBefore(btn, expandBtn);
     });
-    const hasMediumTags = document.querySelectorAll('.medium-tags button[data-filter]').length > 0;
-    if (!hasOverflow && !hasMediumTags) {
-      expandBtn.style.display = 'none';
-    }
-    // Keep hiding tags until expand button fits on the first line
-    let guard = tagBtns.length;
+    // Use the "all" button as the baseline for line 1
+    const allBtn = themeTags.querySelector('button[data-filter="all"]');
+    const firstTop = allBtn ? allBtn.offsetTop : 0;
+    // Move any tags that wrapped to filtersExtra
+    let hasOverflow = false;
+    Array.from(themeTags.querySelectorAll('button[data-filter]:not([data-filter="all"])')).forEach(btn => {
+      if (btn.offsetTop > firstTop) { filtersExtra.appendChild(btn); hasOverflow = true; }
+    });
+    const hasMediumTags = !!document.querySelector('.medium-tags button[data-filter]');
+    expandBtn.style.display = (!hasOverflow && !hasMediumTags) ? 'none' : '';
+    // Keep pulling the last visible tag out until + fits on line 1
+    let guard = 50;
     while (expandBtn.offsetTop > firstTop && guard-- > 0) {
-      const visibleTags = Array.from(themeTags.querySelectorAll('button[data-filter]')).filter(b => b.dataset.filter !== 'all');
-      if (visibleTags.length === 0) break;
-      const last = visibleTags[visibleTags.length - 1];
-      filtersExtra.insertBefore(last, filtersExtra.firstChild);
+      const visible = Array.from(themeTags.querySelectorAll('button[data-filter]:not([data-filter="all"])'));
+      if (!visible.length) break;
+      filtersExtra.insertBefore(visible[visible.length - 1], filtersExtra.firstChild);
     }
-  }, 50);
+  }
+
+  // Run after first paint, after fonts are ready, and on any container resize
+  setTimeout(() => requestAnimationFrame(enforceFirstLine), 0);
+  document.fonts.ready.then(() => requestAnimationFrame(enforceFirstLine));
+  new ResizeObserver(() => { if (!filtersBar.classList.contains('show-all')) requestAnimationFrame(enforceFirstLine); }).observe(filtersRow);
 
   // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
@@ -1679,7 +1682,7 @@ ${archiveCards}
 
   document.getElementById('tag-collapse').addEventListener('click', () => {
     filtersBar.classList.remove('show-all');
-    requestAnimationFrame(positionScaleCtrl);
+    requestAnimationFrame(() => { enforceFirstLine(); positionScaleCtrl(); });
   });
 
   // Support both inline intro search and filter-bar search
