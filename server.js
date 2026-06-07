@@ -1893,19 +1893,16 @@ ${archiveCards}
     var closeBtn = document.createElement('div');
     closeBtn.id = 'dvd-logo-close';
 
-    var iconClose = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7" fill="white"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>';
     var iconPause = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><rect x="5.5" y="5" width="2" height="6" rx="0.5" fill="#000"/><rect x="8.5" y="5" width="2" height="6" rx="0.5" fill="#000"/></svg>';
     var iconPlay  = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><polygon points="6.5,5 12,8 6.5,11" fill="#000"/></svg>';
 
-    closeBtn.innerHTML = iconClose;
+    closeBtn.innerHTML = iconPause;
     closeBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       if (paused) {
         paused = false;
-        closeBtn.innerHTML = iconClose;
-      } else {
-        wrap.style.display = 'none';
+        closeBtn.innerHTML = iconPause;
       }
     });
     wrap.appendChild(closeBtn);
@@ -1978,7 +1975,6 @@ ${archiveCards}
       dragOffX = e.clientX + window.scrollX - x;
       dragOffY = e.clientY + window.scrollY - y;
       wrap.style.cursor = 'grabbing';
-      closeBtn.innerHTML = iconPause;
       e.preventDefault();
     });
 
