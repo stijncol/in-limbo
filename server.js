@@ -879,7 +879,7 @@ async function renderPublic(req, res) {
   }
   /* Margin controls — [about] left, scale right, desktop only */
   .margin-about {
-    position: fixed;
+    position: absolute;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-family: inherit;
@@ -1614,6 +1614,7 @@ ${archiveCards}
       applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
+    requestAnimationFrame(positionScaleCtrl);
   });
 
   // Support both inline intro search and filter-bar search
@@ -1648,7 +1649,7 @@ ${archiveCards}
     activeFilter = value;
     activeType = type || 'tag';
     document.body.classList.toggle('has-filter', value !== 'all');
-    if (value === 'all') filtersBar.classList.remove('show-all');
+    if (value === 'all') { filtersBar.classList.remove('show-all'); requestAnimationFrame(positionScaleCtrl); }
     if (type !== 'search') clearSearchInputs();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
@@ -1760,7 +1761,7 @@ ${archiveCards}
     if (aboutBtn) {
       var leftGap = gridRect.left;
       aboutBtn.style.left = Math.max(4, Math.round((leftGap - aboutBtn.offsetWidth) / 2)) + 'px';
-      aboutBtn.style.top = gridTop + 'px';
+      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
     }
   }
   window.addEventListener('resize', positionScaleCtrl);
