@@ -1059,7 +1059,8 @@ async function renderPublic(req, res) {
 <div class="page">
   <div class="filters" id="filters">
     <div class="filters-left">
-      <div class="filters-row" id="filters-row" style="grid-template-columns:1fr">
+      <div class="filters-row" id="filters-row">
+        <span class="filters-label">theme</span>
         <div class="theme-tags">
           <button class="active" data-filter="all">all</button>
           ${themeButtons}
