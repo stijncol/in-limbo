@@ -1219,7 +1219,7 @@ ${archiveCards}
     <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="8" y1="4.5" x2="8" y2="11.5"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
   </button>
   <button class="scale-icon-btn" id="night-mode-btn" title="Toggle night mode" style="margin-top:6px">
-    <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 10.5A5 5 0 1 1 5.5 5.5a4 4 0 0 0 5 5z"/></svg>
+    <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8A5 5 0 1 1 8 3a4 4 0 0 0 5 5z"/></svg>
   </button>
 </div>
 
