@@ -399,7 +399,20 @@ async function renderPublic(req, res) {
     padding-left: 0;
     margin-top: 6px;
   }
-  .filters.show-all .filters-extra { display: flex; }
+  @keyframes filterFadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .filters.show-all .filters-extra {
+    display: flex;
+    animation: filterFadeIn 0.3s ease forwards;
+  }
+  .filters.show-all .filters-medium {
+    animation: filterFadeIn 0.3s ease 0.05s both;
+  }
+  .filters.show-all .filters-row .filters-label {
+    animation: filterFadeIn 0.25s ease forwards;
+  }
   .filters button {
     font-family: inherit;
     font-size: 14px;
@@ -895,7 +908,7 @@ async function renderPublic(req, res) {
     cursor: pointer;
     padding: 0;
     z-index: 10;
-    transition: color 0.2s;
+    transition: top 0.3s ease, color 0.2s;
     user-select: none;
   }
   .margin-about.active { color: #111; }
