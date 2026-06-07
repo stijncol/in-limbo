@@ -1892,9 +1892,22 @@ ${archiveCards}
 
     var closeBtn = document.createElement('div');
     closeBtn.id = 'dvd-logo-close';
-    closeBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7" fill="white"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>';
+
+    var iconClose = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7" fill="white"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5"/></svg>';
+    var iconPause = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><rect x="5.5" y="5" width="2" height="6" rx="0.5" fill="#000"/><rect x="8.5" y="5" width="2" height="6" rx="0.5" fill="#000"/></svg>';
+    var iconPlay  = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><polygon points="6.5,5 12,8 6.5,11" fill="#000"/></svg>';
+
+    closeBtn.innerHTML = iconClose;
     closeBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    closeBtn.addEventListener('click', function(e) { e.stopPropagation(); wrap.style.display = 'none'; });
+    closeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (paused) {
+        paused = false;
+        closeBtn.innerHTML = iconClose;
+      } else {
+        wrap.style.display = 'none';
+      }
+    });
     wrap.appendChild(closeBtn);
 
     var isSelected = false;
@@ -1940,6 +1953,7 @@ ${archiveCards}
 
     var hovering = false;
     var dragging = false;
+    var paused = false;
     var dragOffX = 0, dragOffY = 0;
 
     document.addEventListener('mousemove', function(e) {
@@ -1960,15 +1974,19 @@ ${archiveCards}
     wrap.addEventListener('mousedown', function(e) {
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;
       dragging = true;
+      paused = false;
       dragOffX = e.clientX + window.scrollX - x;
       dragOffY = e.clientY + window.scrollY - y;
       wrap.style.cursor = 'grabbing';
+      closeBtn.innerHTML = iconPause;
       e.preventDefault();
     });
 
     document.addEventListener('mouseup', function() {
       if (!dragging) return;
       dragging = false;
+      paused = true;
+      closeBtn.innerHTML = iconPlay;
       wrap.style.cursor = isSelected ? 'pointer' : 'grab';
     });
 
@@ -1977,7 +1995,7 @@ ${archiveCards}
       var maxX = Math.max(0, window.innerWidth - size);
       var minY = window.scrollY;
       var maxY = window.scrollY + window.innerHeight - size;
-      if (!hovering && !dragging) {
+      if (!hovering && !dragging && !paused) {
         x += vx;
         y += vy;
         if (x <= minX) { x = minX; vx =  Math.abs(vx); }
