@@ -1877,20 +1877,22 @@ ${archiveCards}
 
     // FLIP — Invert + Play via Web Animations API:
     // animate FROM the old position/size TO the new one (fill:none = no style pollution)
+    cards.forEach(function(card) { card.style.willChange = 'transform'; });
     cards.forEach(function(card, i) {
       const f = firstRects[i], l = lastRects[i];
-      if (!l.width) return;
+      if (!l.width) { card.style.willChange = ''; return; }
       const dx = f.left - l.left;
       const dy = f.top  - l.top;
       const sx = f.width  / l.width;
       const sy = f.height / l.height;
-      card.animate(
+      const anim = card.animate(
         [
-          { transformOrigin: '0 0', transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')' },
+          { transformOrigin: '0 0', transform: 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + sx + ',' + sy + ')' },
           { transformOrigin: '0 0', transform: 'none' }
         ],
         { duration: 600, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'none' }
       );
+      anim.finished.then(function() { card.style.willChange = ''; });
     });
   }
 
