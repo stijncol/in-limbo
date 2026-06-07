@@ -879,7 +879,7 @@ async function renderPublic(req, res) {
   }
   /* Margin controls — [about] left, scale right, desktop only */
   .margin-about {
-    position: absolute;
+    position: fixed;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-family: inherit;
@@ -896,44 +896,6 @@ async function renderPublic(req, res) {
   }
   .margin-about.active { color: #111; }
   .margin-about:hover { color: #111; }
-  #margin-filters {
-    position: absolute;
-    display: none;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    z-index: 10;
-  }
-  #margin-filters.active { display: flex; }
-  #margin-filters .mf-label {
-    font-family: inherit;
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: #aaa;
-    text-transform: lowercase;
-    white-space: nowrap;
-    margin-top: 12px;
-  }
-  #margin-filters .mf-label:first-child { margin-top: 0; }
-  #margin-filters button[data-filter] {
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 400;
-    padding: 3px 0;
-    border: none;
-    background: transparent;
-    color: #000;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    text-align: left;
-  }
-  #margin-filters button[data-filter]::before { content: "["; opacity: 0.4; margin-right: 1px; }
-  #margin-filters button[data-filter]::after  { content: "]"; opacity: 0.4; margin-left: 1px; }
-  #margin-filters button[data-filter]:hover { color: #1e40af; }
-  #margin-filters button[data-filter].active { color: #1e40af; text-decoration: underline; text-underline-offset: 2px; }
   .margin-scale {
     position: fixed;
     display: flex;
@@ -1135,7 +1097,6 @@ ${archiveCards}
 </div>
 
 <button class="margin-about active" id="about-btn">[about]</button>
-<div id="margin-filters"></div>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
     <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
@@ -1645,40 +1606,13 @@ ${archiveCards}
     }
   }, 50);
 
-  // Tag expand toggle — move overflow + medium into left-margin panel
+  // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
     if (activeType === 'search') {
       clearSearchInputs();
       applyFilter('all', 'tag');
     }
-    var mf = document.getElementById('margin-filters');
-    mf.innerHTML = '';
-    var extraBtns = Array.from(filtersExtra.querySelectorAll('button[data-filter]'));
-    if (extraBtns.length > 0) {
-      var themeLabel = document.createElement('span');
-      themeLabel.className = 'mf-label';
-      themeLabel.textContent = 'theme';
-      mf.appendChild(themeLabel);
-      extraBtns.forEach(function(btn) { btn.dataset.origin = 'extra'; mf.appendChild(btn); });
-    }
-    var mediumBtns = Array.from(document.querySelectorAll('.medium-tags button[data-filter]'));
-    if (mediumBtns.length > 0) {
-      var medLabel = document.createElement('span');
-      medLabel.className = 'mf-label';
-      medLabel.textContent = 'medium';
-      mf.appendChild(medLabel);
-      mediumBtns.forEach(function(btn) { btn.dataset.origin = 'medium'; mf.appendChild(btn); });
-    }
-    mf.classList.add('active');
     filtersBar.classList.add('show-all');
-    filtersExtra.style.display = 'none';
-    var filtersMediumEl = document.querySelector('.filters-medium');
-    if (filtersMediumEl) filtersMediumEl.style.display = 'none';
-    positionMarginFilters();
-  });
-
-  document.getElementById('margin-filters').addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON' && e.target.dataset.filter) applyFilter(e.target.dataset.filter, 'tag');
   });
 
   // Support both inline intro search and filter-bar search
@@ -1713,16 +1647,12 @@ ${archiveCards}
     activeFilter = value;
     activeType = type || 'tag';
     document.body.classList.toggle('has-filter', value !== 'all');
-    if (value === 'all') { filtersBar.classList.remove('show-all'); closeMarginFilters(); }
+    if (value === 'all') filtersBar.classList.remove('show-all');
     if (type !== 'search') clearSearchInputs();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
     filtersExtra.querySelectorAll('button[data-filter]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.filter === value);
-    });
-    var mfEl = document.getElementById('margin-filters');
-    if (mfEl) mfEl.querySelectorAll('button[data-filter]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.filter === value);
     });
     document.querySelectorAll('.card-year').forEach(y => {
@@ -1816,58 +1746,22 @@ ${archiveCards}
   function positionScaleCtrl() {
     var ctrl = document.getElementById('scale-ctrl');
     var aboutBtn = document.getElementById('about-btn');
-    var mf = document.getElementById('margin-filters');
     var gridEl = document.querySelector('.grid');
     if (!gridEl || window.innerWidth <= 900) return;
     var gridRect = gridEl.getBoundingClientRect();
-    var leftGap = gridRect.left;
+    var gridTop = Math.round(gridRect.top + 10);
 
     if (ctrl) {
       var rightGap = window.innerWidth - gridRect.right;
       ctrl.style.right = Math.max(4, Math.round((rightGap - ctrl.offsetWidth) / 2)) + 'px';
-      ctrl.style.top = Math.round(gridRect.top + 10) + 'px';
+      ctrl.style.top = gridTop + 'px';
     }
-    if (mf && mf.classList.contains('active')) {
-      positionMarginFilters();
-    } else if (aboutBtn) {
-      aboutBtn.style.left = Math.max(4, Math.round((leftGap - aboutBtn.offsetWidth) / 2)) + 'px';
-      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
-    }
-  }
-
-  function positionMarginFilters() {
-    var mf = document.getElementById('margin-filters');
-    var aboutBtn = document.getElementById('about-btn');
-    var gridEl = document.querySelector('.grid');
-    if (!mf || !gridEl || window.innerWidth <= 900) return;
-    var gridRect = gridEl.getBoundingClientRect();
-    var leftGap = gridRect.left;
-    var mfWidth = Math.max(leftGap - 8, 70);
-    mf.style.width = mfWidth + 'px';
-    mf.style.left = Math.max(4, Math.round((leftGap - mfWidth) / 2)) + 'px';
-    mf.style.top = Math.round(gridRect.top + window.scrollY) + 'px';
     if (aboutBtn) {
+      var leftGap = gridRect.left;
       aboutBtn.style.left = Math.max(4, Math.round((leftGap - aboutBtn.offsetWidth) / 2)) + 'px';
-      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + mf.offsetHeight + 20) + 'px';
+      aboutBtn.style.top = gridTop + 'px';
     }
   }
-
-  function closeMarginFilters() {
-    var mf = document.getElementById('margin-filters');
-    if (!mf || !mf.classList.contains('active')) return;
-    var mediumTagsEl = document.querySelector('.medium-tags');
-    mf.querySelectorAll('button[data-filter]').forEach(function(btn) {
-      if (btn.dataset.origin === 'extra') filtersExtra.appendChild(btn);
-      else if (btn.dataset.origin === 'medium' && mediumTagsEl) mediumTagsEl.appendChild(btn);
-    });
-    mf.classList.remove('active');
-    mf.innerHTML = '';
-    filtersExtra.style.display = '';
-    var filtersMediumEl = document.querySelector('.filters-medium');
-    if (filtersMediumEl) filtersMediumEl.style.display = '';
-    positionScaleCtrl();
-  }
-
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
   requestAnimationFrame(positionScaleCtrl);
