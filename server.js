@@ -1022,12 +1022,14 @@ async function renderPublic(req, res) {
   }
   #dvd-logo {
     position: absolute;
+    left: 0; top: 0;
     cursor: grab;
     z-index: 200;
     user-select: none;
     touch-action: none;
     border-radius: 50%;
     pointer-events: auto;
+    will-change: transform;
   }
   #dvd-logo img {
     position: absolute;
@@ -1986,14 +1988,18 @@ ${archiveCards}
       wrap.style.cursor = isSelected ? 'pointer' : 'grab';
     });
 
-    function tick() {
+    var lastTs = 0;
+    function tick(ts) {
+      var dt = lastTs ? Math.min(ts - lastTs, 50) : 16.667;
+      lastTs = ts;
+      var scale = dt / 16.667;
       var minX = 0;
       var maxX = Math.max(0, window.innerWidth - size);
       var minY = window.scrollY;
       var maxY = window.scrollY + window.innerHeight - size;
       if (!hovering && !dragging && !paused) {
-        x += vx;
-        y += vy;
+        x += vx * scale;
+        y += vy * scale;
         if (x <= minX) { x = minX; vx =  Math.abs(vx); }
         if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
         if (y <= minY) { y = minY; vy =  Math.abs(vy); }
@@ -2001,12 +2007,11 @@ ${archiveCards}
       }
       x = Math.min(Math.max(x, minX), maxX);
       y = Math.min(Math.max(y, minY), maxY);
-      wrap.style.left = Math.round(x) + 'px';
-      wrap.style.top  = Math.round(y) + 'px';
+      wrap.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
       requestAnimationFrame(tick);
     }
 
-    tick();
+    requestAnimationFrame(tick);
   })();
 </script>
 
