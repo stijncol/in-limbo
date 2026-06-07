@@ -476,6 +476,23 @@ async function renderPublic(req, res) {
   }
   .tag-expand:hover { color: #1e40af; }
   .filters.show-all .tag-expand { display: none; }
+  .tag-collapse {
+    font-family: inherit;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .tag-collapse:hover { color: #1e40af; }
+  .filters.show-all .tag-collapse { display: flex; }
   /* Prevent phantom flex items in default (row) layout */
   .filters::before, .filters::after { display: none; }
   /* Filter-bar search is hidden on the main view; the inline intro search is used instead */
@@ -1095,6 +1112,7 @@ async function renderPublic(req, res) {
         <span class="filters-label">medium</span>
         <div class="medium-tags">${mediumButtons}</div>
       </div>
+      <button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button>
     </div>
     <div class="filters-search-wrap">
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
@@ -1637,6 +1655,11 @@ ${archiveCards}
       applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
+    requestAnimationFrame(positionScaleCtrl);
+  });
+
+  document.getElementById('tag-collapse').addEventListener('click', () => {
+    filtersBar.classList.remove('show-all');
     requestAnimationFrame(positionScaleCtrl);
   });
 
