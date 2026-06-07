@@ -1596,13 +1596,13 @@ ${archiveCards}
     if (!hasOverflow && !hasMediumTags) {
       expandBtn.style.display = 'none';
     }
-    // Check if expand button itself overflowed — move one tag to make room
-    if (expandBtn.offsetTop > firstTop) {
-      const visibleTags = Array.from(filtersRow.querySelectorAll('button[data-filter]')).filter(b => b.dataset.filter !== 'all');
-      if (visibleTags.length > 0) {
-        const last = visibleTags[visibleTags.length - 1];
-        filtersExtra.insertBefore(last, filtersExtra.firstChild);
-      }
+    // Keep hiding tags until expand button fits on the first line
+    let guard = tagBtns.length;
+    while (expandBtn.offsetTop > firstTop && guard-- > 0) {
+      const visibleTags = Array.from(themeTags.querySelectorAll('button[data-filter]')).filter(b => b.dataset.filter !== 'all');
+      if (visibleTags.length === 0) break;
+      const last = visibleTags[visibleTags.length - 1];
+      filtersExtra.insertBefore(last, filtersExtra.firstChild);
     }
   }, 50);
 
