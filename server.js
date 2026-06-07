@@ -930,6 +930,17 @@ async function renderPublic(req, res) {
   }
   .margin-about.active { color: #111; }
   .margin-about:hover { color: #111; }
+  #about-panel {
+    position: fixed;
+    background: #fff;
+    border: 1px solid #000;
+    padding: 28px;
+    z-index: 150;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+  }
+  #about-panel.active { display: block; }
   .margin-scale {
     position: fixed;
     display: flex;
@@ -1139,6 +1150,7 @@ ${archiveCards}
 </div>
 
 <button class="margin-about active" id="about-btn">[about]</button>
+<div id="about-panel"></div>
 <div class="margin-scale" id="scale-ctrl">
   <button class="scale-icon-btn" id="scale-down" title="Bigger thumbnails" disabled>
     <svg width="26" height="26" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><line x1="4.5" y1="8" x2="11.5" y2="8"/></svg>
@@ -1827,12 +1839,13 @@ ${archiveCards}
     // (Deferring display:none causes a mid-animation reflow that breaks the FLIP.)
     if (introBlock && idx !== 0 && prev === 0) {
       introBlock.style.display = 'none';
+      if (aboutActive && aboutPanel) { positionAboutPanel(); aboutPanel.classList.add('active'); }
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
-    if (introBlock && idx === 0 && prev !== 0 && aboutActive) {
-      introBlock.style.opacity = '0';
-      introBlock.style.display = '';
+    if (introBlock && idx === 0 && prev !== 0) {
+      if (aboutPanel) aboutPanel.classList.remove('active');
+      if (aboutActive) { introBlock.style.opacity = '0'; introBlock.style.display = ''; }
     }
 
     // Apply grid change instantly
@@ -1850,7 +1863,7 @@ ${archiveCards}
 
     // Fade intro in after positions are captured
     if (introBlock && idx === 0 && prev !== 0 && aboutActive) {
-      requestAnimationFrame(() => { introBlock.style.opacity = '1'; });
+      requestAnimationFrame(function() { introBlock.style.opacity = '1'; });
     }
 
     // FLIP — Invert + Play via Web Animations API:
@@ -1878,27 +1891,53 @@ ${archiveCards}
     btn.addEventListener('click', function() { applyScale(parseInt(btn.dataset.scale, 10)); });
   });
 
-  // About toggle — hides/shows intro block
+  // About panel (fixed overlay for compact grid modes)
+  var aboutPanel = document.getElementById('about-panel');
+  if (aboutPanel && introBlock) {
+    var introText = introBlock.querySelector('.intro-text');
+    if (introText) aboutPanel.innerHTML = introText.innerHTML;
+  }
+
+  function positionAboutPanel() {
+    if (!aboutPanel) return;
+    var gridEl = document.querySelector('.grid');
+    if (!gridEl) return;
+    var gridRect = gridEl.getBoundingClientRect();
+    var colW = Math.round(gridRect.width / 3 - 14);
+    aboutPanel.style.left   = Math.round(gridRect.left) + 'px';
+    aboutPanel.style.top    = Math.round(gridRect.top) + 'px';
+    aboutPanel.style.width  = colW + 'px';
+    aboutPanel.style.maxHeight = Math.round(window.innerHeight - gridRect.top - 20) + 'px';
+  }
+
+  // About toggle — floating panel in compact modes, in-grid block in 3-col
   var aboutBtn = document.getElementById('about-btn');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
       aboutBtn.classList.toggle('active', aboutActive);
-      if (introBlock) {
-        if (aboutActive && scaleIndex === 0) {
-          introBlock.style.opacity = '0';
-          introBlock.style.display = '';
-          requestAnimationFrame(function() {
-            introBlock.style.opacity = '1';
+      if (scaleIndex > 0) {
+        if (aboutActive) { positionAboutPanel(); aboutPanel.classList.add('active'); }
+        else { aboutPanel.classList.remove('active'); }
+      } else {
+        if (aboutPanel) aboutPanel.classList.remove('active');
+        if (introBlock) {
+          if (aboutActive) {
+            introBlock.style.opacity = '0';
+            introBlock.style.display = '';
+            requestAnimationFrame(function() {
+              introBlock.style.opacity = '1';
+              requestAnimationFrame(positionScaleCtrl);
+            });
+          } else {
+            introBlock.style.display = 'none';
             requestAnimationFrame(positionScaleCtrl);
-          });
-        } else {
-          introBlock.style.display = 'none';
-          requestAnimationFrame(positionScaleCtrl);
+          }
         }
       }
     });
   }
+  window.addEventListener('resize', positionAboutPanel);
 
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
