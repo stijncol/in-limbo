@@ -1078,7 +1078,7 @@ async function renderPublic(req, res) {
     .archive-toggle-label { display: none; }
   }
   #dvd-logo {
-    position: absolute;
+    position: fixed;
     left: 0; top: 0;
     cursor: grab;
     z-index: 200;
@@ -1800,7 +1800,6 @@ ${archiveCards}
       setTimeout(trimTags, 50);
     } else {
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-      if (window._dvdLogo) window._dvdLogo.snap();
     }
   });
   // Grid scale control (desktop only — hidden on mobile via CSS)
@@ -2043,8 +2042,8 @@ ${archiveCards}
 
     var margin = 24;
     var startRect = introEl ? introEl.getBoundingClientRect() : { left: 40, top: 120 };
-    var x = startRect.left + window.scrollX + margin;
-    var y = startRect.top  + window.scrollY + margin;
+    var x = startRect.left + margin;
+    var y = startRect.top  + margin;
 
     var speed = 0.78;
     var vx = speed;
@@ -2058,8 +2057,8 @@ ${archiveCards}
     document.addEventListener('mousemove', function(e) {
       if (wrap.style.display === 'none') return;
       if (dragging) {
-        x = e.clientX + window.scrollX - dragOffX;
-        y = e.clientY + window.scrollY - dragOffY;
+        x = e.clientX - dragOffX;
+        y = e.clientY - dragOffY;
         return;
       }
       var rect = wrap.getBoundingClientRect();
@@ -2074,8 +2073,8 @@ ${archiveCards}
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;
       dragging = true;
       paused = false;
-      dragOffX = e.clientX + window.scrollX - x;
-      dragOffY = e.clientY + window.scrollY - y;
+      dragOffX = e.clientX - x;
+      dragOffY = e.clientY - y;
       wrap.style.cursor = 'grabbing';
       e.preventDefault();
     });
@@ -2095,8 +2094,8 @@ ${archiveCards}
       var scale = dt / 16.667;
       var minX = 0;
       var maxX = Math.max(0, window.innerWidth - size);
-      var minY = window.scrollY;
-      var maxY = window.scrollY + window.innerHeight - size;
+      var minY = 0;
+      var maxY = Math.max(0, window.innerHeight - size);
       if (!hovering && !dragging && !paused) {
         x += vx * scale;
         y += vy * scale;
@@ -2113,17 +2112,6 @@ ${archiveCards}
 
     requestAnimationFrame(tick);
 
-    window._dvdLogo = {
-      snap: function() {
-        requestAnimationFrame(function() {
-          var newMaxY = window.scrollY + window.innerHeight - size;
-          var newMinY = window.scrollY;
-          if (y < newMinY || y > newMaxY) {
-            y = newMinY + Math.min(40, newMaxY - newMinY);
-          }
-        });
-      }
-    };
   })();
 </script>
 
