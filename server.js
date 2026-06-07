@@ -1022,7 +1022,7 @@ async function renderPublic(req, res) {
   }
   #dvd-logo {
     position: absolute;
-    cursor: default;
+    cursor: grab;
     z-index: 200;
     user-select: none;
     touch-action: none;
@@ -1903,7 +1903,7 @@ ${archiveCards}
       logoSel.style.transition = 'opacity ' + (duration || 0.5) + 's';
       logoSel.style.opacity = sel ? '1' : '0';
       isSelected = sel;
-      wrap.style.cursor = sel ? 'pointer' : 'default';
+      if (!dragging) wrap.style.cursor = sel ? 'pointer' : 'grab';
     }
 
     wrap.addEventListener('mousemove', function(e) {
@@ -1939,8 +1939,16 @@ ${archiveCards}
     var vy = speed * 0.65;
 
     var hovering = false;
+    var dragging = false;
+    var dragOffX = 0, dragOffY = 0;
+
     document.addEventListener('mousemove', function(e) {
       if (wrap.style.display === 'none') return;
+      if (dragging) {
+        x = e.clientX + window.scrollX - dragOffX;
+        y = e.clientY + window.scrollY - dragOffY;
+        return;
+      }
       var rect = wrap.getBoundingClientRect();
       var cx = rect.left + rect.width / 2;
       var cy = rect.top + rect.height / 2;
@@ -1949,12 +1957,27 @@ ${archiveCards}
       hovering = (dx*dx + dy*dy) < Math.pow(rect.width / 2 + 40, 2);
     }, { passive: true });
 
+    wrap.addEventListener('mousedown', function(e) {
+      if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+      dragging = true;
+      dragOffX = e.clientX + window.scrollX - x;
+      dragOffY = e.clientY + window.scrollY - y;
+      wrap.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (!dragging) return;
+      dragging = false;
+      wrap.style.cursor = isSelected ? 'pointer' : 'grab';
+    });
+
     function tick() {
       var minX = 0;
       var maxX = Math.max(0, window.innerWidth - size);
       var minY = window.scrollY;
       var maxY = window.scrollY + window.innerHeight - size;
-      if (!hovering) {
+      if (!hovering && !dragging) {
         x += vx;
         y += vy;
         if (x <= minX) { x = minX; vx =  Math.abs(vx); }
