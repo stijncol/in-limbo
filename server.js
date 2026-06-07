@@ -1800,6 +1800,7 @@ ${archiveCards}
       setTimeout(trimTags, 50);
     } else {
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      if (window._dvdLogo) window._dvdLogo.snap();
     }
   });
   // Grid scale control (desktop only — hidden on mobile via CSS)
@@ -2111,6 +2112,18 @@ ${archiveCards}
     }
 
     requestAnimationFrame(tick);
+
+    window._dvdLogo = {
+      snap: function() {
+        requestAnimationFrame(function() {
+          var newMaxY = window.scrollY + window.innerHeight - size;
+          var newMinY = window.scrollY;
+          if (y < newMinY || y > newMaxY) {
+            y = newMinY + Math.min(40, newMaxY - newMinY);
+          }
+        });
+      }
+    };
   })();
 </script>
 
