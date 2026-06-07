@@ -346,13 +346,15 @@ async function renderPublic(req, res) {
     min-width: 0;
   }
   .filters-row {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 8px;
-    align-items: start;
+    display: block;
+    position: relative;
   }
   .filters-row .filters-label {
-    padding-top: 7px;
+    position: absolute;
+    left: -52px;
+    top: 7px;
+    width: 44px;
+    text-align: right;
   }
   .filters-row .theme-tags {
     display: flex;
@@ -366,22 +368,22 @@ async function renderPublic(req, res) {
     letter-spacing: 0.05em;
     color: #aaa;
     text-transform: lowercase;
-    width: 52px;
-    flex-shrink: 0;
     white-space: nowrap;
   }
   .filters-medium {
     display: none;
     margin-top: 20px;
+    position: relative;
   }
   .filters.show-all .filters-medium {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 8px;
-    align-items: start;
+    display: block;
   }
   .filters-medium .filters-label {
-    padding-top: 7px;
+    position: absolute;
+    left: -52px;
+    top: 7px;
+    width: 44px;
+    text-align: right;
   }
   .filters-medium .medium-tags {
     display: flex;
@@ -392,7 +394,7 @@ async function renderPublic(req, res) {
     display: none;
     flex-wrap: wrap;
     gap: 8px;
-    padding-left: 52px;
+    padding-left: 0;
     margin-top: 6px;
   }
   .filters.show-all .filters-extra { display: flex; }
@@ -963,6 +965,12 @@ async function renderPublic(req, res) {
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
     .margin-about, .margin-scale { display: none; }
+    .filters-row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: start; }
+    .filters-row .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
+    .filters-medium { position: static; }
+    .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
+    .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
+    .filters-extra { padding-left: 60px; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
