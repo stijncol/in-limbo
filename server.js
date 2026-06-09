@@ -326,7 +326,7 @@ async function renderPublic(req, res) {
   .page {
     flex: 1;
     width: 100%;
-    max-width: 1400px;
+    max-width: 1700px;
     margin: 0 auto;
     padding: 40px 6vw 120px;
     box-sizing: border-box;
@@ -889,7 +889,7 @@ async function renderPublic(req, res) {
   }
   .lightbox .lb-close:hover { color: #fff; }
   .site-footer {
-    max-width: 1400px;
+    max-width: 1700px;
     margin: 0 auto;
     padding: 32px 40px 40px;
     display: flex;
@@ -1007,6 +1007,22 @@ async function renderPublic(req, res) {
   .grid.grid-cols-5 .card-duration,
   .grid.grid-cols-7 .card-duration { display: none; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  /* Tablet range (iPad / iPad Air landscape ~1024px): the vertical writing-mode +
+     rotate(180deg) paints/positions unreliably on iPadOS Safari. Render [about]
+     horizontally near the top-left of the page, and stack scale-ctrl horizontally
+     near the top-right. Upper bound stays below the M1 MacBook (~1280px CSS)
+     so its layout is untouched. */
+  @media (min-width: 901px) and (max-width: 1180px) {
+    .margin-about {
+      writing-mode: horizontal-tb;
+      transform: none;
+    }
+    .margin-scale {
+      flex-direction: row;
+      gap: 10px;
+    }
+    .scale-grid-icons { margin: 0 4px; }
+  }
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
@@ -1820,16 +1836,37 @@ ${archiveCards}
     if (!gridEl || window.innerWidth <= 900) return;
     var gridRect = gridEl.getBoundingClientRect();
     var gridTop = Math.round(gridRect.top + 10);
+    // Tablet range: place controls horizontally above the grid (CSS removes the
+    // vertical writing-mode in this range — see media query for 901-1180px).
+    var isTablet = window.innerWidth <= 1180;
+    // Never let the controls drift more than this far from the grid's edge.
+    // Without a cap, large screens centre the button in the huge empty margin.
+    var MAX_GAP = 80;
 
     if (ctrl) {
       var rightGap = window.innerWidth - gridRect.right;
-      ctrl.style.right = Math.max(4, Math.round((rightGap - ctrl.offsetWidth) / 2)) + 'px';
-      ctrl.style.top = gridTop + 'px';
+      if (isTablet) {
+        // Anchor at the page's top padding line, aligned to the grid's right edge.
+        ctrl.style.right = Math.max(4, Math.round(rightGap)) + 'px';
+        ctrl.style.top = '12px';
+      } else {
+        var ctrlCentered = (rightGap - ctrl.offsetWidth) / 2;
+        var ctrlMin = Math.max(4, rightGap - ctrl.offsetWidth - MAX_GAP);
+        ctrl.style.right = Math.round(Math.max(ctrlMin, ctrlCentered)) + 'px';
+        ctrl.style.top = gridTop + 'px';
+      }
     }
     if (aboutBtn) {
       var leftGap = gridRect.left;
-      aboutBtn.style.left = Math.max(4, Math.round((leftGap - aboutBtn.offsetWidth) / 2)) + 'px';
-      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
+      if (isTablet) {
+        aboutBtn.style.left = Math.max(4, Math.round(leftGap)) + 'px';
+        aboutBtn.style.top = (12 + window.scrollY) + 'px';
+      } else {
+        var aboutCentered = (leftGap - aboutBtn.offsetWidth) / 2;
+        var aboutMin = Math.max(4, leftGap - aboutBtn.offsetWidth - MAX_GAP);
+        aboutBtn.style.left = Math.round(Math.max(aboutMin, aboutCentered)) + 'px';
+        aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
+      }
     }
   }
   window.addEventListener('resize', positionScaleCtrl);
