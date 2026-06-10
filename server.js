@@ -8,11 +8,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://in_limbo_db_user:R81k6JoQsAzzZNEBxU4Yetqzik6MowsV@dpg-d832nvbrjlhs73817e00-a/in_limbo_db';
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'limbo2026';
-const STUDENT_USER = 'student';
-const STUDENT_PASS = 'inlimbo';
+const { DATABASE_URL, ADMIN_USER, ADMIN_PASS, STUDENT_USER, STUDENT_PASS, VIMEO_ACCESS_TOKEN, YOUTUBE_API_KEY } = require('./config');
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -195,7 +191,7 @@ const vimeoCache = new Map();
 
 app.get('/api/vimeo/:id', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  const token = process.env.VIMEO_ACCESS_TOKEN;
+  const token = VIMEO_ACCESS_TOKEN;
   if (!token) return res.json({});
   const id = req.params.id;
   if (vimeoCache.has(id)) return res.json(vimeoCache.get(id));
@@ -1485,7 +1481,7 @@ ${archiveCards}
         }
       } catch(e) {}
       if (!isBaked) img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
-      const ytKey = '${process.env.YOUTUBE_API_KEY || ""}';
+      const ytKey = '${YOUTUBE_API_KEY}';
       if (ytKey) {
         fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + ytId + '&key=' + ytKey)
           .then(r => r.json())
@@ -3513,7 +3509,7 @@ document.getElementById('modal').addEventListener('click',function(e){if(e.targe
 app.get('/lab', requireAuth, async (req, res) => { await renderLab(req, res); });
 
 // --- Start ---
-const PORT = process.env.PORT || 3000;
+const { PORT } = require('./config');
 initDB().then(async () => {
   app.listen(PORT, () => {
     console.log('in limbo running at http://localhost:' + PORT);
