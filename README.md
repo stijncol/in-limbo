@@ -55,10 +55,12 @@ Two Basic Auth tiers, configured via env vars (see `.env.example`):
 
 | Var | Required | Notes |
 | --- | --- | --- |
-| `DATABASE_URL` | on Render: injected automatically | Postgres connection string |
+| `DATABASE_URL` | **yes** | Postgres connection string (Render: link the database in the Environment tab) |
+| `ADMIN_PASS` | **yes** | admin password — the server refuses to start without it |
+| `STUDENT_PASS` | **yes** | student password — the server refuses to start without it |
+| `ADMIN_USER` / `STUDENT_USER` | no | default to `admin` / `student` |
+| `SITE_URL` | no | canonical URL (e.g. `https://www.example.com`); enables redirect + OG tags |
 | `PORT` | no | Render injects this; defaults to 3000 |
-| `ADMIN_USER` / `ADMIN_PASS` | recommended | fallback: hardcoded defaults in `config.js` |
-| `STUDENT_USER` / `STUDENT_PASS` | recommended | fallback: hardcoded defaults in `config.js` |
 | `VIMEO_ACCESS_TOKEN` | optional | enables video duration display |
 | `YOUTUBE_API_KEY` | optional | enables YouTube duration display |
 
@@ -68,13 +70,13 @@ Two Basic Auth tiers, configured via env vars (see `.env.example`):
 - Build command: `npm install` — start command: `node server.js`
 - Database: Render Postgres, connected via `DATABASE_URL`
 
-### Security follow-ups
+### Before deploying this version
 
-1. Confirm `DATABASE_URL` is set on the Render web service, then remove the
-   hardcoded fallback connection string from `config.js` and **rotate the
-   database password** (the old one is in the repo's git history).
-2. Set `ADMIN_PASS` / `STUDENT_PASS` env vars on Render, then remove the
-   credential fallbacks from `config.js`.
+`DATABASE_URL`, `ADMIN_PASS` and `STUDENT_PASS` **must** be set in the Render
+dashboard before this version goes live — the server exits at startup if any
+of them is missing. Pick fresh passwords (the old `limbo2026` / `inlimbo`
+values are in the repo's git history) and **rotate the database password**
+in the Render Postgres settings for the same reason.
 
 ## Admin panel features
 
