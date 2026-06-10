@@ -1,5 +1,4 @@
 const express = require('express');
-const { Pool } = require('pg');
 const path = require('path');
 const https = require('https');
 
@@ -8,49 +7,9 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const { DATABASE_URL, ADMIN_USER, ADMIN_PASS, STUDENT_USER, STUDENT_PASS, VIMEO_ACCESS_TOKEN, YOUTUBE_API_KEY } = require('./config');
-
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: DATABASE_URL.includes('render.com') ? { rejectUnauthorized: false } : false
-});
-
-// --- Init DB ---
-async function initDB() {
-  await pool.query(`CREATE TABLE IF NOT EXISTS videos (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    students TEXT NOT NULL,
-    description TEXT NOT NULL,
-    video_id TEXT NOT NULL,
-    video_type TEXT DEFAULT 'vimeo',
-    year INTEGER NOT NULL,
-    tags_theme TEXT DEFAULT '',
-    tags_medium TEXT DEFAULT '',
-    featured INTEGER DEFAULT 1,
-    archived INTEGER DEFAULT 0,
-    sort_order INTEGER DEFAULT 0,
-    status TEXT DEFAULT 'approved',
-    created_at TIMESTAMP DEFAULT NOW()
-  )`);
-
-  // Migrate existing tables
-  try { await pool.query("ALTER TABLE videos ADD COLUMN tags_theme TEXT DEFAULT ''"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN tags_medium TEXT DEFAULT ''"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN video_type TEXT DEFAULT 'vimeo'"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN video_id TEXT"); } catch(e) {}
-  // Migrate old data: copy vimeo_id to video_id, tags to tags_theme
-  try { await pool.query("UPDATE videos SET video_id = vimeo_id WHERE video_id IS NULL"); } catch(e) {}
-  try { await pool.query("UPDATE videos SET tags_theme = tags WHERE tags_theme = '' AND tags != ''"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_data BYTEA"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_settings JSONB"); } catch(e) {}
-  try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_sharp BYTEA"); } catch(e) {}
-}
-
-async function getVideoRows() {
-  const result = await pool.query('SELECT *, thumb_data IS NOT NULL AS has_thumb FROM videos ORDER BY sort_order ASC, id DESC');
-  return result.rows.map(r => { const row = Object.assign({}, r); delete row.thumb_data; return row; });
-}
+const { ADMIN_USER, ADMIN_PASS, STUDENT_USER, STUDENT_PASS, VIMEO_ACCESS_TOKEN, YOUTUBE_API_KEY } = require('./config');
+const { initDB } = require('./db/pool');
+const { getVideoRows, createVideo, updateVideo, deleteVideo, submitVideo, approveVideo, rejectVideo, getThumb, getThumbSharp, saveThumb, getThumbStats } = require('./db/videos');
 
 // --- Basic Auth middleware ---
 function requireAuth(req, res, next) {
@@ -86,21 +45,21 @@ function requireStudent(req, res, next) {
 // --- Baked thumbnails ---
 app.get('/thumb/:id', async (req, res) => {
   try {
-    const result = await pool.query('SELECT thumb_data FROM videos WHERE id=$1', [req.params.id]);
-    if (!result.rows[0] || !result.rows[0].thumb_data) return res.status(404).send('Not found');
+    const thumb = await getThumb(req.params.id);
+    if (!thumb) return res.status(404).send('Not found');
     res.set('Content-Type', 'image/png');
     res.set('Cache-Control', 'public, max-age=604800');
-    res.send(result.rows[0].thumb_data);
+    res.send(thumb);
   } catch(e) { res.status(500).send('Error'); }
 });
 
 app.get('/thumb/:id/sharp', async (req, res) => {
   try {
-    const result = await pool.query('SELECT thumb_sharp FROM videos WHERE id=$1', [req.params.id]);
-    if (!result.rows[0] || !result.rows[0].thumb_sharp) return res.status(404).send('Not found');
+    const thumb = await getThumbSharp(req.params.id);
+    if (!thumb) return res.status(404).send('Not found');
     res.set('Content-Type', 'image/png');
     res.set('Cache-Control', 'public, max-age=604800');
-    res.send(result.rows[0].thumb_sharp);
+    res.send(thumb);
   } catch(e) { res.status(500).send('Error'); }
 });
 
@@ -110,14 +69,8 @@ app.post('/thumb/:id', requireAuth, async (req, res) => {
     const blurBase64 = (blurData || imageData || '').replace(/^data:image\/png;base64,/, '');
     if (!blurBase64) return res.status(400).json({ error: 'blurData required' });
     const blurBuf = Buffer.from(blurBase64, 'base64');
-    if (sharpData) {
-      const sharpBuf = Buffer.from(sharpData.replace(/^data:image\/png;base64,/, ''), 'base64');
-      await pool.query('UPDATE videos SET thumb_data=$1, thumb_sharp=$2, thumb_settings=$3 WHERE id=$4',
-        [blurBuf, sharpBuf, settings ? JSON.stringify(settings) : null, req.params.id]);
-    } else {
-      await pool.query('UPDATE videos SET thumb_data=$1, thumb_settings=$2 WHERE id=$3',
-        [blurBuf, settings ? JSON.stringify(settings) : null, req.params.id]);
-    }
+    const sharpBuf = sharpData ? Buffer.from(sharpData.replace(/^data:image\/png;base64,/, ''), 'base64') : null;
+    await saveThumb(req.params.id, blurBuf, sharpBuf, settings);
     res.json({ ok: true });
   } catch(e) { console.error('POST /thumb error:', e.message); res.status(500).json({ error: e.message }); }
 });
@@ -139,9 +92,11 @@ app.post('/api/videos', requireAuth, async (req, res) => {
   try {
     const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
     const { id, type } = parseVideoUrl(video_link);
-    await pool.query(
-      `INSERT INTO videos (title, students, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0]);
+    await createVideo({
+      title, students, description, video_id: id, video_type: type,
+      year: parseInt(year), tags_theme: tags_theme || '', tags_medium: tags_medium || '',
+      featured: featured ? 1 : 0, archived: archived ? 1 : 0, sort_order: parseInt(sort_order) || 0
+    });
     res.json({ ok: true });
   } catch(e) { console.error('POST /api/videos error:', e.message); res.status(500).json({ error: e.message }); }
 });
@@ -150,15 +105,17 @@ app.put('/api/videos/:id', requireAuth, async (req, res) => {
   try {
     const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
     const { id, type } = parseVideoUrl(video_link);
-    await pool.query(
-      `UPDATE videos SET title=$1, students=$2, description=$3, video_id=$4, video_type=$5, vimeo_id=$6, year=$7, tags_theme=$8, tags_medium=$9, featured=$10, archived=$11, sort_order=$12 WHERE id=$13`,
-      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '', featured ? 1 : 0, archived ? 1 : 0, parseInt(sort_order) || 0, req.params.id]);
+    await updateVideo(req.params.id, {
+      title, students, description, video_id: id, video_type: type,
+      year: parseInt(year), tags_theme: tags_theme || '', tags_medium: tags_medium || '',
+      featured: featured ? 1 : 0, archived: archived ? 1 : 0, sort_order: parseInt(sort_order) || 0
+    });
     res.json({ ok: true });
   } catch(e) { console.error('PUT /api/videos error:', e.message); res.status(500).json({ error: e.message }); }
 });
 
 app.delete('/api/videos/:id', requireAuth, async (req, res) => {
-  await pool.query('DELETE FROM videos WHERE id=$1', [req.params.id]);
+  await deleteVideo(req.params.id);
   res.json({ ok: true });
 });
 
@@ -167,9 +124,10 @@ app.post('/api/submit', requireStudent, async (req, res) => {
   try {
     const { title, students, description, video_link, year, tags_theme, tags_medium } = req.body;
     const { id, type } = parseVideoUrl(video_link);
-    await pool.query(
-      `INSERT INTO videos (title, students, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,0,0,999,'pending')`,
-      [title, students, description, id, type, id, parseInt(year), tags_theme || '', tags_medium || '']);
+    await submitVideo({
+      title, students, description, video_id: id, video_type: type,
+      year: parseInt(year), tags_theme: tags_theme || '', tags_medium: tags_medium || ''
+    });
     res.json({ ok: true });
   } catch(e) { console.error('POST /api/submit error:', e.message); res.status(500).json({ error: e.message }); }
 });
@@ -177,13 +135,12 @@ app.post('/api/submit', requireStudent, async (req, res) => {
 // Admin approve/reject
 app.put('/api/videos/:id/approve', requireAuth, async (req, res) => {
   const { featured, archived } = req.body;
-  await pool.query('UPDATE videos SET status=$1, featured=$2, archived=$3 WHERE id=$4',
-    ['approved', featured ? 1 : 0, archived ? 1 : 0, req.params.id]);
+  await approveVideo(req.params.id, featured ? 1 : 0, archived ? 1 : 0);
   res.json({ ok: true });
 });
 
 app.put('/api/videos/:id/reject', requireAuth, async (req, res) => {
-  await pool.query('UPDATE videos SET status=$1 WHERE id=$2', ['rejected', req.params.id]);
+  await rejectVideo(req.params.id);
   res.json({ ok: true });
 });
 
@@ -3517,7 +3474,7 @@ initDB().then(async () => {
     console.log('student submit at /submit');
   });
   try {
-    const r = await pool.query('SELECT COUNT(*) AS total, COUNT(thumb_data) AS baked FROM videos WHERE status=$1 OR status IS NULL', ['approved']);
-    console.log('Thumbnails: ' + r.rows[0].baked + '/' + r.rows[0].total + ' baked');
+    const r = await getThumbStats();
+    console.log('Thumbnails: ' + r.baked + '/' + r.total + ' baked');
   } catch(e) {}
 });
