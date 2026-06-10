@@ -11,6 +11,10 @@ router.get('/', async (req, res) => {
   res.send(renderPublic(await getVideoRows()));
 });
 
+router.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send('User-agent: *\nDisallow: /user\nDisallow: /lab\nDisallow: /submit\n');
+});
+
 router.get('/submit', requireStudent, (req, res) => {
   res.send(renderSubmit());
 });

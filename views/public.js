@@ -1,4 +1,6 @@
-const { YOUTUBE_API_KEY } = require('../config');
+const { YOUTUBE_API_KEY, SITE_URL } = require('../config');
+
+const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
 function renderPublic(rows) {
   const allVideos = rows.filter(v => v.status === 'approved' || !v.status);
@@ -69,6 +71,16 @@ function renderPublic(rows) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>in limbo</title>
+<meta name="description" content="${SITE_DESCRIPTION}">
+<meta property="og:title" content="in limbo">
+<meta property="og:description" content="${SITE_DESCRIPTION}">
+<meta property="og:type" content="website">
+${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
+<meta property="og:url" content="${SITE_URL}/">
+<meta property="og:image" content="${SITE_URL}/public/og-image.png">
+<meta name="twitter:card" content="summary_large_image">` : ''}
+<link rel="icon" type="image/png" href="/public/favicon.png">
+<link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/public/css/public.css">
 </head>

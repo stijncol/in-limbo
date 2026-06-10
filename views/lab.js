@@ -26,6 +26,8 @@ function renderLab(rows) {
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>dither lab</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/public/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/public/css/lab.css">
 </head>
