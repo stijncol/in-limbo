@@ -657,8 +657,24 @@
     transition: top 0.3s ease, color 0.2s;
     user-select: none;
   }
-  .margin-about.active { color: #111; }
-  .margin-about:hover { color: #111; }
+  /* Same drawn underline as the filter buttons, rotated along the vertical
+     text: it draws in the reading direction and retracts the same way */
+  .margin-about::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -5px;
+    width: 1px;
+    background: currentColor;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s ease;
+  }
+  .margin-about:hover::after,
+  .margin-about.active::after { transform: scaleY(1); }
+  .margin-about.active { color: #1e40af; }
+  .margin-about:hover { color: #1e40af; }
   #about-panel {
     position: absolute;
     background: #fff;
@@ -669,6 +685,28 @@
     display: none;
   }
   #about-panel.active { display: block; }
+  /* Close cross: a small circle sitting half on the panel border, top right */
+  .about-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid #000;
+    border-radius: 50%;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .about-close:hover { color: #1e40af; border-color: #1e40af; }
+  .about-close svg { stroke: currentColor; display: block; }
   #about-panel .intro-block {
     display: block;
     padding: 20px 0 0 0;
@@ -746,6 +784,19 @@
       writing-mode: horizontal-tb;
       transform: none;
     }
+    /* Horizontal text here: underline below, drawing left to right */
+    .margin-about::after {
+      top: auto;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      width: auto;
+      height: 1px;
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    .margin-about:hover::after,
+    .margin-about.active::after { transform: scaleX(1); }
     .margin-scale {
       flex-direction: row;
       gap: 10px;
