@@ -428,7 +428,9 @@
   const introBlock = document.getElementById('intro-block');
   let activeFilter = 'all';
   let activeType = 'tag';
-  let userArchiveOpen = false;
+  let userArchiveOpen = false;     // archive opened deliberately (plus button)
+  let archiveAutoOpened = false;   // archive opened automatically by zooming out
+  let introAutoHidden = false;     // intro hidden automatically by zooming out
 
   // Dynamically limit visible tags so + always stays on the first line
   const filtersRow = document.getElementById('filters-row');
@@ -542,7 +544,7 @@
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
 
     if (value === 'all') {
-      grid.classList.toggle('show-archive', userArchiveOpen);
+      grid.classList.toggle('show-archive', userArchiveOpen || archiveAutoOpened);
     } else {
       grid.classList.add('show-archive');
     }
@@ -550,7 +552,7 @@
       if (!card.dataset.videoId) return;
       const isArchive = card.dataset.featured === 'false';
       if (value === 'all') {
-        card.classList.toggle('hidden', isArchive && !userArchiveOpen && !card.classList.contains('archive-preview'));
+        card.classList.toggle('hidden', isArchive && !userArchiveOpen && !archiveAutoOpened && !card.classList.contains('archive-preview'));
       } else if (type === 'year') {
         card.classList.toggle('hidden', card.dataset.year !== value);
       } else {
@@ -600,26 +602,37 @@
     archiveCloseBtn.style.display = visible ? 'flex' : 'none';
   }
 
+  function revealArchiveCards() {
+    grid.classList.add('show-archive');
+    archiveToggle.classList.add('is-open');
+    document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
+      card.classList.remove('hidden');
+    });
+    setTimeout(trimTags, 50);
+  }
+
+  function foldArchiveCards() {
+    grid.classList.remove('show-archive');
+    archiveToggle.classList.remove('is-open');
+    document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
+      card.classList.toggle('hidden', !card.classList.contains('archive-preview'));
+    });
+  }
+
+  // Deliberate open (plus button): sticks across zoom changes
   function openArchive() {
     if (!userArchiveOpen) {
-      grid.classList.add('show-archive');
       userArchiveOpen = true;
-      archiveToggle.classList.add('is-open');
-      document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
-        card.classList.remove('hidden');
-      });
-      setTimeout(trimTags, 50);
+      archiveAutoOpened = false;
+      revealArchiveCards();
     }
     updateArchiveCloseBtn();
   }
 
   function closeArchive() {
-    grid.classList.remove('show-archive');
     userArchiveOpen = false;
-    archiveToggle.classList.remove('is-open');
-    document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
-      card.classList.toggle('hidden', !card.classList.contains('archive-preview'));
-    });
+    archiveAutoOpened = false;
+    foldArchiveCards();
     updateArchiveCloseBtn();
   }
 
@@ -683,9 +696,19 @@
     const prev = scaleIndex;
     scaleIndex = idx;
 
-    // Compact views show the whole archive; open it before the FLIP snapshot
-    // below so the revealed cards take part in the animation
-    if (idx > 0) openArchive(); else updateArchiveCloseBtn();
+    // Compact views show the whole archive (before the FLIP snapshot below so
+    // the revealed cards take part in the animation). If the user never opened
+    // it deliberately, fold it again when returning to the normal view.
+    if (idx > 0) {
+      if (!userArchiveOpen && !archiveAutoOpened) {
+        archiveAutoOpened = true;
+        revealArchiveCards();
+      }
+    } else if (archiveAutoOpened && !userArchiveOpen) {
+      archiveAutoOpened = false;
+      foldArchiveCards();
+    }
+    updateArchiveCloseBtn();
 
     // FLIP — First: snapshot every visible card's position and size
     const cards = Array.from(grid.querySelectorAll('.card:not(.hidden)'))
@@ -697,14 +720,22 @@
     if (introBlock && idx !== 0 && prev === 0) {
       introBlock.style.display = 'none';
       if (aboutPanel) aboutPanel.classList.remove('active');
+      if (aboutActive) introAutoHidden = true;
       aboutActive = false;
       var aboutBtn = document.getElementById('about-btn');
       if (aboutBtn) aboutBtn.classList.remove('active');
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
+    // Restore the intro unless the user deliberately closed it meanwhile.
     if (introBlock && idx === 0 && prev !== 0) {
       if (aboutPanel) aboutPanel.classList.remove('active');
+      if (introAutoHidden) {
+        introAutoHidden = false;
+        aboutActive = true;
+        var aboutBtnBack = document.getElementById('about-btn');
+        if (aboutBtnBack) aboutBtnBack.classList.add('active');
+      }
       if (aboutActive) { introBlock.style.opacity = '0'; introBlock.style.display = ''; }
     }
 
@@ -787,6 +818,8 @@
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
+      introAutoHidden = false; // explicit choice from here on
+
       aboutBtn.classList.toggle('active', aboutActive);
       if (scaleIndex > 0) {
         if (aboutActive) { positionAboutPanel(); aboutPanel.classList.add('active'); }
@@ -861,10 +894,8 @@
     closeBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      if (paused) {
-        paused = false;
-        closeBtn.innerHTML = iconPause;
-      }
+      paused = !paused;
+      closeBtn.innerHTML = paused ? iconPlay : iconPause;
     });
     wrap.appendChild(closeBtn);
 
@@ -885,14 +916,12 @@
       if (inCenter !== isSelected) fadeTo(inCenter, 0.5);
     });
     wrap.addEventListener('mouseleave', function() { fadeTo(false, 0.5); });
-    wrap.addEventListener('click', function() {
-      if (!isSelected) return;
-      if (typeof aboutActive !== 'undefined' && !aboutActive) {
-        var btn = document.getElementById('about-btn');
-        if (btn) btn.click();
-      }
-      if (typeof applyFilter === 'function') applyFilter('all', 'tag');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Click toggles the float; a drag (mouse moved since mousedown) does not count
+    var downX = 0, downY = 0;
+    wrap.addEventListener('click', function(e) {
+      if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) return;
+      paused = !paused;
+      closeBtn.innerHTML = paused ? iconPlay : iconPause;
     });
 
     var introEl = document.getElementById('intro-block');
@@ -931,19 +960,24 @@
 
     wrap.addEventListener('mousedown', function(e) {
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+      downX = e.clientX;
+      downY = e.clientY;
       dragging = true;
-      paused = false;
       dragOffX = e.clientX - x;
       dragOffY = e.clientY - y;
       wrap.style.cursor = 'grabbing';
       e.preventDefault();
     });
 
-    document.addEventListener('mouseup', function() {
+    document.addEventListener('mouseup', function(e) {
       if (!dragging) return;
       dragging = false;
-      paused = true;
-      closeBtn.innerHTML = iconPlay;
+      // Only a real drag parks the logo; a plain click is handled by the
+      // click listener, which toggles the float instead
+      if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) {
+        paused = true;
+        closeBtn.innerHTML = iconPlay;
+      }
       wrap.style.cursor = isSelected ? 'pointer' : 'grab';
     });
 
