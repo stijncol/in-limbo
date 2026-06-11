@@ -638,10 +638,10 @@
     var gridEl = document.querySelector('.grid');
     if (!gridEl || window.innerWidth <= 900) return;
     var gridRect = gridEl.getBoundingClientRect();
-    // The control is position:fixed but gridRect.top is viewport-relative:
-    // when this runs while scrolled down it goes negative and the control
-    // vanishes off-screen. Clamp so it pins near the viewport top instead.
-    var gridTop = Math.round(Math.max(12, gridRect.top + 10));
+    // The control is position:fixed; use the grid's *document* offset so a
+    // recalculation gives the same spot no matter the current scroll position
+    // (gridRect.top alone is viewport-relative and made the control jump).
+    var gridTop = Math.round(gridRect.top + window.scrollY + 10);
     // Tablet range: place controls horizontally above the grid (CSS removes the
     // vertical writing-mode in this range — see media query for 901-1180px).
     var isTablet = window.innerWidth <= 1180;
