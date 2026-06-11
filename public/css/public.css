@@ -138,20 +138,7 @@
   .filters button.active {
     color: #1e40af;
   }
-  .filters button.active::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    transform: translate(-50%, -7px);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #1e40af;
-    margin: 0;
-    opacity: 1;
-  }
-  .filters button.active::after { content: ""; margin: 0; opacity: 0; }
+  .filters button.active::before, .filters button.active::after { opacity: 0.7; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -484,8 +471,9 @@
   .labo-hover:hover .labo-logo-hover {
     opacity: 1;
   }
-  /* Archive reveal: a preview row of border-only "preload" rectangles inside
-     the grid; the central one carries the plus and opens the full archive. */
+  /* Archive reveal: two preview rows of border-only "preload" rectangles
+     inside the grid (second row more faded, suggesting more below); the
+     first rectangle carries the plus + "show all" and opens the archive. */
   .archive-toggle { display: contents; }
   .archive-toggle.is-open { display: none; }
   .ghost-card {
@@ -495,11 +483,17 @@
     transform: translateY(30px);
     animation: fadeUp 0.6s ease forwards;
   }
+  .ghost-card.ghost-r2 {
+    border-color: #e2e2e2;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 92%);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 92%);
+  }
   button.ghost-plus {
     margin: 0;
     padding: 0;
     background: transparent;
-    color: #555;
+    border-color: rgba(0,0,0,0.65);
+    color: #111;
     cursor: pointer;
     font-family: inherit;
     display: flex;
@@ -513,11 +507,9 @@
   .ghost-plus svg { stroke: currentColor; }
   .ghost-label {
     font-size: 13px;
-    color: #aaa;
-    opacity: 0;
-    transition: opacity 0.2s ease, color 0.2s ease;
+    color: inherit;
+    transition: color 0.2s ease;
   }
-  .ghost-plus:hover .ghost-label { opacity: 1; color: #1e40af; }
   .lightbox {
     display: none;
     position: fixed;
@@ -767,8 +759,8 @@
     .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
     .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
     .filters-extra { padding-left: 60px; }
-    /* 2-column grid: drop the second side ghost so the preview row fills one line */
-    .ghost-card.ghost-side-2 { display: none; }
+    /* 2-column grid: two ghosts per preview row */
+    .ghost-card.ghost-c, .ghost-card.ghost-f { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -823,8 +815,8 @@
     .lightbox .lb-close { left: 12px; top: -32px; }
     /* Footer */
     .site-footer { padding: 20px 14px 32px; }
-    /* 1-column grid: only the plus rectangle remains of the preview row */
-    .ghost-card[aria-hidden="true"] { display: none; }
+    /* 1-column grid: the plus rectangle + one faded ghost below */
+    .ghost-card.ghost-b, .ghost-card.ghost-e { display: none; }
   }
   #dvd-logo {
     position: fixed;
