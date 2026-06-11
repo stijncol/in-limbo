@@ -496,6 +496,9 @@
     activeType = 'search';
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
     grid.classList.add('show-archive');
+    const archiveToggleEl = document.getElementById('archive-toggle');
+    if (archiveToggleEl) archiveToggleEl.style.display = 'none';
+    updateArchiveCloseBtn();
     document.querySelectorAll('.card').forEach(card => {
       if (!card.dataset.videoId) return;
       const title = (card.dataset.title || '').toLowerCase();
@@ -547,7 +550,7 @@
       if (!card.dataset.videoId) return;
       const isArchive = card.dataset.featured === 'false';
       if (value === 'all') {
-        card.classList.toggle('hidden', isArchive && !userArchiveOpen);
+        card.classList.toggle('hidden', isArchive && !userArchiveOpen && !card.classList.contains('archive-preview'));
       } else if (type === 'year') {
         card.classList.toggle('hidden', card.dataset.year !== value);
       } else {
@@ -555,6 +558,7 @@
         card.classList.toggle('hidden', !tags.split(',').includes(value));
       }
     });
+    updateArchiveCloseBtn();
   }
 
   filtersBar.addEventListener('click', e => {
@@ -585,18 +589,42 @@
     });
   });
 
-  // Archive reveal: clicking the plus in the ghost preview row shows the full
-  // archive; the ghost row itself disappears (one-way until reload)
+  // Archive reveal: the plus in the ghost preview row shows the full archive;
+  // the minus cell at the end (normal view only) folds it back to highlights
   const archiveToggle = document.getElementById('archive-toggle');
-  document.getElementById('archive-btn').addEventListener('click', () => {
-    grid.classList.add('show-archive');
-    userArchiveOpen = true;
-    archiveToggle.classList.add('is-open');
+  const archiveCloseBtn = document.getElementById('archive-close-btn');
+
+  function updateArchiveCloseBtn() {
+    if (!archiveCloseBtn) return;
+    const visible = userArchiveOpen && activeFilter === 'all' && scaleIndex === 0;
+    archiveCloseBtn.style.display = visible ? 'flex' : 'none';
+  }
+
+  function openArchive() {
+    if (!userArchiveOpen) {
+      grid.classList.add('show-archive');
+      userArchiveOpen = true;
+      archiveToggle.classList.add('is-open');
+      document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
+        card.classList.remove('hidden');
+      });
+      setTimeout(trimTags, 50);
+    }
+    updateArchiveCloseBtn();
+  }
+
+  function closeArchive() {
+    grid.classList.remove('show-archive');
+    userArchiveOpen = false;
+    archiveToggle.classList.remove('is-open');
     document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
-      card.classList.remove('hidden');
+      card.classList.toggle('hidden', !card.classList.contains('archive-preview'));
     });
-    setTimeout(trimTags, 50);
-  });
+    updateArchiveCloseBtn();
+  }
+
+  document.getElementById('archive-btn').addEventListener('click', openArchive);
+  if (archiveCloseBtn) archiveCloseBtn.addEventListener('click', closeArchive);
   // Grid scale control (desktop only — hidden on mobile via CSS)
   const scaleDown = document.getElementById('scale-down');
   const scaleUp = document.getElementById('scale-up');
@@ -651,6 +679,10 @@
   function applyScale(idx) {
     const prev = scaleIndex;
     scaleIndex = idx;
+
+    // Compact views show the whole archive; open it before the FLIP snapshot
+    // below so the revealed cards take part in the animation
+    if (idx > 0) openArchive(); else updateArchiveCloseBtn();
 
     // FLIP — First: snapshot every visible card's position and size
     const cards = Array.from(grid.querySelectorAll('.card:not(.hidden)'))

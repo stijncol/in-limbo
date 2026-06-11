@@ -24,7 +24,7 @@
     width: 100%;
     max-width: 1700px;
     margin: 0 auto;
-    padding: 40px 6vw 120px;
+    padding: 40px 6vw 72px;
     box-sizing: border-box;
   }
   .filters {
@@ -225,6 +225,8 @@
   }
   .card.hidden { display: none !important; }
   .card[data-featured="false"] { display: none; }
+  /* The first archive video stays visible as a real teaser in the preview row */
+  .card.archive-preview { display: block; }
   .grid.show-archive .card[data-featured="false"] { display: block; }
   .card-duration {
     position: absolute;
@@ -505,6 +507,9 @@
   }
   button.ghost-plus:hover { color: #1e40af; border-color: #1e40af; }
   .ghost-plus svg { stroke: currentColor; }
+  /* Fold-archive cell: shown via JS only when the archive is open, unfiltered,
+     and the grid is in normal (3-column) view */
+  #archive-close-btn { display: none; }
   .ghost-label {
     font-size: 13px;
     color: inherit;
@@ -759,8 +764,8 @@
     .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
     .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
     .filters-extra { padding-left: 60px; }
-    /* 2-column grid: two ghosts per preview row */
-    .ghost-card.ghost-c, .ghost-card.ghost-f { display: none; }
+    /* 2-column grid: [real teaser][plus] then two faded ghosts */
+    .ghost-card.ghost-b, .ghost-card.ghost-f { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -815,8 +820,8 @@
     .lightbox .lb-close { left: 12px; top: -32px; }
     /* Footer */
     .site-footer { padding: 20px 14px 32px; }
-    /* 1-column grid: the plus rectangle + one faded ghost below */
-    .ghost-card.ghost-b, .ghost-card.ghost-e { display: none; }
+    /* 1-column grid: teaser, plus rectangle, one faded ghost */
+    .ghost-card.ghost-e { display: none; }
   }
   #dvd-logo {
     position: fixed;

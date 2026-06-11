@@ -23,7 +23,7 @@ function renderPublic(rows) {
     (v.tags_medium || '').split(',').map(t => t.trim()).filter(t => t.length > 0).forEach(t => mediumTags.add(t));
   });
 
-  function renderCard(v, isFeatured) {
+  function renderCard(v, isFeatured, extraClass = '') {
     const tt = (v.tags_theme || v.tags || '').split(',').filter(Boolean).map(t => t.trim());
     const tm = (v.tags_medium || '').split(',').filter(Boolean).map(t => t.trim());
     const allTags = [...tt, ...tm];
@@ -35,7 +35,7 @@ function renderPublic(rows) {
       ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
       : `<div class="thumb"><img alt=""></div>`;
     return `
-    <div class="card" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
+    <div class="card${extraClass}" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
       ${thumbHtml}
       <div class="meta">
@@ -53,7 +53,8 @@ function renderPublic(rows) {
   }
 
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
-  const archiveCards = archive.map(v => renderCard(v, 'false')).join('\n');
+  // The first archive video stays visible as a real teaser in the preview row
+  const archiveCards = archive.map((v, i) => renderCard(v, 'false', i === 0 ? ' archive-preview' : '')).join('\n');
 
   const themeTagCounts = {};
   const mediumTagCounts = {};
@@ -125,11 +126,14 @@ ${archiveCards}
         <span class="ghost-label">show all</span>
       </button>
       <div class="ghost-card ghost-r1 ghost-b" aria-hidden="true"></div>
-      <div class="ghost-card ghost-r1 ghost-c" aria-hidden="true"></div>
       <div class="ghost-card ghost-r2" aria-hidden="true"></div>
       <div class="ghost-card ghost-r2 ghost-e" aria-hidden="true"></div>
       <div class="ghost-card ghost-r2 ghost-f" aria-hidden="true"></div>
     </div>
+    <button class="ghost-card ghost-plus ghost-minus" id="archive-close-btn" aria-label="show only the highlights">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="ghost-label">show less</span>
+    </button>
   </div>
   </div>
 </div>
