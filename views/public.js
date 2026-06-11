@@ -119,11 +119,15 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
     </div>
 ${featuredCards}
 ${archiveCards}
+    <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
+      <div class="ghost-card" aria-hidden="true"></div>
+      <button class="ghost-card ghost-plus" id="archive-btn" aria-label="load the complete archive">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="ghost-label">show all</span>
+      </button>
+      <div class="ghost-card ghost-side-2" aria-hidden="true"></div>
+    </div>
   </div>
-  </div>
-  <div class="archive-toggle" id="archive-toggle" ${archive.length === 0 ? 'style="display:none"' : ''}>
-    <button id="archive-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-    <span class="archive-toggle-label">load the complete archive</span>
   </div>
 </div>
 

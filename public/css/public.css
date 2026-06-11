@@ -120,17 +120,23 @@
     background: transparent;
     color: #000;
     cursor: pointer;
-    transition: all 0.2s ease;
+    /* ::before/::after hold the brackets, so the drawn underline lives in a
+       background gradient: width animates 0% -> 100% from the left */
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 calc(100% - 3px);
+    background-size: 0% 1px;
+    transition: all 0.2s ease, background-size 0.3s ease;
     position: relative;
   }
   .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
   .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
   .filters button:hover { color: #1e40af; }
   .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
+  .filters button:hover,
+  .filters button.active { background-size: 100% 1px; }
   .filters button.active {
     color: #1e40af;
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
   .filters button.active::before {
     content: "";
@@ -343,10 +349,25 @@
     letter-spacing: 0.03em;
     color: #777;
     cursor: pointer;
+    position: relative;
     transition: color 0.2s ease;
   }
+  .card .tags span::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+  .card .tags span:hover::after,
+  .card .tags span.active::after { transform: scaleX(1); }
   .card .tags span:hover { color: #1e40af; }
-  .card .tags span.active { color: #1e40af; text-decoration: underline; text-underline-offset: 2px; }
+  .card .tags span.active { color: #1e40af; }
   .card .tags span::before { content: "↳ "; opacity: 0.4; }
   .card .tags span.tag-medium { font-style: italic; }
   .card .tags:has(span.active) { opacity: 1; pointer-events: auto; }
@@ -364,12 +385,27 @@
     text-align: left;
     white-space: nowrap;
     flex-shrink: 0;
+    position: relative;
     transition: color 0.2s ease;
   }
+  /* Underline draws in from the left on hover, retracts back to the left on leave */
+  .card .card-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .card:hover .card-title::after { transform: scaleX(1); }
   /* Year is shown inside .card-duration (prepended via JS); the standalone label is hidden */
   .card .card-year { display: none; }
   .card:hover .card-duration { opacity: 1; color: #1e40af; }
-  .card:hover .card-title { text-decoration: underline; color: #1e40af; }
+  .card:hover .card-title { color: #1e40af; }
   .card:hover .tags span { color: #555; }
   .intro-block {
     grid-column: 1;
@@ -448,40 +484,40 @@
   .labo-hover:hover .labo-logo-hover {
     opacity: 1;
   }
-  .archive-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 61px;
-    position: relative;
-  }
-  .archive-toggle button {
-    width: 46px;
-    height: 46px;
-    padding: 0;
+  /* Archive reveal: a preview row of border-only "preload" rectangles inside
+     the grid; the central one carries the plus and opens the full archive. */
+  .archive-toggle { display: contents; }
+  .archive-toggle.is-open { display: none; }
+  .ghost-card {
+    aspect-ratio: 16 / 9;
     border: 1px solid #ccc;
-    border-radius: 50%;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+  button.ghost-plus {
+    margin: 0;
+    padding: 0;
     background: transparent;
     color: #555;
     cursor: pointer;
-    transition: all 0.2s ease;
+    font-family: inherit;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    transition: color 0.2s ease, border-color 0.2s ease;
   }
-  .archive-toggle button:hover { border-color: #1e40af; color: #1e40af; }
-  .archive-toggle button svg { stroke: currentColor; }
-  .archive-toggle-label {
-    position: absolute;
-    left: calc(50% + 38px);
+  button.ghost-plus:hover { color: #1e40af; border-color: #1e40af; }
+  .ghost-plus svg { stroke: currentColor; }
+  .ghost-label {
     font-size: 13px;
     color: #aaa;
-    white-space: nowrap;
     opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, color 0.2s ease;
   }
-  .archive-toggle:not(.is-open) button:hover ~ .archive-toggle-label { opacity: 1; }
+  .ghost-plus:hover .ghost-label { opacity: 1; color: #1e40af; }
   .lightbox {
     display: none;
     position: fixed;
@@ -731,6 +767,8 @@
     .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
     .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
     .filters-extra { padding-left: 60px; }
+    /* 2-column grid: drop the second side ghost so the preview row fills one line */
+    .ghost-card.ghost-side-2 { display: none; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
@@ -785,8 +823,8 @@
     .lightbox .lb-close { left: 12px; top: -32px; }
     /* Footer */
     .site-footer { padding: 20px 14px 32px; }
-    /* Archive toggle label: clip overflow on narrow screens */
-    .archive-toggle-label { display: none; }
+    /* 1-column grid: only the plus rectangle remains of the preview row */
+    .ghost-card[aria-hidden="true"] { display: none; }
   }
   #dvd-logo {
     position: fixed;

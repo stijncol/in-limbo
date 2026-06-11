@@ -585,22 +585,17 @@
     });
   });
 
-  // Archive toggle
+  // Archive reveal: clicking the plus in the ghost preview row shows the full
+  // archive; the ghost row itself disappears (one-way until reload)
   const archiveToggle = document.getElementById('archive-toggle');
-  archiveToggle.addEventListener('click', () => {
-    const isOpen = grid.classList.toggle('show-archive');
-    userArchiveOpen = isOpen;
-    archiveToggle.classList.toggle('is-open', isOpen);
+  document.getElementById('archive-btn').addEventListener('click', () => {
+    grid.classList.add('show-archive');
+    userArchiveOpen = true;
+    archiveToggle.classList.add('is-open');
     document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
-      card.classList.toggle('hidden', !isOpen);
+      card.classList.remove('hidden');
     });
-    const btn = document.getElementById('archive-btn');
-    if (isOpen) {
-      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-      setTimeout(trimTags, 50);
-    } else {
-      btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-    }
+    setTimeout(trimTags, 50);
   });
   // Grid scale control (desktop only — hidden on mobile via CSS)
   const scaleDown = document.getElementById('scale-down');
