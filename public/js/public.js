@@ -432,6 +432,14 @@
   let archiveAutoOpened = false;   // archive opened automatically by zooming out
   let introAutoHidden = false;     // intro hidden automatically by zooming out
 
+  // The intro block occupies two grid cells; when it is not in the grid the
+  // .intro-off class lets two extra archive teasers fill its place so the
+  // row rhythm before the show-all row stays intact
+  function updateIntroOffClass() {
+    const introInGrid = aboutActive && scaleIndex === 0 && activeFilter === 'all';
+    grid.classList.toggle('intro-off', !introInGrid);
+  }
+
   // Dynamically limit visible tags so + always stays on the first line
   const filtersRow = document.getElementById('filters-row');
   const themeTags = filtersRow.querySelector('.theme-tags');
@@ -540,6 +548,7 @@
     // Show/hide intro block + archive toggle when filtering
     const isFiltered = value !== 'all';
     if (introBlock) introBlock.style.display = (isFiltered || !aboutActive || scaleIndex > 0) ? 'none' : '';
+    updateIntroOffClass();
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
 
@@ -552,7 +561,8 @@
       if (!card.dataset.videoId) return;
       const isArchive = card.dataset.featured === 'false';
       if (value === 'all') {
-        card.classList.toggle('hidden', isArchive && !userArchiveOpen && !archiveAutoOpened && !card.classList.contains('archive-preview'));
+        card.classList.toggle('hidden', isArchive && !userArchiveOpen && !archiveAutoOpened
+          && !card.classList.contains('archive-preview') && !card.classList.contains('archive-preview-extra'));
       } else if (type === 'year') {
         card.classList.toggle('hidden', card.dataset.year !== value);
       } else {
@@ -615,7 +625,8 @@
     grid.classList.remove('show-archive');
     archiveToggle.classList.remove('is-open');
     document.querySelectorAll('.card[data-featured="false"]').forEach(card => {
-      card.classList.toggle('hidden', !card.classList.contains('archive-preview'));
+      card.classList.toggle('hidden',
+        !card.classList.contains('archive-preview') && !card.classList.contains('archive-preview-extra'));
     });
   }
 
@@ -738,6 +749,7 @@
       }
       if (aboutActive) { introBlock.style.opacity = '0'; introBlock.style.display = ''; }
     }
+    updateIntroOffClass();
 
     // Apply grid change instantly
     grid.classList.toggle('grid-cols-5', idx === 1);
@@ -819,6 +831,7 @@
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
       introAutoHidden = false; // explicit choice from here on
+      updateIntroOffClass();
 
       aboutBtn.classList.toggle('active', aboutActive);
       if (scaleIndex > 0) {

@@ -53,8 +53,11 @@ function renderPublic(rows) {
   }
 
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
-  // The first archive video stays visible as a real teaser in the preview row
-  const archiveCards = archive.map((v, i) => renderCard(v, 'false', i === 0 ? ' archive-preview' : '')).join('\n');
+  // The first archive video stays visible as a real teaser in the preview row;
+  // the next two appear only when the intro block is hidden, filling the two
+  // grid cells it leaves behind so the row rhythm stays intact
+  const archiveCards = archive.map((v, i) => renderCard(v, 'false',
+    i === 0 ? ' archive-preview' : (i <= 2 ? ' archive-preview-extra' : ''))).join('\n');
 
   const themeTagCounts = {};
   const mediumTagCounts = {};
