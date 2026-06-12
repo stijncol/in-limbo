@@ -288,6 +288,9 @@
     object-fit: cover;
     display: block;
     opacity: 0;
+    /* visibility keeps the 35 idle sharp images out of paint/compositing
+       entirely; JS flips it around the opacity fade */
+    visibility: hidden;
     transition: opacity 0.45s ease-in-out;
   }
   .card .thumb[data-baked] canvas { display: none; }

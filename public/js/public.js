@@ -200,6 +200,8 @@
     }
 
     thumb.addEventListener('mouseenter', () => {
+      if (sharp._hideTimer) { clearTimeout(sharp._hideTimer); sharp._hideTimer = null; }
+      sharp.style.visibility = 'visible';
       sharp.style.opacity = '1';
       if (!canvas) initShimmer();
       if (canvas && origData) {
@@ -217,6 +219,10 @@
         setTimeout(() => { if (!shimmerActive && canvas) canvas.style.display = 'none'; }, 550);
       }
       sharp.style.opacity = '0';
+      sharp._hideTimer = setTimeout(() => {
+        sharp.style.visibility = 'hidden';
+        sharp._hideTimer = null;
+      }, 500);
     });
   }
 
@@ -995,6 +1001,7 @@
     });
 
     var lastTs = 0;
+    var lastX = null, lastY = null;
     function tick(ts) {
       var dt = lastTs ? Math.min(ts - lastTs, 50) : 16.667;
       lastTs = ts;
@@ -1013,7 +1020,12 @@
       }
       x = Math.min(Math.max(x, minX), maxX);
       y = Math.min(Math.max(y, minY), maxY);
-      wrap.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+      // Only touch the style when the logo actually moved — a parked logo
+      // otherwise invalidates the compositor every frame
+      if (x !== lastX || y !== lastY) {
+        wrap.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+        lastX = x; lastY = y;
+      }
       requestAnimationFrame(tick);
     }
 
