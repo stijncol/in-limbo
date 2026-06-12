@@ -884,12 +884,12 @@
     document.body.appendChild(wrap);
 
     var logoBase = document.createElement('img');
-    logoBase.src = '/public/inlimbo-logo2.png';
+    logoBase.src = '/public/dvd-logo.png';
     logoBase.draggable = false;
     logoBase.style.opacity = '1';
 
     var logoSel = document.createElement('img');
-    logoSel.src = '/public/inlimbo-logo2_selected.png';
+    logoSel.src = '/public/dvd-logo_selected.png';
     logoSel.draggable = false;
     logoSel.style.opacity = '0';
     logoSel.style.transition = 'opacity 0.5s';
@@ -1019,4 +1019,62 @@
 
     requestAnimationFrame(tick);
 
+  })();
+
+  // Smooth inertia scrolling: wheel input feeds a target offset that a rAF
+  // loop eases toward, so the page glides instead of stepping per wheel tick.
+  // Touch devices keep native scrolling; scrollable sub-elements and the
+  // lightbox (body overflow:hidden) stay untouched.
+  (function() {
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var EASE = 0.14;
+    var target = window.scrollY;
+    var current = window.scrollY;
+    var raf = null;
+
+    function maxScroll() {
+      return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    }
+
+    function inScrollableContainer(el) {
+      while (el && el !== document.body && el !== document.documentElement) {
+        if (el.scrollHeight > el.clientHeight + 1) {
+          var ov = getComputedStyle(el).overflowY;
+          if (ov === 'auto' || ov === 'scroll') return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+
+    function step() {
+      current += (target - current) * EASE;
+      if (Math.abs(target - current) < 0.5) {
+        current = target;
+        raf = null;
+      } else {
+        raf = requestAnimationFrame(step);
+      }
+      window.scrollTo(0, current);
+    }
+
+    window.addEventListener('wheel', function(e) {
+      if (e.ctrlKey) return; // pinch zoom
+      if (document.body.style.overflow === 'hidden') return; // lightbox open
+      if (inScrollableContainer(e.target)) return;
+      e.preventDefault();
+      var delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 16;
+      else if (e.deltaMode === 2) delta *= window.innerHeight;
+      target = Math.max(0, Math.min(maxScroll(), target + delta));
+      if (!raf) raf = requestAnimationFrame(step);
+    }, { passive: false });
+
+    // Anything else that scrolls (keyboard, find-in-page, anchors) resyncs us
+    window.addEventListener('scroll', function() {
+      if (raf) return;
+      target = current = window.scrollY;
+    }, { passive: true });
   })();

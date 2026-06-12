@@ -32,7 +32,7 @@ function renderPublic(rows) {
     const videoId = v.video_id || v.vimeo_id;
     const videoType = v.video_type || 'vimeo';
     const thumbHtml = v.has_thumb
-      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
+      ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" loading="lazy" decoding="async" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
       : `<div class="thumb"><img alt=""></div>`;
     return `
     <div class="card${extraClass}" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
