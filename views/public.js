@@ -90,6 +90,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 </head>
 <body>
 <div class="page">
+  <a class="mobile-brand" href="/" aria-label="in limbo — home"><img src="/public/dvd-logo.png" alt="in limbo"></a>
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">

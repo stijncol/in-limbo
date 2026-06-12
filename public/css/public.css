@@ -808,15 +808,28 @@
     }
     .scale-grid-icons { margin: 0 4px; }
   }
+  /* Brand header: desktop has the floating logo, mobile gets this instead */
+  .mobile-brand { display: none; }
   @media (max-width: 900px) {
     .page { padding: 32px 20px 80px; }
+    .mobile-brand { display: block; margin-bottom: 20px; }
+    .mobile-brand img { width: 64px; height: auto; display: block; }
+    /* iOS zooms the page when a focused input is under 16px */
+    .filters-search-input, .inline-search-input { font-size: 16px; }
+    /* Roomier tap targets */
+    .filters button { padding: 9px 5px; }
+    .card .tags span { padding: 3px 0; display: inline-block; }
     /* row-gap 36px gives absolute-positioned .meta room; column-gap 14px stays tight */
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 14px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
     .margin-about, .margin-scale { display: none; }
     .filters-row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: start; }
-    .filters-row .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
-    .filters-medium { position: static; }
+    /* The grid reserves a 52px label column, so the label must be in the grid
+       even in collapsed state (base CSS hides it until show-all) */
+    .filters-row .filters-label { display: block; position: static; width: 52px; text-align: left; top: auto; left: auto; }
+    /* .filters-medium also carries .filters-row, whose grid rule above would
+       otherwise override its display:none — keep it collapsed until show-all */
+    .filters-row.filters-medium { display: none; position: static; }
     .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
     .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
     .filters-extra { padding-left: 60px; }
@@ -854,7 +867,9 @@
     .card-duration { display: none; }
 
     /* Filters: stack search below tags */
-    .filters { flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    /* Column direction + the base align-items:flex-start shrinks children to
+       content width; stretch keeps the tag rows full-width */
+    .filters { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 28px; }
     .filters-search-wrap { padding-top: 0; }
     .filters-search-input { width: 160px; }
 

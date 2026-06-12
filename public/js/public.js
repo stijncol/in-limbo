@@ -408,9 +408,29 @@
       lbDescWrap.classList.remove('open');
       lbReadMore.textContent = 'read synopsis ↓';
       lightbox.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockBody();
     }
   });
+
+  // iOS Safari ignores overflow:hidden on body; the position:fixed pattern
+  // locks scroll reliably on all platforms (scroll position saved/restored)
+  let lockScrollY = 0;
+  function lockBody() {
+    lockScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = -lockScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.overflow = 'hidden';
+  }
+  function unlockBody() {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, lockScrollY);
+  }
 
   lbReadMore.addEventListener('click', () => {
     const isOpen = lbDescWrap.classList.toggle('open');
@@ -421,7 +441,7 @@
     lightbox.classList.remove('open');
     lbIframe.src = '';
     lbDescWrap.classList.remove('open');
-    document.body.style.overflow = '';
+    unlockBody();
   }
   lightbox.addEventListener('click', e => {
     if (e.target === lightbox || e.target.closest('.lb-close')) closeLightbox();
@@ -458,19 +478,22 @@
     Array.from(filtersExtra.querySelectorAll('button[data-filter]')).forEach(btn => {
       themeTags.insertBefore(btn, expandBtn);
     });
-    // Use the "all" button as the baseline for line 1
+    // Use the "all" button as the baseline for line 1. Buttons differ a few px
+    // in height (superscript counts), so centering offsets them slightly —
+    // only treat a clear jump as a wrap, not sub-row alignment differences.
+    const ROW_TOL = 8;
     const allBtn = themeTags.querySelector('button[data-filter="all"]');
     const firstTop = allBtn ? allBtn.offsetTop : 0;
     // Move any tags that wrapped to filtersExtra
     let hasOverflow = false;
     Array.from(themeTags.querySelectorAll('button[data-filter]:not([data-filter="all"])')).forEach(btn => {
-      if (btn.offsetTop > firstTop) { filtersExtra.appendChild(btn); hasOverflow = true; }
+      if (btn.offsetTop > firstTop + ROW_TOL) { filtersExtra.appendChild(btn); hasOverflow = true; }
     });
     const hasMediumTags = !!document.querySelector('.medium-tags button[data-filter]');
     expandBtn.style.display = (!hasOverflow && !hasMediumTags) ? 'none' : '';
     // Keep pulling the last visible tag out until + fits on line 1
     let guard = 50;
-    while (expandBtn.offsetTop > firstTop && guard-- > 0) {
+    while (expandBtn.offsetTop > firstTop + ROW_TOL && guard-- > 0) {
       const visible = Array.from(themeTags.querySelectorAll('button[data-filter]:not([data-filter="all"])'));
       if (!visible.length) break;
       filtersExtra.insertBefore(visible[visible.length - 1], filtersExtra.firstChild);
@@ -481,6 +504,12 @@
   setTimeout(() => requestAnimationFrame(enforceFirstLine), 0);
   document.fonts.ready.then(() => requestAnimationFrame(enforceFirstLine));
   new ResizeObserver(() => { if (!filtersBar.classList.contains('show-all')) requestAnimationFrame(enforceFirstLine); }).observe(filtersRow);
+  // Re-run after window resizes settle (orientation change on phones)
+  let efTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(efTimer);
+    efTimer = setTimeout(() => { if (!filtersBar.classList.contains('show-all')) enforceFirstLine(); }, 150);
+  });
 
   // Tag expand toggle
   document.getElementById('tag-expand').addEventListener('click', () => {
