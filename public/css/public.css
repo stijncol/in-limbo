@@ -24,7 +24,7 @@
     width: 100%;
     max-width: 1700px;
     margin: 0 auto;
-    padding: 40px 6vw 20px;
+    padding: 40px 6vw 4px;
     box-sizing: border-box;
   }
   .filters {
@@ -625,7 +625,7 @@
   .site-footer {
     max-width: 1700px;
     margin: 0 auto;
-    padding: 16px 40px 40px;
+    padding: 8px 40px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
