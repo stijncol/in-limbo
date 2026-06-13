@@ -677,7 +677,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: -5px;
+    right: -5px;
     width: 1px;
     background: currentColor;
     transform: scaleY(0);
