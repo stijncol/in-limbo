@@ -801,6 +801,13 @@
     }
     .scale-grid-icons { margin: 0 4px; }
   }
+  /* iPad in portrait (e.g. 12.9" = 1024px tall): two columns reads more
+     elegantly than three. Intro spans the full width like the mobile layout
+     so the row rhythm stays intact. Landscape keeps three columns. */
+  @media (min-width: 901px) and (max-width: 1180px) and (orientation: portrait) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 22px; }
+    .intro-block { grid-column: 1 / -1; grid-row: auto; }
+  }
   /* Brand header: desktop has the floating logo, mobile gets this instead */
   .mobile-brand { display: none; }
   @media (max-width: 900px) {
