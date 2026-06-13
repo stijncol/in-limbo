@@ -648,8 +648,7 @@
   /* Margin controls — [about] left, scale right, desktop only */
   .margin-about {
     position: absolute;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    display: inline-flex;
     font-family: inherit;
     font-size: 14px;
     letter-spacing: 0.08em;
@@ -661,6 +660,15 @@
     z-index: 10;
     transition: top 0.3s ease, color 0.2s;
     user-select: none;
+  }
+  /* The vertical orientation lives on the inner span, not the button: iOS
+     Safari ignores writing-mode on <button> (it stayed horizontal + flipped
+     = upside-down), but honors it on a child element. */
+  .margin-about-label {
+    display: inline-block;
+    writing-mode: vertical-rl;
+    -webkit-writing-mode: vertical-rl;
+    transform: rotate(180deg);
   }
   /* Same drawn underline as the filter buttons, rotated along the vertical
      text: it draws in the reading direction and retracts the same way */
