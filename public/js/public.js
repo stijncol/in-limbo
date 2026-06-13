@@ -701,9 +701,11 @@
     // recalculation gives the same spot no matter the current scroll position
     // (gridRect.top alone is viewport-relative and made the control jump).
     var gridTop = Math.round(gridRect.top + window.scrollY + 10);
-    // Tablet range: place controls horizontally above the grid (CSS removes the
-    // vertical writing-mode in this range — see media query for 901-1180px).
-    var isTablet = window.innerWidth <= 1180;
+    // Tablet range: place controls horizontally above the grid. Portrait
+    // tablets (iPad) have enough side margin, so they use the desktop
+    // side-margin placement instead — otherwise the controls overlap the tags.
+    var portrait = window.matchMedia('(orientation: portrait)').matches;
+    var isTablet = window.innerWidth <= 1180 && !portrait;
     // Never let the controls drift more than this far from the grid's edge.
     // Without a cap, large screens centre the button in the huge empty margin.
     var MAX_GAP = 80;
