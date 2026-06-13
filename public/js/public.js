@@ -975,7 +975,11 @@
     });
 
     var introEl = document.getElementById('intro-block');
-    var size = introEl ? Math.round(introEl.offsetWidth * 7 / 16) : 158;
+    // Size relative to one grid column (a card), not the intro block — the
+    // intro spans the full width in iPad portrait, which would inflate the logo.
+    var sizeBasisEl = document.querySelector('.grid .card');
+    var sizeBasis = sizeBasisEl ? sizeBasisEl.offsetWidth : (introEl ? introEl.offsetWidth : 360);
+    var size = Math.round(sizeBasis * 7 / 16);
     wrap.style.width  = size + 'px';
     wrap.style.height = size + 'px';
 
