@@ -24,7 +24,7 @@
     width: 100%;
     max-width: 1700px;
     margin: 0 auto;
-    padding: 40px 6vw 72px;
+    padding: 40px 6vw 20px;
     box-sizing: border-box;
   }
   .filters {
@@ -625,7 +625,7 @@
   .site-footer {
     max-width: 1700px;
     margin: 0 auto;
-    padding: 32px 40px 40px;
+    padding: 16px 40px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -808,12 +808,18 @@
     }
     .scale-grid-icons { margin: 0 4px; }
   }
-  /* Brand header: desktop has the floating logo, mobile gets this instead */
+  /* Brand header: pointer-fine devices (mouse) get the floating DVD logo,
+     touch devices get a static brand mark — the logo is a hover/drag toy that
+     just drifts over the text on a touchscreen. */
   .mobile-brand { display: none; }
+  .mobile-brand img { width: 64px; height: auto; display: block; }
+  @media (pointer: coarse) {
+    #dvd-logo { display: none !important; }
+    .mobile-brand { display: block; margin-bottom: 24px; }
+  }
   @media (max-width: 900px) {
-    .page { padding: 32px 20px 80px; }
+    .page { padding: 32px 20px 40px; }
     .mobile-brand { display: block; margin-bottom: 20px; }
-    .mobile-brand img { width: 64px; height: auto; display: block; }
     /* iOS zooms the page when a focused input is under 16px */
     .filters-search-input, .inline-search-input { font-size: 16px; }
     /* Roomier tap targets */
