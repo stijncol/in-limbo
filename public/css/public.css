@@ -785,41 +785,20 @@
      near the top-right. Upper bound stays below the M1 MacBook (~1280px CSS)
      so its layout is untouched. */
   @media (min-width: 901px) and (max-width: 1180px) {
-    .margin-about {
-      writing-mode: horizontal-tb;
-      transform: none;
-    }
-    /* Horizontal text here: underline below, drawing left to right */
-    .margin-about::after {
-      top: auto;
-      bottom: -3px;
-      left: 0;
-      right: 0;
-      width: auto;
-      height: 1px;
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-    .margin-about:hover::after,
-    .margin-about.active::after { transform: scaleX(1); }
+    /* [about] stays vertical here (like desktop) — forcing it horizontal read
+       as upside-down on iPad. */
     .margin-scale {
       flex-direction: row;
       gap: 10px;
     }
     .scale-grid-icons { margin: 0 4px; }
   }
-  /* Brand header: pointer-fine devices (mouse) get the floating DVD logo,
-     touch devices get a static brand mark — the logo is a hover/drag toy that
-     just drifts over the text on a touchscreen. */
+  /* Brand header: desktop has the floating logo, mobile gets this instead */
   .mobile-brand { display: none; }
-  .mobile-brand img { width: 64px; height: auto; display: block; }
-  @media (pointer: coarse) {
-    #dvd-logo { display: none !important; }
-    .mobile-brand { display: block; margin-bottom: 24px; }
-  }
   @media (max-width: 900px) {
-    .page { padding: 32px 20px 40px; }
+    .page { padding: 32px 20px 80px; }
     .mobile-brand { display: block; margin-bottom: 20px; }
+    .mobile-brand img { width: 64px; height: auto; display: block; }
     /* iOS zooms the page when a focused input is under 16px */
     .filters-search-input, .inline-search-input { font-size: 16px; }
     /* Roomier tap targets */
