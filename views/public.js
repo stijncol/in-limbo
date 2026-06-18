@@ -53,11 +53,12 @@ function renderPublic(rows) {
   }
 
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
-  // The first archive video stays visible as a real teaser in the preview row;
-  // the next two appear only when the intro block is hidden, filling the two
-  // grid cells it leaves behind so the row rhythm stays intact
+  // The first two archive videos stay visible as real teasers in the preview row
+  // (they sit before the single "show all" frame so the row reads
+  // [teaser][teaser][+]); the next two appear only when the intro block is
+  // hidden, filling the two grid cells it leaves behind so the row rhythm stays intact
   const archiveCards = archive.map((v, i) => renderCard(v, 'false',
-    i === 0 ? ' archive-preview' : (i <= 2 ? ' archive-preview-extra' : ''))).join('\n');
+    i <= 1 ? ' archive-preview' : (i <= 3 ? ' archive-preview-extra' : ''))).join('\n');
 
   const themeTagCounts = {};
   const mediumTagCounts = {};
@@ -86,7 +87,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260615a">
+<link rel="stylesheet" href="/public/css/public.css?v=20260615c">
 </head>
 <body>
 <div class="page">
@@ -129,10 +130,6 @@ ${archiveCards}
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span class="ghost-label">show all</span>
       </button>
-      <div class="ghost-card ghost-r1 ghost-b" aria-hidden="true"></div>
-      <div class="ghost-card ghost-r2" aria-hidden="true"></div>
-      <div class="ghost-card ghost-r2 ghost-e" aria-hidden="true"></div>
-      <div class="ghost-card ghost-r2 ghost-f" aria-hidden="true"></div>
     </div>
     <button class="ghost-card ghost-plus ghost-minus" id="archive-close-btn" aria-label="show only the highlights">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -191,7 +188,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260615a"></script>
+<script src="/public/js/public.js?v=20260615c"></script>
 
 </body>
 </html>`;
