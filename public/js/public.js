@@ -691,6 +691,19 @@
   let scaleIndex = 0;
   var aboutActive = true;
 
+  // Density readout: rebuild the 2×N dot matrix to match the current column
+  // count (3 / 5 / 7) — more dots = more columns = smaller thumbnails
+  const scaleMatrix = document.getElementById('scale-matrix');
+  function renderScaleMatrix() {
+    if (!scaleMatrix) return;
+    var cols = scaleSteps[scaleIndex];
+    scaleMatrix.style.gridTemplateColumns = 'repeat(' + cols + ', 3px)';
+    var dots = '';
+    for (var i = 0; i < cols * 2; i++) dots += '<i></i>';
+    scaleMatrix.innerHTML = dots;
+  }
+  renderScaleMatrix();
+
   function positionScaleCtrl() {
     var ctrl = document.getElementById('scale-ctrl');
     var aboutBtn = document.getElementById('about-btn');
@@ -791,9 +804,7 @@
     // Apply grid change instantly
     grid.classList.toggle('grid-cols-5', idx === 1);
     grid.classList.toggle('grid-cols-7', idx === 2);
-    document.querySelectorAll('.scale-grid-icon').forEach(function(btn, i) {
-      btn.classList.toggle('active', i === idx);
-    });
+    renderScaleMatrix();
     if (scaleDown) scaleDown.disabled = idx === 0;
     if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
     requestAnimationFrame(positionScaleCtrl);
@@ -829,9 +840,6 @@
 
   if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
   if (scaleUp) scaleUp.addEventListener('click', () => applyScale(Math.min(scaleSteps.length - 1, scaleIndex + 1)));
-  document.querySelectorAll('.scale-grid-icon').forEach(function(btn) {
-    btn.addEventListener('click', function() { applyScale(parseInt(btn.dataset.scale, 10)); });
-  });
 
   // About panel (fixed overlay for compact grid modes)
   var aboutPanel = document.getElementById('about-panel');
