@@ -2,18 +2,28 @@ const { YOUTUBE_API_KEY, SITE_URL } = require('../config');
 
 const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
+// Fisher–Yates: randomise the order in place so the grid looks different on
+// every page load (the server re-renders per request)
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function renderPublic(rows) {
   const allVideos = rows.filter(v => v.status === 'approved' || !v.status);
-  let featured = allVideos.filter(v => v.featured && !v.archived);
-  let archive = allVideos.filter(v => v.archived || !v.featured);
+  // Every highlight always shows in the grid — only the order is randomised
+  const featured = shuffle(allVideos.filter(v => v.featured && !v.archived));
+  const archive = shuffle(allVideos.filter(v => v.archived || !v.featured));
 
-  // Force featured to fill complete rows, accounting for the intro block occupying
-  // column 1 of rows 1-2. Valid counts are 4, 7, 10, 13… → remainder = (n-1) % 3
-  const remainder = featured.length > 0 ? (featured.length - 1) % 3 : 0;
-  if (remainder !== 0) {
-    const overflow = featured.splice(featured.length - remainder, remainder);
-    archive = [...overflow, ...archive];
-  }
+  // Pick how many archive videos appear as teasers before the "show all" frame
+  // so the final row stays complete with the plus in the last column. The intro
+  // block occupies 2 cells (= the 2 intro-off fillers), so the same parity works
+  // whether the intro is shown or hidden: we need (featured + teasers) % 3 === 0.
+  let teaserCount = 2;
+  while ((featured.length + teaserCount) % 3 !== 0) teaserCount++;
 
   // Collect tags by category
   const themeTags = new Set();
@@ -53,12 +63,12 @@ function renderPublic(rows) {
   }
 
   const featuredCards = featured.map(v => renderCard(v, 'true')).join('\n');
-  // The first two archive videos stay visible as real teasers in the preview row
-  // (they sit before the single "show all" frame so the row reads
-  // [teaser][teaser][+]); the next two appear only when the intro block is
-  // hidden, filling the two grid cells it leaves behind so the row rhythm stays intact
+  // The first `teaserCount` archive videos stay visible as real teasers, sitting
+  // before the single "show all" frame so the row reads […][teaser][+]; the next
+  // two appear only when the intro block is hidden, filling the two grid cells it
+  // leaves behind so the row rhythm stays intact
   const archiveCards = archive.map((v, i) => renderCard(v, 'false',
-    i <= 1 ? ' archive-preview' : (i <= 3 ? ' archive-preview-extra' : ''))).join('\n');
+    i < teaserCount ? ' archive-preview' : (i < teaserCount + 2 ? ' archive-preview-extra' : ''))).join('\n');
 
   const themeTagCounts = {};
   const mediumTagCounts = {};
