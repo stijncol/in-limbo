@@ -97,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260615d">
+<link rel="stylesheet" href="/public/css/public.css?v=20260615g">
 </head>
 <body>
 <div class="page">
@@ -149,7 +149,7 @@ ${archiveCards}
   </div>
 </div>
 
-<button class="margin-about active" id="about-btn"><span class="margin-about-label">[about] + [search]</span></button>
+<button class="margin-about active" id="about-btn"><span class="margin-about-label">[about] + <svg class="margin-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></span></button>
 <div id="about-panel">
   <button class="about-close" aria-label="close about"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
 </div>
@@ -183,7 +183,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260615d"></script>
+<script src="/public/js/public.js?v=20260615g"></script>
 
 </body>
 </html>`;

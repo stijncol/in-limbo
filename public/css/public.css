@@ -261,7 +261,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 1px solid rgba(0,0,0,0.65);
+    border: 1px solid #000;
     z-index: 10;
     pointer-events: none;
     transition: border-color 0.2s ease;
@@ -494,7 +494,7 @@
     margin: 0;
     padding: 0;
     background: transparent;
-    border-color: rgba(0,0,0,0.65);
+    border-color: #000;
     color: #111;
     cursor: pointer;
     font-family: inherit;
@@ -663,6 +663,14 @@
     display: inline-block;
     writing-mode: vertical-rl;
     -webkit-writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  /* Search magnifier inside the vertical label — sits upright relative to the
+     reading direction (counter the parent's 180° flip) and aligns with the text */
+  .margin-search-icon {
+    width: 13px;
+    height: 13px;
+    vertical-align: -2px;
     transform: rotate(180deg);
   }
   /* Same drawn underline as the filter buttons, rotated along the vertical
@@ -838,7 +846,7 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       aspect-ratio: 16 / 9;
-      border: 1px solid rgba(0,0,0,0.65);
+      border: 1px solid #000;
       pointer-events: none;
       z-index: 10;
       transition: border-color 0.2s ease;
