@@ -714,39 +714,26 @@
     // recalculation gives the same spot no matter the current scroll position
     // (gridRect.top alone is viewport-relative and made the control jump).
     var gridTop = Math.round(gridRect.top + window.scrollY + 10);
-    // Tablet range: place controls horizontally above the grid. Portrait
-    // tablets (iPad) have enough side margin, so they use the desktop
-    // side-margin placement instead — otherwise the controls overlap the tags.
-    var portrait = window.matchMedia('(orientation: portrait)').matches;
-    var isTablet = window.innerWidth <= 1180 && !portrait;
-    // Never let the controls drift more than this far from the grid's edge.
-    // Without a cap, large screens centre the button in the huge empty margin.
+    // Always centre the controls vertically in the side margin (down to 900px,
+    // below which they are hidden). The centred 2-column layout keeps wide side
+    // margins, so they never need to jump to the top or rotate horizontal.
+    // Never let them drift more than this far from the grid's edge, though —
+    // large screens have huge margins.
     var MAX_GAP = 80;
 
     if (ctrl) {
       var rightGap = window.innerWidth - gridRect.right;
-      if (isTablet) {
-        // Anchor at the page's top padding line, aligned to the grid's right edge.
-        ctrl.style.right = Math.max(4, Math.round(rightGap)) + 'px';
-        ctrl.style.top = '12px';
-      } else {
-        var ctrlCentered = (rightGap - ctrl.offsetWidth) / 2;
-        var ctrlMin = Math.max(4, rightGap - ctrl.offsetWidth - MAX_GAP);
-        ctrl.style.right = Math.round(Math.max(ctrlMin, ctrlCentered)) + 'px';
-        ctrl.style.top = gridTop + 'px';
-      }
+      var ctrlCentered = (rightGap - ctrl.offsetWidth) / 2;
+      var ctrlMin = Math.max(4, rightGap - ctrl.offsetWidth - MAX_GAP);
+      ctrl.style.right = Math.round(Math.max(ctrlMin, ctrlCentered)) + 'px';
+      ctrl.style.top = gridTop + 'px';
     }
     if (aboutBtn) {
       var leftGap = gridRect.left;
-      if (isTablet) {
-        aboutBtn.style.left = Math.max(4, Math.round(leftGap)) + 'px';
-        aboutBtn.style.top = (12 + window.scrollY) + 'px';
-      } else {
-        var aboutCentered = (leftGap - aboutBtn.offsetWidth) / 2;
-        var aboutMin = Math.max(4, leftGap - aboutBtn.offsetWidth - MAX_GAP);
-        aboutBtn.style.left = Math.round(Math.max(aboutMin, aboutCentered)) + 'px';
-        aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
-      }
+      var aboutCentered = (leftGap - aboutBtn.offsetWidth) / 2;
+      var aboutMin = Math.max(4, leftGap - aboutBtn.offsetWidth - MAX_GAP);
+      aboutBtn.style.left = Math.round(Math.max(aboutMin, aboutCentered)) + 'px';
+      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
     }
   }
   window.addEventListener('resize', positionScaleCtrl);

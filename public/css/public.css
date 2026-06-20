@@ -24,7 +24,12 @@
     width: 100%;
     max-width: 1700px;
     margin: 0 auto;
-    padding: 40px 7.8vw 60px;
+    /* Generous side margin — the original 7.8vw look on the default/large
+       widths (Air ~1440 and up), so the [about] + scale controls sit in the
+       margin, not on the thumbnails. It only shrinks as the window narrows so
+       the 3 columns stay wide enough to keep the intro in 2 rows; below ~1260px
+       we drop to 2 columns (capped + centred, which brings its own wide margins). */
+    padding: 40px max(16px, min(7.8vw, calc((100vw - 1211px) / 2))) 60px;
     box-sizing: border-box;
   }
   .filters {
@@ -213,7 +218,12 @@
   .filters-search-input:focus { border-bottom-color: #1e40af; }
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Capped-width columns + centering: thumbnails keep a roughly constant size
+       across the column tiers (no upscaling when dropping a column); leftover
+       space becomes wide outer margins around a centered grid. 3 columns can
+       grow to 460px on big screens, shrinking to ~385px at the 2-column switch. */
+    grid-template-columns: repeat(3, minmax(0, 460px));
+    justify-content: center;
     grid-auto-flow: dense;
     gap: 28px;
   }
@@ -781,30 +791,16 @@
   .grid.grid-cols-5 .card-duration,
   .grid.grid-cols-7 .card-duration { display: none; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  /* Tablet range (iPad / iPad Air landscape ~1024px): the vertical writing-mode +
-     rotate(180deg) paints/positions unreliably on iPadOS Safari. Render [about]
-     horizontally near the top-left of the page, and stack scale-ctrl horizontally
-     near the top-right. Upper bound stays below the M1 MacBook (~1280px CSS)
-     so its layout is untouched. */
-  @media (min-width: 901px) and (max-width: 1180px) {
-    /* [about] stays vertical here (like desktop) — forcing it horizontal read
-       as upside-down on iPad. */
-    .margin-scale {
-      flex-direction: row;
-      gap: 10px;
-    }
-    .scale-matrix { margin: 0 4px; }
-  }
-  /* iPad in portrait (e.g. 12.9" = 1024px tall): two columns reads more
-     elegantly than three. Intro spans the full width like the mobile layout
-     so the row rhythm stays intact. Landscape keeps three columns. */
-  @media (min-width: 901px) and (max-width: 1180px) and (orientation: portrait) {
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 22px; }
-    .intro-block { grid-column: 1 / -1; grid-row: auto; }
-    /* Controls sit vertically in the side margins here (JS positions them like
-       desktop in portrait), so undo the horizontal row from the tablet block. */
-    .margin-scale { flex-direction: column; gap: 6px; }
-    .scale-matrix { margin: 5px 0; }
+  /* ── Column tiers ──────────────────────────────────────────
+     Columns have a capped width and the grid is centred, so thumbnails keep a
+     roughly constant size and the freed space becomes wide outer margins (the
+     [about] + scale controls live in those margins, placed by JS). As the
+     window narrows the fluid side margin (see .page) keeps the 3 columns wide
+     enough that the intro still fits 2 rows; below ~1260px we drop to 2 columns
+     (capped at 385px, the size the 3-column layout reaches just before the
+     switch — so thumbnails don't jump bigger), with the intro still in column 1. */
+  @media (max-width: 1260px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 385px)); }
   }
   /* Brand header: desktop has the floating logo, mobile gets this instead */
   .mobile-brand { display: none; }
