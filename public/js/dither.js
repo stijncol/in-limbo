@@ -128,6 +128,23 @@ function preprocess(imageData,cfg){
     if(co!==1){r=((r/255-.5)*co+.5)*255;g=((g/255-.5)*co+.5)*255;b=((b/255-.5)*co+.5)*255}
     var j=i/4*3;res[j]=Math.max(0,Math.min(255,r));res[j+1]=Math.max(0,Math.min(255,g));res[j+2]=Math.max(0,Math.min(255,b));
   }
+  // ── optional tone control (both off by default — production unaffected) ──
+  function meanLum(){var s=0;for(var q=0;q<res.length;q+=3){s+=0.299*res[q]+0.587*res[q+1]+0.114*res[q+2]}return(s/(res.length/3))/255}
+  // Auto-exposure: per-image gamma so the mean luminance lands on a target,
+  // lightening dark frames so they stop dominating the grid (out = in^e maps mean→target)
+  if(cfg.image.autoExpose&&cfg.image.autoExpose.enabled){
+    var m=meanLum(),T=cfg.image.autoExpose.target||0.72;
+    if(m>0.02&&m<0.98){
+      var e=Math.max(0.35,Math.min(1.6,Math.log(T)/Math.log(m)));
+      for(var ae=0;ae<res.length;ae++)res[ae]=255*Math.pow(res[ae]/255,e);
+    }
+  }
+  // Invert-if-dark: flip black/white when the frame is darker than the threshold
+  if(cfg.image.invertIfDark&&cfg.image.invertIfDark.enabled){
+    if(meanLum()<(cfg.image.invertIfDark.threshold||0.45)){
+      for(var iv=0;iv<res.length;iv++)res[iv]=255-res[iv];
+    }
+  }
   if(bl>0){
     var tmp=new Float32Array(w*h*3);
     for(var y=0;y<h;y++)for(var x=0;x<w;x++){
@@ -248,7 +265,7 @@ function sampleCard(card,img,w,h){
 // settings used to bake the production thumbnails. Change here = change the
 // look of newly baked thumbnails everywhere (lab + admin auto-bake).
 var DEFAULT_DITHER_CFG={
-  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.27,blur:2},
+  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.27,blur:2,autoExpose:{enabled:true,target:0.70}},
   dither:{technique:'fs',width:500},
   palette:{mode:'duo',colors:4,pastel:60,lightness:50,
     monoHue:'#3C5A78',tintHue:'#3C5A78',fixedExtras:'warm',
