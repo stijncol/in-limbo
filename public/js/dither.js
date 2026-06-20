@@ -130,12 +130,16 @@ function preprocess(imageData,cfg){
   }
   // ── optional tone control (both off by default — production unaffected) ──
   function meanLum(){var s=0;for(var q=0;q<res.length;q+=3){s+=0.299*res[q]+0.587*res[q+1]+0.114*res[q+2]}return(s/(res.length/3))/255}
-  // Auto-exposure: per-image gamma so the mean luminance lands on a target,
-  // lightening dark frames so they stop dominating the grid (out = in^e maps mean→target)
+  // Auto-exposure: per-image gamma that nudges the mean luminance toward a
+  // target so dark frames stop dominating the grid (out = in^e maps mean→target).
+  // `strength` (0..1) moves the mean only part way there, so dark frames keep
+  // their contrasty patches instead of washing out to flat grey.
   if(cfg.image.autoExpose&&cfg.image.autoExpose.enabled){
     var m=meanLum(),T=cfg.image.autoExpose.target||0.72;
-    if(m>0.02&&m<0.98){
-      var e=Math.max(0.35,Math.min(1.6,Math.log(T)/Math.log(m)));
+    var s=cfg.image.autoExpose.strength==null?1:cfg.image.autoExpose.strength;
+    if(m>0.02&&m<0.98&&s>0){
+      var Tp=m+s*(T-m); // partial target
+      var e=Math.max(0.4,Math.min(1.6,Math.log(Tp)/Math.log(m)));
       for(var ae=0;ae<res.length;ae++)res[ae]=255*Math.pow(res[ae]/255,e);
     }
   }
@@ -265,7 +269,7 @@ function sampleCard(card,img,w,h){
 // settings used to bake the production thumbnails. Change here = change the
 // look of newly baked thumbnails everywhere (lab + admin auto-bake).
 var DEFAULT_DITHER_CFG={
-  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.27,blur:2,autoExpose:{enabled:true,target:0.70}},
+  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.27,blur:2,autoExpose:{enabled:true,target:0.70,strength:0.45}},
   dither:{technique:'fs',width:500},
   palette:{mode:'duo',colors:4,pastel:60,lightness:50,
     monoHue:'#3C5A78',tintHue:'#3C5A78',fixedExtras:'warm',

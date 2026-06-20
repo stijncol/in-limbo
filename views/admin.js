@@ -189,7 +189,7 @@ function renderAdmin(videos) {
   </div>
 
 <script>window.__CONFIG__ = { user: '${ADMIN_USER}', pass: '${ADMIN_PASS}' };</script>
-<script src="/public/js/dither.js?v=20260615e"></script>
+<script src="/public/js/dither.js?v=20260615f"></script>
 <script src="/public/js/admin.js"></script>
 </body>
 </html>`;
