@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 117.63 742.84">
+  <defs>
+    <style>
+      .cls-1 { letter-spacing: -.18em; }
+
+      .cls-4, .cls-5, .cls-6, .cls-7 { fill: none; }
+
+      .cls-4 { stroke: #231f20; }
+      .cls-4, .cls-5 { stroke-width: .82px; }
+      .cls-5, .cls-6, .cls-7 { stroke: #000; }
+
+      .cls-6 { stroke-width: 1px; }
+
+      .cls-11 {
+        font-family: IBMPlexMono-Text, 'IBM Plex Mono';
+        font-size: 18.53px;
+      }
+      .cls-11, .cls-12, .cls-13, .cls-14, .cls-15 { fill: #231f20; }
+
+      .cls-12 {
+        font-family: IBMPlexSansVar-Italic, 'IBM Plex Sans Var';
+        font-variation-settings: 'wght' 400, 'wdth' 100;
+      }
+      .cls-12, .cls-13 { font-size: 22.24px; }
+      .cls-12, .cls-13, .cls-14, .cls-15 { font-style: italic; }
+
+      .cls-13, .cls-14, .cls-15 {
+        font-family: IBMPlexSerifVar-Italic, 'IBM Plex Serif Var';
+        font-variation-settings: 'wght' 400;
+      }
+      .cls-14 { font-size: 24.31px; }
+      .cls-15 { font-size: 26.56px; }
+
+      .cls-19 { letter-spacing: 0em; }
+      .cls-20 { letter-spacing: -.02em; }
+      .cls-21 { letter-spacing: 0em; }
+      .cls-22 { letter-spacing: .01em; }
+      .cls-23 { letter-spacing: -.06em; }
+      .cls-24 { letter-spacing: 0em; }
+    </style>
+  </defs>
+
+  <g transform="translate(12, 0)">
+    <!-- inlimbo.video frame: rect centered at y=530.5 (= 50vh in a 70vh/742.84 SVG) -->
+    <rect class="cls-5" x="12.13" y="438.1" width="48.63" height="184.85"/>
+    <text class="cls-15" transform="translate(44.3 607.1) rotate(-90)"><tspan x="0" y="0">inlimb</tspan><tspan class="cls-20" x="74.58" y="0">o</tspan><tspan class="cls-23" x="87.25" y="0">.</tspan><tspan class="cls-22" x="92.17" y="0">v</tspan><tspan class="cls-21" x="104.47" y="0">ideo</tspan></text>
+    <text class="cls-14" transform="translate(44.3 459.4) rotate(-90)"><tspan class="cls-1" x="0" y="0" xml:space="preserve">          </tspan><tspan x="8.26" y="0"> </tspan></text>
+
+    <!-- about: rounded rect top at y=126 (≈ vertical start of intro text at typical viewport) -->
+    <rect class="cls-4" x="16.69" y="126" width="40.12" height="93.93" rx="17.22" ry="17.22"/>
+    <text class="cls-12" transform="translate(42.21 222.18) rotate(-90)"><tspan x="0" y="0" xml:space="preserve">    </tspan></text>
+    <text class="cls-13" transform="translate(42.21 201.19) rotate(-90)"><tspan class="cls-19" x="0" y="0">a</tspan><tspan x="12.03" y="0">bo</tspan><tspan class="cls-24" x="34.53" y="0">u</tspan><tspan x="46.92" y="0">t</tspan></text>
+    <text class="cls-14" transform="translate(42.21 148.04) rotate(-90)"><tspan x="0" y="0"> </tspan></text>
+
+    <!-- scale-up (+): cy=331 -->
+    <circle class="cls-7" cx="36.44" cy="331" r="17.45"/>
+    <text class="cls-11" transform="translate(30.64 336.63)"><tspan x="0" y="0">+</tspan></text>
+
+    <!-- scale-down (-): cy=266 -->
+    <circle class="cls-7" cx="37.19" cy="266" r="17.45"/>
+    <text class="cls-11" transform="translate(31.39 271.63)"><tspan x="0" y="0">-</tspan></text>
+
+    <!-- search outer circle (r=22.51, centre 38.65,62.75) + magnifier (r=6, better centred) -->
+    <path class="cls-6" d="M38.65,85.26c12.43,0,22.51-10.08,22.51-22.51s-10.08-22.51-22.51-22.51-22.51,10.08-22.51,22.51,10.08,22.51,22.51,22.51Z"/>
+    <circle class="cls-7" cx="35" cy="59" r="6" fill="none"/>
+    <line class="cls-7" x1="39.24" y1="63.24" x2="43" y2="67" stroke-linecap="round"/>
+  </g>
+</svg>

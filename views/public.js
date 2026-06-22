@@ -1,4 +1,36 @@
 const { YOUTUBE_API_KEY, SITE_URL } = require('../config');
+const fs = require('fs');
+const path = require('path');
+
+let _railSvg = '';
+try {
+  const raw = fs.readFileSync(path.join(__dirname, '../public/rail.svg'), 'utf8');
+  _railSvg = raw
+    .replace(/^<\?xml[^?]*\?>\s*/m, '')
+    .replace('id="Layer_1"', 'id="rail-svg"')
+    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
+      let scoped = css.replace(/\.cls-/g, '#rail-svg .cls-');
+      scoped = scoped
+        .replace("'IBM Plex Serif Var'", "'IBM Plex Serif Var', 'IBM Plex Serif'")
+        .replace("'IBM Plex Sans Var'", "'IBM Plex Sans Var', 'IBM Plex Sans'");
+      return `<style>${scoped}</style>`;
+    });
+} catch (e) {
+  _railSvg = '';
+}
+
+let _laboSvg = '';
+try {
+  const raw = fs.readFileSync(path.join(__dirname, '../public/labo.svg'), 'utf8');
+  _laboSvg = raw
+    .replace(/^<\?xml[^?]*\?>\s*/m, '')
+    .replace('id="Layer_labo"', 'id="labo-svg"')
+    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
+      return `<style>${css.replace(/\.cls-/g, '#labo-svg .cls-')}</style>`;
+    });
+} catch (e) {
+  _laboSvg = '';
+}
 
 const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
@@ -96,8 +128,8 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <meta name="twitter:card" content="summary_large_image">` : ''}
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260616e">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/public/css/public.css?v=20260621g">
 </head>
 <body>
 <div class="page">
@@ -146,22 +178,26 @@ ${archiveCards}
       <span class="ghost-label">show less</span>
     </button>
   </div>
+  <div class="left-rail" id="left-rail">
+    ${_railSvg}
+    ${_laboSvg}
+    <button class="rail-overlay" id="rail-search-btn" aria-label="search"></button>
+    <div id="scale-ctrl">
+      <button class="rail-overlay scale-step" id="scale-down" aria-label="bigger thumbnails" disabled></button>
+      <div id="scale-matrix"></div>
+      <button class="rail-overlay scale-step" id="scale-up" aria-label="smaller thumbnails"></button>
+    </div>
+    <button class="rail-overlay margin-about active" id="about-btn" aria-label="about"></button>
   </div>
 </div>
 
-<button class="margin-about active" id="about-btn"><span class="margin-about-label">[about] + <svg class="margin-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></span></button>
 <div id="about-panel">
   <button class="about-close" aria-label="close about"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
-</div>
-<div class="margin-scale" id="scale-ctrl">
-  <button class="scale-step" id="scale-down" title="Bigger thumbnails" aria-label="bigger thumbnails" disabled>[–]</button>
-  <div class="scale-matrix" id="scale-matrix" aria-hidden="true"></div>
-  <button class="scale-step" id="scale-up" title="Smaller thumbnails" aria-label="smaller thumbnails">[+]</button>
 </div>
 
 <div class="site-footer">
   <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
-  <div class="footer-logos"><img src="/public/logos-outline.png" alt="lab-O & KU Leuven"></div>
+  <div class="footer-logos"><img src="/public/logos-outline_kuleuven.png" alt="KU Leuven"></div>
 </div>
 
 <div class="lightbox" id="lightbox">
@@ -183,7 +219,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260616e"></script>
+<script src="/public/js/public.js?v=20260621g"></script>
 
 </body>
 </html>`;

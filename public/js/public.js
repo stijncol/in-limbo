@@ -162,67 +162,105 @@
     });
   }
 
-  // Hover handler for baked thumbnails: shows sharp + pixel-noise shimmer
+  // Hover handler for baked thumbnails.
+  // Pixel dissolve (D): yellow version materialises pixel-by-pixel, then dissolves
+  // back out, looping as long as the cursor is over the thumbnail.
+  // On mouseleave the canvas fades out over 1s (nasuizen).
   function setupBakedHover(thumb) {
     const sharp = thumb.querySelector('.baked-sharp');
     if (!sharp) return;
-    let canvas = null, ctx = null, origData = null, shimmerRaf = null, shimmerActive = false;
+    let canvas = null, ctx = null, yellowData = null, shimmerActive = false;
+    let dissolveFrame = null, dissolveIndices = null;
+    let dissolveRevealed = 0, dissolveTimer = null;
 
-    function initShimmer() {
+    const DC_YR = 255, DC_YG = 230, DC_YB = 0, DC_OP = 0.08;
+    function toLin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+    const DC_YLUM = 0.2126 * toLin(DC_YR) + 0.7152 * toLin(DC_YG) + 0.0722 * toLin(DC_YB);
+
+    function initCanvas() {
       if (canvas || !sharp.naturalWidth) return false;
       canvas = document.createElement('canvas');
       canvas.width = sharp.naturalWidth;
       canvas.height = sharp.naturalHeight;
-      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;opacity:0;transition:opacity 0.55s ease-in-out;image-rendering:pixelated';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;image-rendering:pixelated';
       thumb.appendChild(canvas);
       ctx = canvas.getContext('2d');
       try {
         ctx.drawImage(sharp, 0, 0, canvas.width, canvas.height);
-        origData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const raw = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        yellowData = new ImageData(new Uint8ClampedArray(raw.data), raw.width, raw.height);
+        const yd = yellowData.data;
+        for (let i = 0; i < yd.length; i += 4) {
+          const pL = 0.2126 * toLin(yd[i]) + 0.7152 * toLin(yd[i+1]) + 0.0722 * toLin(yd[i+2]);
+          if (DC_YLUM < pL) {
+            yd[i]   = Math.round(yd[i]   + (DC_YR - yd[i])   * DC_OP);
+            yd[i+1] = Math.round(yd[i+1] + (DC_YG - yd[i+1]) * DC_OP);
+            yd[i+2] = Math.round(yd[i+2] + (DC_YB - yd[i+2]) * DC_OP);
+          }
+        }
+        const n = raw.width * raw.height;
+        dissolveIndices = new Uint32Array(n);
+        for (let i = 0; i < n; i++) dissolveIndices[i] = i;
+        for (let i = n - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = dissolveIndices[i]; dissolveIndices[i] = dissolveIndices[j]; dissolveIndices[j] = t;
+        }
+        dissolveFrame = new ImageData(raw.width, raw.height); // starts transparent
         return true;
       } catch(e) { return false; }
     }
 
-    function shimmerTick() {
-      if (!shimmerActive || !origData) return;
-      const id = new ImageData(new Uint8ClampedArray(origData.data), origData.width, origData.height);
-      const d = id.data, n = origData.width * origData.height;
-      const swaps = Math.floor(n * 0.015);
-      for (let k = 0; k < swaps; k++) {
-        const i = Math.floor(Math.random() * n) * 4;
-        const j = Math.floor(Math.random() * n) * 4;
-        const r = d[i], g = d[i+1], b = d[i+2];
-        d[i] = d[j]; d[i+1] = d[j+1]; d[i+2] = d[j+2];
-        d[j] = r; d[j+1] = g; d[j+2] = b;
+    // Dissolve in: pixels appear one-by-one over ~2s, then stay still
+    function dissolveTick() {
+      if (!shimmerActive || !yellowData) return;
+      const n = yellowData.width * yellowData.height;
+      const BATCH = Math.ceil(n / 20); // 20 steps × 50ms ≈ 1s total
+      const end = Math.min(dissolveRevealed + BATCH, n);
+      for (let k = dissolveRevealed; k < end; k++) {
+        const px = dissolveIndices[k] * 4;
+        dissolveFrame.data[px]   = yellowData.data[px];
+        dissolveFrame.data[px+1] = yellowData.data[px+1];
+        dissolveFrame.data[px+2] = yellowData.data[px+2];
+        dissolveFrame.data[px+3] = 255;
       }
-      ctx.putImageData(id, 0, 0);
-      setTimeout(() => { if (shimmerActive) shimmerRaf = requestAnimationFrame(shimmerTick); }, 120);
+      dissolveRevealed = end;
+      ctx.putImageData(dissolveFrame, 0, 0);
+      if (dissolveRevealed < n) dissolveTimer = setTimeout(dissolveTick, 50);
+      // fully revealed: stays still until mouseleave
     }
 
     thumb.addEventListener('mouseenter', () => {
       if (sharp._hideTimer) { clearTimeout(sharp._hideTimer); sharp._hideTimer = null; }
       sharp.style.visibility = 'visible';
       sharp.style.opacity = '1';
-      if (!canvas) initShimmer();
-      if (canvas && origData) {
+      if (!canvas) initCanvas();
+      if (canvas && yellowData) {
         shimmerActive = true;
+        dissolveFrame.data.fill(0);
+        dissolveRevealed = 0;
+        canvas.style.transition = '';
+        canvas.style.opacity = '';
         canvas.style.display = 'block';
-        shimmerTick();
-        requestAnimationFrame(() => requestAnimationFrame(() => { canvas.style.opacity = '1'; }));
+        dissolveTick();
       }
     });
+
     thumb.addEventListener('mouseleave', () => {
       shimmerActive = false;
-      if (shimmerRaf) cancelAnimationFrame(shimmerRaf);
+      clearTimeout(dissolveTimer);
       if (canvas) {
+        canvas.style.transition = 'opacity 1s ease';
         canvas.style.opacity = '0';
-        setTimeout(() => { if (!shimmerActive && canvas) canvas.style.display = 'none'; }, 550);
+        setTimeout(() => {
+          if (!shimmerActive && canvas) {
+            canvas.style.display = 'none';
+            canvas.style.transition = '';
+            canvas.style.opacity = '';
+          }
+        }, 1050);
       }
       sharp.style.opacity = '0';
-      sharp._hideTimer = setTimeout(() => {
-        sharp.style.visibility = 'hidden';
-        sharp._hideTimer = null;
-      }, 500);
+      sharp._hideTimer = setTimeout(() => { sharp.style.visibility = 'hidden'; sharp._hideTimer = null; }, 500);
     });
   }
 
@@ -705,36 +743,11 @@
   renderScaleMatrix();
 
   function positionScaleCtrl() {
+    // Rail layout is CSS-based; clear any inline positions left by older versions.
     var ctrl = document.getElementById('scale-ctrl');
     var aboutBtn = document.getElementById('about-btn');
-    var gridEl = document.querySelector('.grid');
-    if (!gridEl || window.innerWidth <= 900) return;
-    var gridRect = gridEl.getBoundingClientRect();
-    // The control is position:fixed; use the grid's *document* offset so a
-    // recalculation gives the same spot no matter the current scroll position
-    // (gridRect.top alone is viewport-relative and made the control jump).
-    var gridTop = Math.round(gridRect.top + window.scrollY + 10);
-    // Always centre the controls vertically in the side margin (down to 900px,
-    // below which they are hidden). The centred 2-column layout keeps wide side
-    // margins, so they never need to jump to the top or rotate horizontal.
-    // Never let them drift more than this far from the grid's edge, though —
-    // large screens have huge margins.
-    var MAX_GAP = 80;
-
-    if (ctrl) {
-      var rightGap = window.innerWidth - gridRect.right;
-      var ctrlCentered = (rightGap - ctrl.offsetWidth) / 2;
-      var ctrlMin = Math.max(4, rightGap - ctrl.offsetWidth - MAX_GAP);
-      ctrl.style.right = Math.round(Math.max(ctrlMin, ctrlCentered)) + 'px';
-      ctrl.style.top = gridTop + 'px';
-    }
-    if (aboutBtn) {
-      var leftGap = gridRect.left;
-      var aboutCentered = (leftGap - aboutBtn.offsetWidth) / 2;
-      var aboutMin = Math.max(4, leftGap - aboutBtn.offsetWidth - MAX_GAP);
-      aboutBtn.style.left = Math.round(Math.max(aboutMin, aboutCentered)) + 'px';
-      aboutBtn.style.top = Math.round(gridRect.top + window.scrollY + 10) + 'px';
-    }
+    if (ctrl) { ctrl.style.left = ''; ctrl.style.top = ''; ctrl.style.right = ''; }
+    if (aboutBtn) { aboutBtn.style.left = ''; aboutBtn.style.top = ''; }
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
@@ -888,6 +901,15 @@
     });
   }
   window.addEventListener('resize', positionAboutPanel);
+
+  // Rail search button: focus the filters search input
+  var railSearchBtn = document.getElementById('rail-search-btn');
+  if (railSearchBtn) {
+    railSearchBtn.addEventListener('click', function() {
+      var input = document.querySelector('.filters-search-input');
+      if (input) input.focus();
+    });
+  }
 
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
