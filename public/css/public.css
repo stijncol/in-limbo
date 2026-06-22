@@ -39,6 +39,10 @@
        to the viewport edge. This offset keeps them anchored to the centered
        block's left edge so the rail, divider and content stay aligned. */
     --rail-x: max(0px, (100vw - 1700px) / 2);
+    /* The whole rail coordinate system (rail height, buttons, divider, lab-O,
+       footer, page padding) derives from this one height. Capped so the rail
+       and its icons don't balloon on tall/large monitors. */
+    --rail-h: min(62vh, 600px);
   }
   .page {
     flex: 1;
@@ -46,7 +50,7 @@
     max-width: 1700px;
     margin: 0 auto;
     position: relative;
-    padding: calc(70vh * 0.05416) 32px 0 calc(70vh * 0.13183 + 32px);
+    padding: calc(var(--rail-h) * 0.05416) 32px 0 calc(var(--rail-h) * 0.13183 + 32px);
     box-sizing: border-box;
   }
   /* Vertical divider: aligned with the divider line baked into rail.svg
@@ -55,7 +59,7 @@
   .page::before {
     content: '';
     position: absolute;
-    left: calc(70vh * 0.13183);
+    left: calc(var(--rail-h) * 0.13183);
     top: 0;
     bottom: 0;
     width: 1px;
@@ -457,7 +461,7 @@
     font-weight: 400;
     /* Scale with the grid: the intro sits in one column, so its type tracks the
        column width — ~19px on a laptop, growing to ~27px on a wide 27" display. */
-    font-size: clamp(17px, 0.58vw + 11.15px, 27px);
+    font-size: clamp(16px, 0.3vw + 14.6px, 20px);
     line-height: 1.55;
     color: #111;
   }
@@ -669,7 +673,7 @@
     max-width: 1700px;
     margin: 24px auto 0;
     padding: 0;
-    height: calc(70vh * 0.09228 + 40px);
+    height: calc(var(--rail-h) * 0.09228 + 40px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -684,7 +688,7 @@
   }
   .site-footer .footer-logos {
     flex-shrink: 0;
-    width: calc(70vh * 0.25838);
+    width: calc(var(--rail-h) * 0.25838);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -692,7 +696,7 @@
     order: -1;
   }
   .site-footer .footer-logos img {
-    height: calc(70vh * 0.25838);
+    height: calc(var(--rail-h) * 0.25838);
     width: auto;
     transform: rotate(90deg);
     opacity: 1;
@@ -703,7 +707,7 @@
     position: fixed;
     left: var(--rail-x);
     top: 0;
-    height: 70vh;
+    height: var(--rail-h);
     z-index: 10;
     pointer-events: none;
   }
@@ -725,13 +729,13 @@
   #labo-svg {
     position: fixed;
     bottom: 20px;
-    left: calc(var(--rail-x) + 70vh * 0.01978);
-    width: calc(70vh * 0.09228);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.01978);
+    width: calc(var(--rail-h) * 0.09228);
     pointer-events: none;
     z-index: 10;
   }
   /* Transparent click-target buttons positioned over SVG elements.
-     Coordinates: (SVG-unit / 742.84) × 70vh */
+     Coordinates: (SVG-unit / 742.84) × var(--rail-h) */
   .rail-overlay {
     position: fixed;
     background: transparent;
@@ -743,38 +747,38 @@
   }
   /* Search circle: cx=38.65+12=50.65 cy=62.75 r=22.51 (translate offset +0.01615) */
   #rail-search-btn.rail-overlay {
-    top: calc(70vh * 0.05416);
-    left: calc(var(--rail-x) + 70vh * 0.03788);
-    width: calc(70vh * 0.06061);
-    height: calc(70vh * 0.06061);
+    top: calc(var(--rail-h) * 0.05416);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.03788);
+    width: calc(var(--rail-h) * 0.06061);
+    height: calc(var(--rail-h) * 0.06061);
   }
   /* Scale-down circle: cx=37.19+12=49.19 cy=266 r=17.45 */
   #scale-down.rail-overlay {
-    top: calc(70vh * 0.33461);
-    left: calc(var(--rail-x) + 70vh * 0.04272);
-    width: calc(70vh * 0.04699);
-    height: calc(70vh * 0.04699);
+    top: calc(var(--rail-h) * 0.33461);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.04272);
+    width: calc(var(--rail-h) * 0.04699);
+    height: calc(var(--rail-h) * 0.04699);
   }
   #scale-down.rail-overlay:disabled { cursor: default; }
   /* Scale-up circle: cx=36.44+12=48.44 cy=331 r=17.45 */
   #scale-up.rail-overlay {
-    top: calc(70vh * 0.42200);
-    left: calc(var(--rail-x) + 70vh * 0.04172);
-    width: calc(70vh * 0.04699);
-    height: calc(70vh * 0.04699);
+    top: calc(var(--rail-h) * 0.42200);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.04172);
+    width: calc(var(--rail-h) * 0.04699);
+    height: calc(var(--rail-h) * 0.04699);
   }
   /* About rounded rect: x=16.69+12=28.69 y=126 w=40.12 h=93.93 */
   .margin-about.rail-overlay {
-    top: calc(70vh * 0.16961);
-    left: calc(var(--rail-x) + 70vh * 0.03862);
-    width: calc(70vh * 0.05402);
-    height: calc(70vh * 0.12645);
+    top: calc(var(--rail-h) * 0.16961);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.03862);
+    width: calc(var(--rail-h) * 0.05402);
+    height: calc(var(--rail-h) * 0.12645);
   }
   /* Scale dot matrix: centered in rail, between – and + circles */
   #scale-matrix {
     position: fixed;
-    top: calc(70vh * 0.40181 - 4px);
-    left: calc(var(--rail-x) + 70vh * 0.06592);
+    top: calc(var(--rail-h) * 0.40181 - 4px);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.06592);
     transform: translateX(-50%);
     display: grid;
     grid-template-rows: 3px 3px;
