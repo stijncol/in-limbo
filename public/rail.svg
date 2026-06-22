@@ -42,11 +42,6 @@
   </defs>
 
   <g transform="translate(12, 0)">
-    <!-- inlimbo.video frame: rect centered at y=530.5 (= 50vh in a 70vh/742.84 SVG) -->
-    <rect class="cls-5" x="12.13" y="438.1" width="48.63" height="184.85"/>
-    <text class="cls-15" transform="translate(44.3 607.1) rotate(-90)"><tspan x="0" y="0">inlimb</tspan><tspan class="cls-20" x="74.58" y="0">o</tspan><tspan class="cls-23" x="87.25" y="0">.</tspan><tspan class="cls-22" x="92.17" y="0">v</tspan><tspan class="cls-21" x="104.47" y="0">ideo</tspan></text>
-    <text class="cls-14" transform="translate(44.3 459.4) rotate(-90)"><tspan class="cls-1" x="0" y="0" xml:space="preserve">          </tspan><tspan x="8.26" y="0"> </tspan></text>
-
     <!-- about: rounded rect top at y=126 (≈ vertical start of intro text at typical viewport) -->
     <rect class="cls-4" x="16.69" y="126" width="40.12" height="93.93" rx="17.22" ry="17.22"/>
     <text class="cls-12" transform="translate(42.21 222.18) rotate(-90)"><tspan x="0" y="0" xml:space="preserve">    </tspan></text>

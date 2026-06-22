@@ -32,6 +32,24 @@ try {
   _laboSvg = '';
 }
 
+// inlimbo.video label: split out of rail.svg so it can be positioned
+// independently (centred at 50vh) without moving the rail's other icons.
+let _inlimboSvg = '';
+try {
+  const raw = fs.readFileSync(path.join(__dirname, '../public/inlimbo.svg'), 'utf8');
+  _inlimboSvg = raw
+    .replace(/^<\?xml[^?]*\?>\s*/m, '')
+    .replace('id="Layer_inlimbo"', 'id="inlimbo-svg"')
+    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
+      const scoped = css
+        .replace(/\.cls-/g, '#inlimbo-svg .cls-')
+        .replace("'IBM Plex Serif Var'", "'IBM Plex Serif Var', 'IBM Plex Serif'");
+      return `<style>${scoped}</style>`;
+    });
+} catch (e) {
+  _inlimboSvg = '';
+}
+
 const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
 // Fisher–Yates: randomise the order in place so the grid looks different on
@@ -180,6 +198,7 @@ ${archiveCards}
   </div>
   <div class="left-rail" id="left-rail">
     ${_railSvg}
+    ${_inlimboSvg}
     ${_laboSvg}
     <button class="rail-overlay" id="rail-search-btn" aria-label="search"></button>
     <div id="scale-ctrl">

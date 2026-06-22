@@ -43,11 +43,6 @@
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
     --rail-h: min(62vh, 600px);
-    /* Vertical anchor for the rail: the "inlimbo.video" label is baked at
-       viewBox y=530.5 (fraction 0.71415 of the rail). Offsetting the rail top
-       by this keeps that label centred at exactly 50vh whatever the rail
-       height — matching the original 70vh layout. */
-    --rail-y: calc(50vh - var(--rail-h) * 0.71415);
   }
   .page {
     flex: 1;
@@ -713,7 +708,7 @@
   .left-rail {
     position: fixed;
     left: var(--rail-x);
-    top: var(--rail-y);
+    top: 0;
     height: var(--rail-h);
     z-index: 10;
     pointer-events: none;
@@ -729,6 +724,23 @@
   #rail-svg .cls-5,
   #rail-svg .cls-6,
   #rail-svg .cls-7 {
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  /* inlimbo.video label: split out of the rail SVG and centred at exactly 50vh,
+     independent of the rail icons. Same scale + x as the rail (cropped viewBox
+     "22 436 53 189" → height = rail-h × 189/742.84; left = rail edge + 22/742.84). */
+  #inlimbo-svg {
+    position: fixed;
+    left: calc(var(--rail-x) + var(--rail-h) * 0.02962);
+    top: 50%;
+    transform: translateY(-50%);
+    height: calc(var(--rail-h) * 0.25443);
+    width: auto;
+    z-index: 10;
+    pointer-events: none;
+  }
+  #inlimbo-svg .cls-5 {
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
   }
@@ -754,14 +766,14 @@
   }
   /* Search circle: cx=38.65+12=50.65 cy=62.75 r=22.51 (translate offset +0.01615) */
   #rail-search-btn.rail-overlay {
-    top: calc(var(--rail-y) + var(--rail-h) * 0.05416);
+    top: calc(var(--rail-h) * 0.05416);
     left: calc(var(--rail-x) + var(--rail-h) * 0.03788);
     width: calc(var(--rail-h) * 0.06061);
     height: calc(var(--rail-h) * 0.06061);
   }
   /* Scale-down circle: cx=37.19+12=49.19 cy=266 r=17.45 */
   #scale-down.rail-overlay {
-    top: calc(var(--rail-y) + var(--rail-h) * 0.33461);
+    top: calc(var(--rail-h) * 0.33461);
     left: calc(var(--rail-x) + var(--rail-h) * 0.04272);
     width: calc(var(--rail-h) * 0.04699);
     height: calc(var(--rail-h) * 0.04699);
@@ -769,14 +781,14 @@
   #scale-down.rail-overlay:disabled { cursor: default; }
   /* Scale-up circle: cx=36.44+12=48.44 cy=331 r=17.45 */
   #scale-up.rail-overlay {
-    top: calc(var(--rail-y) + var(--rail-h) * 0.42200);
+    top: calc(var(--rail-h) * 0.42200);
     left: calc(var(--rail-x) + var(--rail-h) * 0.04172);
     width: calc(var(--rail-h) * 0.04699);
     height: calc(var(--rail-h) * 0.04699);
   }
   /* About rounded rect: x=16.69+12=28.69 y=126 w=40.12 h=93.93 */
   .margin-about.rail-overlay {
-    top: calc(var(--rail-y) + var(--rail-h) * 0.16961);
+    top: calc(var(--rail-h) * 0.16961);
     left: calc(var(--rail-x) + var(--rail-h) * 0.03862);
     width: calc(var(--rail-h) * 0.05402);
     height: calc(var(--rail-h) * 0.12645);
@@ -784,7 +796,7 @@
   /* Scale dot matrix: centered in rail, between – and + circles */
   #scale-matrix {
     position: fixed;
-    top: calc(var(--rail-y) + var(--rail-h) * 0.40181 - 4px);
+    top: calc(var(--rail-h) * 0.40181 - 4px);
     left: calc(var(--rail-x) + var(--rail-h) * 0.06592);
     transform: translateX(-50%);
     display: grid;
