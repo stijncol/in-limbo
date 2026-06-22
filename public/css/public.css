@@ -34,6 +34,11 @@
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
+    /* Above the 1700px .page max-width, the content block centers and the
+       baked-in divider drifts inward; the fixed left rail/buttons are pinned
+       to the viewport edge. This offset keeps them anchored to the centered
+       block's left edge so the rail, divider and content stay aligned. */
+    --rail-x: max(0px, (100vw - 1700px) / 2);
   }
   .page {
     flex: 1;
@@ -450,10 +455,16 @@
   .intro-block .intro-text {
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 400;
-    font-size: 19px;
+    /* Scale with the grid: the intro sits in one column, so its type tracks the
+       column width — ~19px on a laptop, growing to ~27px on a wide 27" display. */
+    font-size: clamp(17px, 0.58vw + 11.15px, 27px);
     line-height: 1.55;
     color: #111;
   }
+  /* In the denser column tiers the columns (and this single-column intro) get
+     narrower, so the type steps down to stay in proportion. */
+  .grid.grid-cols-5 .intro-text { font-size: clamp(12px, 0.36vw + 7px, 17px); }
+  .grid.grid-cols-7 .intro-text { font-size: clamp(10px, 0.28vw + 5px, 13px); }
   .intro-block .intro-text p {
     margin-bottom: 16px;
   }
@@ -690,7 +701,7 @@
      All SVG coordinates are in a 117.63×742.84 viewBox; heights scale with 100vh. */
   .left-rail {
     position: fixed;
-    left: 0;
+    left: var(--rail-x);
     top: 0;
     height: 70vh;
     z-index: 10;
@@ -714,7 +725,7 @@
   #labo-svg {
     position: fixed;
     bottom: 20px;
-    left: calc(70vh * 0.01978);
+    left: calc(var(--rail-x) + 70vh * 0.01978);
     width: calc(70vh * 0.09228);
     pointer-events: none;
     z-index: 10;
@@ -733,14 +744,14 @@
   /* Search circle: cx=38.65+12=50.65 cy=62.75 r=22.51 (translate offset +0.01615) */
   #rail-search-btn.rail-overlay {
     top: calc(70vh * 0.05416);
-    left: calc(70vh * 0.03788);
+    left: calc(var(--rail-x) + 70vh * 0.03788);
     width: calc(70vh * 0.06061);
     height: calc(70vh * 0.06061);
   }
   /* Scale-down circle: cx=37.19+12=49.19 cy=266 r=17.45 */
   #scale-down.rail-overlay {
     top: calc(70vh * 0.33461);
-    left: calc(70vh * 0.04272);
+    left: calc(var(--rail-x) + 70vh * 0.04272);
     width: calc(70vh * 0.04699);
     height: calc(70vh * 0.04699);
   }
@@ -748,14 +759,14 @@
   /* Scale-up circle: cx=36.44+12=48.44 cy=331 r=17.45 */
   #scale-up.rail-overlay {
     top: calc(70vh * 0.42200);
-    left: calc(70vh * 0.04172);
+    left: calc(var(--rail-x) + 70vh * 0.04172);
     width: calc(70vh * 0.04699);
     height: calc(70vh * 0.04699);
   }
   /* About rounded rect: x=16.69+12=28.69 y=126 w=40.12 h=93.93 */
   .margin-about.rail-overlay {
     top: calc(70vh * 0.16961);
-    left: calc(70vh * 0.03862);
+    left: calc(var(--rail-x) + 70vh * 0.03862);
     width: calc(70vh * 0.05402);
     height: calc(70vh * 0.12645);
   }
@@ -763,7 +774,7 @@
   #scale-matrix {
     position: fixed;
     top: calc(70vh * 0.40181 - 4px);
-    left: calc(70vh * 0.06592);
+    left: calc(var(--rail-x) + 70vh * 0.06592);
     transform: translateX(-50%);
     display: grid;
     grid-template-rows: 3px 3px;
