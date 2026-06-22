@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bake test — auto-exposure tuning</title>
+<style>
+  body{font-family:'IBM Plex Sans',Helvetica,Arial,sans-serif;font-weight:300;background:#fff;color:#111;margin:0;padding:28px 32px 80px}
+  h1{font-weight:400;font-size:20px;margin:0 0 4px}
+  .sub{color:#888;font-size:13px;margin-bottom:24px}
+  .controls{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;padding:14px 0 16px;display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap;z-index:5}
+  .ctl{display:flex;flex-direction:column;gap:5px}
+  .ctl label{font-size:11px;letter-spacing:.05em;color:#888;text-transform:lowercase}
+  .ctl .val{color:#1e40af;font-weight:400}
+  input[type=range]{width:180px}
+  button{font-family:inherit;font-size:13px;letter-spacing:.03em;padding:8px 18px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
+  button:hover{background:#333}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13px;color:#111;cursor:pointer}
+  #progress{font-size:13px;color:#666;margin:18px 0}
+  .col-head{display:grid;grid-template-columns:230px 1fr 1fr;gap:16px;align-items:end;font-size:11px;letter-spacing:.05em;color:#aaa;text-transform:lowercase;padding:0 0 8px;border-bottom:1px solid #eee;margin-top:8px;position:sticky;top:84px;background:#fff;z-index:4}
+  .row{display:grid;grid-template-columns:230px 1fr 1fr;gap:16px;align-items:start;padding:14px 0;border-bottom:1px solid #f2f2f2}
+  .row.light{opacity:.32}
+  .meta{font-size:12px;color:#444;line-height:1.5}
+  .meta .title{font-size:13px;color:#111;margin-bottom:6px}
+  .meta .m{color:#888}
+  .meta .bad{color:#b45309}
+  figure{margin:0}
+  figure img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;border:1px solid rgba(0,0,0,.5)}
+  figure figcaption{font-size:11px;color:#888;margin-top:5px}
+</style>
+</head>
+<body>
+  <h1>bake test — auto-exposure tuning</h1>
+  <div class="sub">left = raw (no auto-exposure), right = auto-exposure with the target + strength below. strength moves each tile only part-way to the target, so dark frames keep their contrast. local only, not deployed.</div>
+
+  <div class="controls">
+    <div class="ctl">
+      <label>target <span class="val" id="t-val">0.70</span></label>
+      <input type="range" id="target" min="0.55" max="0.85" step="0.01" value="0.70">
+    </div>
+    <div class="ctl">
+      <label>strength <span class="val" id="s-val">0.50</span></label>
+      <input type="range" id="strength" min="0" max="1" step="0.05" value="0.50">
+    </div>
+    <label class="chk"><input type="checkbox" id="dark-only" checked> only show dark tiles (coverage &gt; 35%)</label>
+    <button id="apply">re-bake</button>
+  </div>
+
+  <div id="progress">loading source frames…</div>
+  <div class="col-head" id="col-head" style="display:none">
+    <div>video</div><div>raw (current-ish)</div><div>auto-exposure</div>
+  </div>
+  <div id="rows"></div>
+
+  <script src="/public/js/dither.js"></script>
+  <script>
+  (function(){
+    var sources = [];
+    var rowsEl = document.getElementById('rows');
+    var progress = document.getElementById('progress');
+
+    function cfgRaw(){ var c=JSON.parse(JSON.stringify(DEFAULT_DITHER_CFG)); if(c.image.autoExpose) c.image.autoExpose.enabled=false; return c; }
+    function cfgAuto(){
+      var c=JSON.parse(JSON.stringify(DEFAULT_DITHER_CFG));
+      c.image.autoExpose={enabled:true,target:parseFloat(document.getElementById('target').value),strength:parseFloat(document.getElementById('strength').value)};
+      return c;
+    }
+
+    function coverage(dataURL){
+      return new Promise(function(res){
+        var im=new Image(); im.onload=function(){
+          var c=document.createElement('canvas'); c.width=80; c.height=45;
+          var x=c.getContext('2d'); x.drawImage(im,0,0,80,45);
+          var d=x.getImageData(0,0,80,45).data, dark=0, n=80*45;
+          for(var i=0;i<d.length;i+=4){ var y=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; if(y<120) dark++; }
+          res(dark/n);
+        }; im.src=dataURL;
+      });
+    }
+
+    function load(){
+      fetch('/api/videos').then(function(r){return r.json()}).then(function(list){
+        var vids = list.filter(function(v){return (v.video_id||v.vimeo_id)});
+        var i=0;
+        (function next(){
+          if(i>=vids.length){ progress.textContent='loaded '+sources.length+' frames. baking…'; render(); return; }
+          var v=vids[i++];
+          progress.textContent='loading source '+i+'/'+vids.length+' — '+(v.title||'').trim();
+          loadSourceThumb(v.video_id||v.vimeo_id, v.video_type||'vimeo')
+            .then(function(img){ sources.push({id:v.id,title:(v.title||'').trim(),img:img}); })
+            .catch(function(){})
+            .then(function(){ setTimeout(next,40); });
+        })();
+      }).catch(function(e){ progress.textContent='failed to load /api/videos: '+e.message; });
+    }
+
+    function render(){
+      document.getElementById('col-head').style.display='';
+      rowsEl.innerHTML='';
+      var darkOnly=document.getElementById('dark-only').checked;
+      var cr=cfgRaw(), ca=cfgAuto();
+      var k=0;
+      (function step(){
+        if(k>=sources.length){ progress.textContent='done — '+sources.length+' frames.'; return; }
+        var s=sources[k++];
+        progress.textContent='baking '+k+'/'+sources.length+'…';
+        var raw=bakeImage(s.img,cr), auto=bakeImage(s.img,ca);
+        coverage(raw.blurData).then(function(covRaw){
+          if(darkOnly && covRaw<=0.35){ setTimeout(step,0); return; }
+          coverage(auto.blurData).then(function(covAuto){
+            var row=document.createElement('div');
+            row.className='row';
+            row.innerHTML =
+              '<div class="meta"><div class="title">'+s.title+'</div>'+
+                '<div class="'+(covRaw>0.35?'bad':'m')+'">raw dark '+Math.round(covRaw*100)+'%</div>'+
+                '<div class="m">auto dark '+Math.round(covAuto*100)+'%</div></div>'+
+              '<figure><img src="'+raw.blurData+'"><figcaption>raw</figcaption></figure>'+
+              '<figure><img src="'+auto.blurData+'"><figcaption>auto-exposure</figcaption></figure>';
+            rowsEl.appendChild(row);
+            setTimeout(step,0);
+          });
+        });
+      })();
+    }
+
+    document.getElementById('target').addEventListener('input',function(){document.getElementById('t-val').textContent=parseFloat(this.value).toFixed(2);});
+    document.getElementById('strength').addEventListener('input',function(){document.getElementById('s-val').textContent=parseFloat(this.value).toFixed(2);});
+    document.getElementById('apply').addEventListener('click',render);
+    document.getElementById('dark-only').addEventListener('change',render);
+
+    load();
+  })();
+  </script>
+</body>
+</html>
