@@ -167,15 +167,14 @@
     font-weight: 400;
     letter-spacing: 0.02em;
     padding: 6px 14px;
-    border: 0.75px solid #000;
+    border: 0.75px solid rgba(0, 0, 0, 0.35);
     border-radius: 5px;
-    color: #000;
-    transition: background 0.15s ease, color 0.15s ease;
+    color: rgba(0, 0, 0, 0.55);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   .filters .tag-count { display: none; }
-  .filters button[data-filter]:hover { background: rgba(255, 230, 0, 0.22); }
-  .filters button[data-filter].active { background: #000; color: #fff; }
-  .filters button[data-filter].active .tag-count { opacity: 0.7; }
+  .filters button[data-filter]:hover { background: rgba(255, 230, 0, 0.22); border-color: rgba(0,0,0,0.6); color: #000; }
+  .filters button[data-filter].active { color: #000; border-color: #000; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -815,12 +814,7 @@
   .margin-about.rail-overlay.active {
     background: transparent;
   }
-  /* When about is active: fill the SVG rect black + invert text.
-     Button stays transparent so SVG (which paints text above rect) shows through. */
-  .left-rail:has(#about-btn.active) #rail-svg .cls-4 { fill: #000; stroke: #fff; }
-  .left-rail:has(#about-btn.active) #rail-svg .cls-12,
-  .left-rail:has(#about-btn.active) #rail-svg .cls-13,
-  .left-rail:has(#about-btn.active) #rail-svg .cls-14 { fill: #fff; }
+  /* About active: no fill change — SVG draws normally, button stays transparent */
   /* inlimbo.video overlay button: same position/size as #inlimbo-svg */
   #inlimbo-btn.rail-overlay {
     top: 50%;
