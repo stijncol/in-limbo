@@ -911,6 +911,14 @@
     });
   }
 
+  // inlimbo.video label: click scrolls back to the top
+  var inlimboBtn = document.getElementById('inlimbo-btn');
+  if (inlimboBtn) {
+    inlimboBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
   if (window.innerWidth <= 768 && introBlock && filtersBar) {

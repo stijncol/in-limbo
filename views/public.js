@@ -147,7 +147,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260621g">
+<link rel="stylesheet" href="/public/css/public.css?v=20260625a">
 </head>
 <body>
 <div class="page">
@@ -199,6 +199,7 @@ ${archiveCards}
   <div class="left-rail" id="left-rail">
     ${_railSvg}
     ${_inlimboSvg}
+    <button id="inlimbo-btn" class="rail-overlay" aria-label="back to top"></button>
     ${_laboSvg}
     <button class="rail-overlay" id="rail-search-btn" aria-label="search"></button>
     <div id="scale-ctrl">
@@ -238,7 +239,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260621g"></script>
+<script src="/public/js/public.js?v=20260625a"></script>
 
 </body>
 </html>`;

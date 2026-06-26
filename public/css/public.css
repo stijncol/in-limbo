@@ -42,7 +42,7 @@
     /* The whole rail coordinate system (rail height, buttons, divider, lab-O,
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
-    --rail-h: min(62vh, 600px);
+    --rail-h: min(71.3vh, 690px);
   }
   .page {
     flex: 1;
@@ -69,7 +69,7 @@
     z-index: 9;
   }
   .filters {
-    display: none;
+    display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
@@ -98,7 +98,7 @@
   .filters-row .theme-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
   }
   .filters-label {
@@ -150,36 +150,32 @@
   .filters.show-all .filters-row .filters-label {
     animation: filterFadeIn 0.25s ease forwards;
   }
+  /* Base for all filter buttons */
   .filters button {
     font-family: 'Neue Haas Unica', sans-serif;
-    font-size: 14px;
     font-weight: 400;
-    letter-spacing: 0.02em;
-    padding: 6px 4px;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    color: #000;
     cursor: pointer;
-    /* ::before/::after hold the brackets, so the drawn underline lives in a
-       background gradient: width animates 0% -> 100% from the left */
-    background-image: linear-gradient(currentColor, currentColor);
-    background-repeat: no-repeat;
-    background-position: 0 calc(100% - 3px);
-    background-size: 0% 1px;
-    transition: all 0.2s ease, background-size 0.3s ease;
+    background: transparent;
+    border: none;
+    padding: 0;
     position: relative;
   }
-  .filters button::before { content: "["; opacity: 0.4; margin-right: 1px; }
-  .filters button::after { content: "]"; opacity: 0.4; margin-left: 1px; }
-  .filters button:hover { color: #1e40af; }
-  .filters button:hover::before, .filters button:hover::after { opacity: 0.7; }
-  .filters button:hover,
-  .filters button.active { background-size: 100% 1px; }
-  .filters button.active {
-    color: #1e40af;
+  .filters button::before, .filters button::after { content: none; }
+  /* Rounded-rect style for actual tag/filter buttons */
+  .filters button[data-filter] {
+    font-size: 13.5px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    padding: 6px 14px;
+    border: 0.75px solid #000;
+    border-radius: 5px;
+    color: #000;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .filters button.active::before, .filters button.active::after { opacity: 0.7; }
+  .filters .tag-count { display: none; }
+  .filters button[data-filter]:hover { background: rgba(255, 230, 0, 0.22); }
+  .filters button[data-filter].active { background: #000; color: #fff; }
+  .filters button[data-filter].active .tag-count { opacity: 0.7; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -779,6 +775,24 @@
     height: calc(var(--rail-h) * 0.04699);
   }
   #scale-down.rail-overlay:disabled { cursor: default; }
+  /* Scale buttons: grey-out overlay when at limit; hover hint when available */
+  #scale-down.rail-overlay::after,
+  #scale-up.rail-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: background 0.15s ease;
+  }
+  #scale-down.rail-overlay:disabled::after,
+  #scale-up.rail-overlay:disabled::after {
+    background: rgba(255, 255, 255, 0.72);
+  }
+  #scale-down.rail-overlay:not(:disabled):hover::after,
+  #scale-up.rail-overlay:not(:disabled):hover::after {
+    background: rgba(255, 230, 0, 0.22);
+  }
   /* Scale-up circle: cx=36.44+12=48.44 cy=331 r=17.45 */
   #scale-up.rail-overlay {
     top: calc(var(--rail-h) * 0.42200);
@@ -792,7 +806,41 @@
     left: calc(var(--rail-x) + var(--rail-h) * 0.03862);
     width: calc(var(--rail-h) * 0.05402);
     height: calc(var(--rail-h) * 0.12645);
+    border-radius: calc(var(--rail-h) * 0.02318);
+    transition: background 0.15s ease;
   }
+  .margin-about.rail-overlay:hover:not(.active) {
+    background: rgba(255, 230, 0, 0.22);
+  }
+  .margin-about.rail-overlay.active {
+    background: transparent;
+  }
+  /* When about is active: fill the SVG rect black + invert text.
+     Button stays transparent so SVG (which paints text above rect) shows through. */
+  .left-rail:has(#about-btn.active) #rail-svg .cls-4 { fill: #000; stroke: #fff; }
+  .left-rail:has(#about-btn.active) #rail-svg .cls-12,
+  .left-rail:has(#about-btn.active) #rail-svg .cls-13,
+  .left-rail:has(#about-btn.active) #rail-svg .cls-14 { fill: #fff; }
+  /* inlimbo.video overlay button: same position/size as #inlimbo-svg */
+  #inlimbo-btn.rail-overlay {
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(var(--rail-x) + var(--rail-h) * 0.02962);
+    width: calc(var(--rail-h) * 0.07134);
+    height: calc(var(--rail-h) * 0.25443);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  #inlimbo-btn.rail-overlay:hover {
+    background: rgba(255, 230, 0, 0.22);
+  }
+  #inlimbo-btn.rail-overlay:active {
+    background: #000;
+  }
+  /* When inlimbo btn is pressed: flip its SVG text + border to white */
+  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-14,
+  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-15 { fill: #fff; }
+  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-5 { stroke: #fff; }
   /* Scale dot matrix: centered in rail, between – and + circles */
   #scale-matrix {
     position: fixed;
