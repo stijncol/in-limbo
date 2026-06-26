@@ -814,7 +814,13 @@
   .margin-about.rail-overlay.active {
     background: transparent;
   }
-  /* About active: no fill change — SVG draws normally, button stays transparent */
+  /* About text: faded when inactive, full black when active */
+  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-12,
+  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-13,
+  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-14 { fill: rgba(0,0,0,0.35); }
+  .left-rail:has(#about-btn.active) #rail-svg .cls-12,
+  .left-rail:has(#about-btn.active) #rail-svg .cls-13,
+  .left-rail:has(#about-btn.active) #rail-svg .cls-14 { fill: #231f20; }
   /* inlimbo.video overlay button: same position/size as #inlimbo-svg */
   #inlimbo-btn.rail-overlay {
     top: 50%;
