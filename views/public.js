@@ -1,54 +1,4 @@
 const { YOUTUBE_API_KEY, SITE_URL } = require('../config');
-const fs = require('fs');
-const path = require('path');
-
-let _railSvg = '';
-try {
-  const raw = fs.readFileSync(path.join(__dirname, '../public/rail.svg'), 'utf8');
-  _railSvg = raw
-    .replace(/^<\?xml[^?]*\?>\s*/m, '')
-    .replace('id="Layer_1"', 'id="rail-svg"')
-    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
-      let scoped = css.replace(/\.cls-/g, '#rail-svg .cls-');
-      scoped = scoped
-        .replace("'IBM Plex Serif Var'", "'IBM Plex Serif Var', 'IBM Plex Serif'")
-        .replace("'IBM Plex Sans Var'", "'IBM Plex Sans Var', 'IBM Plex Sans'");
-      return `<style>${scoped}</style>`;
-    });
-} catch (e) {
-  _railSvg = '';
-}
-
-let _laboSvg = '';
-try {
-  const raw = fs.readFileSync(path.join(__dirname, '../public/labo.svg'), 'utf8');
-  _laboSvg = raw
-    .replace(/^<\?xml[^?]*\?>\s*/m, '')
-    .replace('id="Layer_labo"', 'id="labo-svg"')
-    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
-      return `<style>${css.replace(/\.cls-/g, '#labo-svg .cls-')}</style>`;
-    });
-} catch (e) {
-  _laboSvg = '';
-}
-
-// inlimbo.video label: split out of rail.svg so it can be positioned
-// independently (centred at 50vh) without moving the rail's other icons.
-let _inlimboSvg = '';
-try {
-  const raw = fs.readFileSync(path.join(__dirname, '../public/inlimbo.svg'), 'utf8');
-  _inlimboSvg = raw
-    .replace(/^<\?xml[^?]*\?>\s*/m, '')
-    .replace('id="Layer_inlimbo"', 'id="inlimbo-svg"')
-    .replace(/<style>([\s\S]*?)<\/style>/, (_, css) => {
-      const scoped = css
-        .replace(/\.cls-/g, '#inlimbo-svg .cls-')
-        .replace("'IBM Plex Serif Var'", "'IBM Plex Serif Var', 'IBM Plex Serif'");
-      return `<style>${scoped}</style>`;
-    });
-} catch (e) {
-  _inlimboSvg = '';
-}
 
 const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
@@ -147,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260625a">
+<link rel="stylesheet" href="/public/css/public.css?v=20260701c">
 </head>
 <body>
 <div class="page">
@@ -157,7 +107,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
       <div class="filters-row" id="filters-row">
         <span class="filters-label">theme</span>
         <div class="theme-tags">
-          <button class="active" data-filter="all">all</button>
+          <button class="active" data-filter="all">all tags</button>
           ${themeButtons}
           <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
         </div>
@@ -180,7 +130,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles. Search by title, student name, or keyword: <span class="inline-search-wrap"><svg class="inline-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg><input type="text" id="search-input" class="inline-search-input" placeholder=""></span></p>
+        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles.</p>
       </div>
     </div>
 ${featuredCards}
@@ -197,17 +147,23 @@ ${archiveCards}
     </button>
   </div>
   <div class="left-rail" id="left-rail">
-    ${_railSvg}
-    ${_inlimboSvg}
-    <button id="inlimbo-btn" class="rail-overlay" aria-label="back to top"></button>
-    ${_laboSvg}
-    <button class="rail-overlay" id="rail-search-btn" aria-label="search"></button>
-    <div id="scale-ctrl">
-      <button class="rail-overlay scale-step" id="scale-down" aria-label="bigger thumbnails" disabled></button>
-      <div id="scale-matrix"></div>
-      <button class="rail-overlay scale-step" id="scale-up" aria-label="smaller thumbnails"></button>
+    <div id="rail-search" class="rail-search" role="search">
+      <button id="rail-search-btn" class="rail-search-toggle" aria-label="search" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      </button>
+      <input type="text" id="rail-search-input" class="rail-search-input" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false" />
     </div>
-    <button class="rail-overlay margin-about active" id="about-btn" aria-label="about"></button>
+    <div class="rail-top">
+      <button id="scale-down" class="rail-circle scale-step" aria-label="bigger thumbnails" disabled>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div id="scale-matrix" aria-hidden="true"></div>
+      <button id="scale-up" class="rail-circle scale-step" aria-label="smaller thumbnails">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <button id="inlimbo-btn" class="active" aria-label="about — in limbo">inlimbo.video</button>
+    <img id="rail-labo" src="/public/labo.svg" alt="lab-O" />
   </div>
 </div>
 
@@ -239,7 +195,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260625a"></script>
+<script src="/public/js/public.js?v=20260701c"></script>
 
 </body>
 </html>`;

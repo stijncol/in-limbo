@@ -15,6 +15,30 @@
     font-display: swap;
   }
   @font-face {
+    font-family: 'Neue Haas Unica';
+    src: url('/public/fonts/NeueHaasUnica-Medium.woff2') format('woff2'),
+         url('/public/fonts/NeueHaasUnica-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Neue Haas Unica';
+    src: url('/public/fonts/NeueHaasUnica-Bold.woff2') format('woff2'),
+         url('/public/fonts/NeueHaasUnica-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Neue Haas Unica';
+    src: url('/public/fonts/NeueHaasUnica-Black.woff2') format('woff2'),
+         url('/public/fonts/NeueHaasUnica-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
     font-family: 'Univers';
     src: url('/public/fonts/Univers.woff2') format('woff2');
     font-weight: 100 900;
@@ -52,6 +76,10 @@
     position: relative;
     padding: calc(var(--rail-h) * 0.05416) 32px 0 calc(var(--rail-h) * 0.13183 + 32px);
     box-sizing: border-box;
+    /* Flex column so the footer can be pushed to the bottom regardless of how
+       few thumbnails are shown — keeps it level with the fixed lab-O mark. */
+    display: flex;
+    flex-direction: column;
   }
   /* Vertical divider: aligned with the divider line baked into rail.svg
      (x=97.94 in a 742.84-tall viewBox → 97.94/742.84 = 0.13183 of the rail).
@@ -98,8 +126,8 @@
   .filters-row .theme-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
+    gap: 0;
+    align-items: baseline;
   }
   .filters-label {
     font-family: inherit;
@@ -155,26 +183,42 @@
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 400;
     cursor: pointer;
-    background: transparent;
+    background-color: transparent;
     border: none;
     padding: 0;
     position: relative;
   }
-  .filters button::before, .filters button::after { content: none; }
-  /* Rounded-rect style for actual tag/filter buttons */
+  /* Comma-separated inline tag style */
   .filters button[data-filter] {
-    font-size: 13.5px;
+    font-size: 16px;
     font-weight: 400;
-    letter-spacing: 0.02em;
-    padding: 6px 14px;
-    border: 0.75px solid rgba(0, 0, 0, 0.35);
-    border-radius: 5px;
-    color: rgba(0, 0, 0, 0.55);
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.01em;
+    color: #000;
+    /* Sliding underline via background gradient */
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0% 100%;
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    transition: background-size 0.25s ease, color 0.15s ease;
+  }
+  /* Comma separator before every tag except "all tags" */
+  .theme-tags button[data-filter]:not([data-filter="all"])::before {
+    content: ',\00a0';
+    background: none;
   }
   .filters .tag-count { display: none; }
-  .filters button[data-filter]:hover { background: rgba(255, 230, 0, 0.22); border-color: rgba(0,0,0,0.6); color: #000; }
-  .filters button[data-filter].active { color: #000; border-color: #000; }
+  .filters button[data-filter]:hover { color: #1e40af; background-size: 100% 1px; }
+  .filters button[data-filter].active { color: #1e40af; background-size: 100% 1px; }
+  /* "all tags:" — the bold heading that also resets the filter (no underline,
+     stays black in every state; listed last so it wins over the rules above) */
+  .filters button[data-filter="all"] {
+    font-weight: 700;
+    background-image: none;
+    color: #000;
+  }
+  .filters button[data-filter="all"]::after { content: ':'; }
+  .filters button[data-filter="all"]:hover,
+  .filters button[data-filter="all"].active { color: #000; background-size: 0 1px; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
@@ -187,19 +231,15 @@
   .tag-expand {
     font-family: inherit;
     font-size: 16px;
-    width: 32px;
-    height: 32px;
     padding: 0;
     border: none;
     background: transparent;
-    color: #000;
+    color: rgba(0, 0, 0, 0.38);
     cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: color 0.15s ease;
   }
-  .tag-expand:hover { color: #1e40af; }
+  .tag-expand::before { content: ',\00a0'; }
+  .tag-expand:hover { color: rgba(0, 0, 0, 0.8); }
   .filters.show-all .tag-expand { display: none; }
   .tag-collapse {
     font-family: inherit;
@@ -666,9 +706,16 @@
     transition: color 0.2s;
   }
   .lightbox .lb-close:hover { color: #fff; }
+  /* Min gap between the grid and the (bottom-pinned) footer on tall pages,
+     since the footer's own margin-top collapses to auto for the sticky push. */
+  #grid-area { margin-bottom: 24px; }
   .site-footer {
-    max-width: 1700px;
-    margin: 24px auto 0;
+    /* Full width, left-aligned: the KU Leuven logo box sits at the grid's left
+       edge (aligned with the left thumbnail column). margin-top:auto pushes the
+       footer to the bottom of the flex-column .page when content is short. */
+    align-self: stretch;
+    margin: 0;
+    margin-top: auto;
     padding: 0;
     height: calc(var(--rail-h) * 0.09228 + 40px);
     display: flex;
@@ -691,6 +738,7 @@
     justify-content: center;
     overflow: hidden;
     order: -1;
+    margin-left: 0;
   }
   .site-footer .footer-logos img {
     height: calc(var(--rail-h) * 0.25838);
@@ -698,167 +746,159 @@
     transform: rotate(90deg);
     opacity: 1;
   }
-  /* Left rail: the InDesign SVG (rail.svg) is inlined here as a fixed element.
-     All SVG coordinates are in a 117.63×742.84 viewBox; heights scale with 100vh. */
+  /* Left rail: plain HTML column pinned to the left edge of the centred page.
+     Width runs up to the vertical divider (rail-h × 0.13183); items are laid
+     out with flow/flex — no SVG, no coordinate overlays. */
   .left-rail {
     position: fixed;
     left: var(--rail-x);
     top: 0;
-    height: var(--rail-h);
+    width: calc(var(--rail-h) * 0.13183);
+    height: 100vh;
     z-index: 10;
     pointer-events: none;
   }
-  #rail-svg {
-    height: 100%;
-    width: auto;
-    display: block;
-  }
-  /* All SVG strokes match the 1px card frame borders — non-scaling so they
-     stay exactly 1px regardless of how the SVG is scaled by the viewport. */
-  #rail-svg .cls-4,
-  #rail-svg .cls-5,
-  #rail-svg .cls-6,
-  #rail-svg .cls-7 {
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  /* inlimbo.video label: split out of the rail SVG and centred at exactly 50vh,
-     independent of the rail icons. Same scale + x as the rail (cropped viewBox
-     "22 436 53 189" → height = rail-h × 189/742.84; left = rail edge + 22/742.84). */
-  #inlimbo-svg {
-    position: fixed;
-    left: calc(var(--rail-x) + var(--rail-h) * 0.02962);
-    top: 50%;
-    transform: translateY(-50%);
-    height: calc(var(--rail-h) * 0.25443);
-    width: auto;
-    z-index: 10;
-    pointer-events: none;
-  }
-  #inlimbo-svg .cls-5 {
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  /* lab-O logo: separate SVG pinned to the bottom of the rail area */
-  #labo-svg {
-    position: fixed;
-    bottom: 20px;
-    left: calc(var(--rail-x) + var(--rail-h) * 0.01978);
-    width: calc(var(--rail-h) * 0.09228);
-    pointer-events: none;
-    z-index: 10;
-  }
-  /* Transparent click-target buttons positioned over SVG elements.
-     Coordinates: (SVG-unit / 742.84) × var(--rail-h) */
-  .rail-overlay {
-    position: fixed;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    pointer-events: all;
-    z-index: 11;
-  }
-  /* Search circle: cx=38.65+12=50.65 cy=62.75 r=22.51 (translate offset +0.01615) */
-  #rail-search-btn.rail-overlay {
-    top: calc(var(--rail-h) * 0.05416);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.03788);
-    width: calc(var(--rail-h) * 0.06061);
-    height: calc(var(--rail-h) * 0.06061);
-  }
-  /* Scale-down circle: cx=37.19+12=49.19 cy=266 r=17.45 */
-  #scale-down.rail-overlay {
-    top: calc(var(--rail-h) * 0.33461);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.04272);
-    width: calc(var(--rail-h) * 0.04699);
-    height: calc(var(--rail-h) * 0.04699);
-  }
-  #scale-down.rail-overlay:disabled { cursor: default; }
-  /* Scale buttons: grey-out overlay when at limit; hover hint when available */
-  #scale-down.rail-overlay::after,
-  #scale-up.rail-overlay::after {
-    content: '';
+  .left-rail > * { pointer-events: auto; }
+  /* Search pill: a circle that expands rightward into a black rounded bar.
+     Absolutely placed (out of the −/+ column) with its centre on the tag line. */
+  .rail-search {
     position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    transition: background 0.15s ease;
-  }
-  #scale-down.rail-overlay:disabled::after,
-  #scale-up.rail-overlay:disabled::after {
-    background: rgba(255, 255, 255, 0.72);
-  }
-  #scale-down.rail-overlay:not(:disabled):hover::after,
-  #scale-up.rail-overlay:not(:disabled):hover::after {
-    background: rgba(255, 230, 0, 0.22);
-  }
-  /* Scale-up circle: cx=36.44+12=48.44 cy=331 r=17.45 */
-  #scale-up.rail-overlay {
-    top: calc(var(--rail-h) * 0.42200);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.04172);
-    width: calc(var(--rail-h) * 0.04699);
-    height: calc(var(--rail-h) * 0.04699);
-  }
-  /* About rounded rect: x=16.69+12=28.69 y=126 w=40.12 h=93.93 */
-  .margin-about.rail-overlay {
-    top: calc(var(--rail-h) * 0.16961);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.03862);
-    width: calc(var(--rail-h) * 0.05402);
-    height: calc(var(--rail-h) * 0.12645);
-    border-radius: calc(var(--rail-h) * 0.02318);
-    transition: background 0.15s ease;
-  }
-  .margin-about.rail-overlay:hover:not(.active) {
-    background: rgba(255, 230, 0, 0.22);
-  }
-  .margin-about.rail-overlay.active {
+    top: calc(var(--rail-h) * 0.055 - 9px);
+    left: calc((var(--rail-h) * 0.13183 - 33px) / 2);
+    display: flex;
+    align-items: center;
+    height: 33px;
+    width: 33px;
+    border: 1px solid #000;
+    border-radius: 999px;
     background: transparent;
+    overflow: hidden;
+    z-index: 12;
+    transition: width 0.30s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease, border-color 0.2s ease;
   }
-  /* About text: faded when inactive, full black when active */
-  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-12,
-  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-13,
-  .left-rail:has(#about-btn:not(.active)) #rail-svg .cls-14 { fill: rgba(0,0,0,0.35); }
-  .left-rail:has(#about-btn.active) #rail-svg .cls-12,
-  .left-rail:has(#about-btn.active) #rail-svg .cls-13,
-  .left-rail:has(#about-btn.active) #rail-svg .cls-14 { fill: #231f20; }
-  /* inlimbo.video overlay button: same position/size as #inlimbo-svg */
-  #inlimbo-btn.rail-overlay {
-    top: 50%;
-    transform: translateY(-50%);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.02962);
-    width: calc(var(--rail-h) * 0.07134);
-    height: calc(var(--rail-h) * 0.25443);
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  #inlimbo-btn.rail-overlay:hover {
-    background: rgba(255, 230, 0, 0.22);
-  }
-  #inlimbo-btn.rail-overlay:active {
+  .rail-search.open {
+    width: 232px;
     background: #000;
+    border-color: #000;
   }
-  /* When inlimbo btn is pressed: flip its SVG text + border to white */
-  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-14,
-  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-15 { fill: #fff; }
-  .left-rail:has(#inlimbo-btn:active) #inlimbo-svg .cls-5 { stroke: #fff; }
-  /* Scale dot matrix: centered in rail, between – and + circles */
+  .rail-search:not(.open):hover { border-color: #1e40af; }
+  .rail-search:not(.open):hover .rail-search-toggle { color: #1e40af; }
+  .rail-search-toggle {
+    flex: 0 0 31px;
+    width: 31px;
+    height: 31px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    color: #000;
+    transition: color 0.2s ease;
+  }
+  .rail-search.open .rail-search-toggle { color: #fff; }
+  .rail-search-toggle svg { display: block; }
+  .rail-search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #fff;
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    padding: 0 16px 0 0;
+    opacity: 0;
+    pointer-events: none;
+    caret-color: #fff;
+    transition: opacity 0.18s ease;
+  }
+  .rail-search.open .rail-search-input { opacity: 1; pointer-events: auto; }
+  .rail-search-input::placeholder { color: rgba(255, 255, 255, 0.55); }
+  /* − / + column (density dots between them); sits where it did before the
+     search pill was pulled out of the flow (search height 33 + gap 13). */
+  .rail-top {
+    position: absolute;
+    top: calc(var(--rail-h) * 0.055 + 46px);
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+  }
+  .rail-circle {
+    width: 33px;
+    height: 33px;
+    border-radius: 50%;
+    border: 1px solid #000;
+    background: transparent;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .rail-circle svg { display: block; }
+  .rail-circle:hover { color: #1e40af; border-color: #1e40af; }
+  .rail-circle:disabled {
+    cursor: default;
+    color: rgba(0, 0, 0, 0.25);
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+  /* Density readout: 2×N dot grid (N = current column count), between − and + */
   #scale-matrix {
-    position: fixed;
-    top: calc(var(--rail-h) * 0.40181 - 4px);
-    left: calc(var(--rail-x) + var(--rail-h) * 0.06592);
-    transform: translateX(-50%);
     display: grid;
     grid-template-rows: 3px 3px;
     row-gap: 2px;
     column-gap: 2px;
-    pointer-events: none;
-    z-index: 10;
+    justify-content: center;
+    margin: 1px 0;
   }
   #scale-matrix i {
     display: block;
     width: 3px;
     height: 3px;
+    border-radius: 50%;
     background: #231f20;
+  }
+  /* inlimbo.video: vertical label in the lower rail; opens the about panel */
+  #inlimbo-btn {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(25px + 49px + 20px);
+    margin: 0 auto;
+    width: max-content;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: 0.005em;
+    color: #000;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  #inlimbo-btn:hover { color: #1e40af; }
+  /* lab-O mark pinned to the bottom of the rail */
+  #rail-labo {
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    width: 49px;
+    height: 49px;
+    display: block;
   }
   #about-panel {
     position: absolute;
@@ -926,8 +966,6 @@
     .page { padding: 40px 40px 60px; }
     .page::before { display: none; }
     .left-rail { display: none; }
-    .rail-overlay { display: none; }
-    #labo-svg { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
   }
   /* Brand header: desktop has the floating logo, mobile gets this instead */
@@ -1011,37 +1049,4 @@
     /* Footer */
     .site-footer { padding: 20px 14px 32px; }
   }
-  #dvd-logo {
-    position: fixed;
-    left: 0; top: 0;
-    cursor: grab;
-    z-index: 200;
-    user-select: none;
-    touch-action: none;
-    border-radius: 50%;
-    pointer-events: auto;
-    will-change: transform;
-  }
-  #dvd-logo img {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: block;
-    pointer-events: none;
-  }
-  #dvd-logo-close {
-    position: absolute;
-    top: 8px; right: 8px;
-    transform: translate(50%, -50%);
-    width: 26px; height: 26px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: auto;
-    z-index: 2;
-    line-height: 0;
-  }
-  #dvd-logo:hover #dvd-logo-close,
-  #dvd-logo-close:hover { opacity: 1; }
-  @media (max-width: 900px) { #dvd-logo { display: none; } }
 

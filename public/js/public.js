@@ -571,6 +571,8 @@
   function clearSearchInputs() {
     if (searchInput) searchInput.value = '';
     if (filterBarSearch) filterBarSearch.value = '';
+    var rsi = document.getElementById('rail-search-input');
+    if (rsi) rsi.value = '';
   }
 
   function runSearch(q) {
@@ -743,11 +745,7 @@
   renderScaleMatrix();
 
   function positionScaleCtrl() {
-    // Rail layout is CSS-based; clear any inline positions left by older versions.
-    var ctrl = document.getElementById('scale-ctrl');
-    var aboutBtn = document.getElementById('about-btn');
-    if (ctrl) { ctrl.style.left = ''; ctrl.style.top = ''; ctrl.style.right = ''; }
-    if (aboutBtn) { aboutBtn.style.left = ''; aboutBtn.style.top = ''; }
+    // Rail layout is fully CSS-driven now — nothing to position in JS.
   }
   window.addEventListener('resize', positionScaleCtrl);
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
@@ -783,8 +781,8 @@
       if (aboutPanel) aboutPanel.classList.remove('active');
       if (aboutActive) introAutoHidden = true;
       aboutActive = false;
-      var aboutBtn = document.getElementById('about-btn');
-      if (aboutBtn) aboutBtn.classList.remove('active');
+      var inlimboLbl = document.getElementById('inlimbo-btn');
+      if (inlimboLbl) inlimboLbl.classList.remove('active');
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
@@ -794,8 +792,8 @@
       if (introAutoHidden) {
         introAutoHidden = false;
         aboutActive = true;
-        var aboutBtnBack = document.getElementById('about-btn');
-        if (aboutBtnBack) aboutBtnBack.classList.add('active');
+        var inlimboLblBack = document.getElementById('inlimbo-btn');
+        if (inlimboLblBack) inlimboLblBack.classList.add('active');
       }
       if (aboutActive) { introBlock.style.opacity = '0'; introBlock.style.display = ''; }
     }
@@ -865,13 +863,14 @@
   if (aboutClose) {
     aboutClose.addEventListener('click', function(e) {
       e.stopPropagation();
-      var btn = document.getElementById('about-btn');
+      var btn = document.getElementById('inlimbo-btn');
       if (btn && aboutActive) btn.click();
     });
   }
 
-  // About toggle — floating panel in compact modes, in-grid block in 3-col
-  var aboutBtn = document.getElementById('about-btn');
+  // About toggle — the vertical "inlimbo.video" rail label opens/closes the
+  // about section (floating panel in compact modes, in-grid intro in 3-col)
+  var aboutBtn = document.getElementById('inlimbo-btn');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
@@ -902,22 +901,48 @@
   }
   window.addEventListener('resize', positionAboutPanel);
 
-  // Rail search button: focus the filters search input
+  // Rail search: the circle expands into a black pill with a text input.
+  var railSearch = document.getElementById('rail-search');
   var railSearchBtn = document.getElementById('rail-search-btn');
+  var railSearchInput = document.getElementById('rail-search-input');
+  function openRailSearch() {
+    if (!railSearch) return;
+    railSearch.classList.add('open');
+    railSearchBtn.setAttribute('aria-expanded', 'true');
+    if (railSearchInput) railSearchInput.focus();
+  }
+  function closeRailSearch() {
+    if (!railSearch) return;
+    railSearch.classList.remove('open');
+    railSearchBtn.setAttribute('aria-expanded', 'false');
+    if (railSearchInput) railSearchInput.value = '';
+  }
   if (railSearchBtn) {
-    railSearchBtn.addEventListener('click', function() {
-      var input = document.querySelector('.filters-search-input');
-      if (input) input.focus();
+    railSearchBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (railSearch.classList.contains('open')) {
+        var hadQuery = railSearchInput && railSearchInput.value.trim();
+        closeRailSearch();
+        if (hadQuery) applyFilter('all', 'tag');
+      } else {
+        openRailSearch();
+      }
     });
   }
-
-  // inlimbo.video label: click scrolls back to the top
-  var inlimboBtn = document.getElementById('inlimbo-btn');
-  if (inlimboBtn) {
-    inlimboBtn.addEventListener('click', function() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (railSearchInput) {
+    railSearchInput.addEventListener('input', function() {
+      runSearch(railSearchInput.value.toLowerCase().trim());
+    });
+    railSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { closeRailSearch(); applyFilter('all', 'tag'); }
     });
   }
+  // Click outside the open pill collapses it (only when it holds no query)
+  document.addEventListener('click', function(e) {
+    if (!railSearch || !railSearch.classList.contains('open')) return;
+    if (railSearch.contains(e.target)) return;
+    if (!(railSearchInput && railSearchInput.value.trim())) closeRailSearch();
+  });
 
   // On mobile: move intro block above the filter tags so reading order is
   // intro → tags → cards instead of tags → intro → cards
@@ -937,159 +962,5 @@
       prependYear(dur);
       new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
     });
-  })();
-
-  // DVD screensaver logo
-  (function() {
-    var wrap = document.createElement('div');
-    wrap.id = 'dvd-logo';
-    document.body.appendChild(wrap);
-
-    var logoBase = document.createElement('img');
-    logoBase.src = '/public/dvd-logo.png';
-    logoBase.draggable = false;
-    logoBase.style.opacity = '1';
-
-    var logoSel = document.createElement('img');
-    logoSel.src = '/public/dvd-logo_selected.png';
-    logoSel.draggable = false;
-    logoSel.style.opacity = '0';
-    logoSel.style.transition = 'opacity 0.5s';
-
-    wrap.appendChild(logoBase);
-    wrap.appendChild(logoSel);
-
-    var closeBtn = document.createElement('div');
-    closeBtn.id = 'dvd-logo-close';
-
-    var iconPause = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><rect x="5.5" y="5" width="2" height="6" rx="0.5" fill="#000"/><rect x="8.5" y="5" width="2" height="6" rx="0.5" fill="#000"/></svg>';
-    var iconPlay  = '<svg width="26" height="26" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="white" stroke="#000" stroke-width="0.5"/><polygon points="6.5,5 12,8 6.5,11" fill="#000"/></svg>';
-
-    closeBtn.innerHTML = iconPause;
-    closeBtn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    closeBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      paused = !paused;
-      closeBtn.innerHTML = paused ? iconPlay : iconPause;
-    });
-    wrap.appendChild(closeBtn);
-
-    var isSelected = false;
-
-    function fadeTo(sel, duration) {
-      logoSel.style.transition = 'opacity ' + (duration || 0.5) + 's';
-      logoSel.style.opacity = sel ? '1' : '0';
-      isSelected = sel;
-      if (!dragging) wrap.style.cursor = sel ? 'pointer' : 'grab';
-    }
-
-    wrap.addEventListener('mousemove', function(e) {
-      var rect = wrap.getBoundingClientRect();
-      var dx = e.clientX - (rect.left + rect.width / 2);
-      var dy = e.clientY - (rect.top  + rect.height / 2);
-      var inCenter = Math.sqrt(dx*dx + dy*dy) < rect.width * 0.32;
-      if (inCenter !== isSelected) fadeTo(inCenter, 0.5);
-    });
-    wrap.addEventListener('mouseleave', function() { fadeTo(false, 0.5); });
-    // Click toggles the float; a drag (mouse moved since mousedown) does not count
-    var downX = 0, downY = 0;
-    wrap.addEventListener('click', function(e) {
-      if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) return;
-      paused = !paused;
-      closeBtn.innerHTML = paused ? iconPlay : iconPause;
-    });
-
-    var introEl = document.getElementById('intro-block');
-    // Size relative to one grid column (a card), not the intro block — the
-    // intro spans the full width in iPad portrait, which would inflate the logo.
-    var sizeBasisEl = document.querySelector('.grid .card');
-    var sizeBasis = sizeBasisEl ? sizeBasisEl.offsetWidth : (introEl ? introEl.offsetWidth : 360);
-    var size = Math.round(sizeBasis * 7 / 16);
-    wrap.style.width  = size + 'px';
-    wrap.style.height = size + 'px';
-
-    var margin = 24;
-    var startRect = introEl ? introEl.getBoundingClientRect() : { left: 40, top: 120 };
-    var x = startRect.left + margin;
-    var y = startRect.top  + margin;
-
-    var speed = 0.78;
-    var vx = speed;
-    var vy = speed * 0.65;
-
-    var hovering = false;
-    var dragging = false;
-    var paused = false;
-    var dragOffX = 0, dragOffY = 0;
-
-    document.addEventListener('mousemove', function(e) {
-      if (wrap.style.display === 'none') return;
-      if (dragging) {
-        x = e.clientX - dragOffX;
-        y = e.clientY - dragOffY;
-        return;
-      }
-      var rect = wrap.getBoundingClientRect();
-      var cx = rect.left + rect.width / 2;
-      var cy = rect.top + rect.height / 2;
-      var dx = e.clientX - cx;
-      var dy = e.clientY - cy;
-      hovering = (dx*dx + dy*dy) < Math.pow(rect.width / 2 + 40, 2);
-    }, { passive: true });
-
-    wrap.addEventListener('mousedown', function(e) {
-      if (e.target === closeBtn || closeBtn.contains(e.target)) return;
-      downX = e.clientX;
-      downY = e.clientY;
-      dragging = true;
-      dragOffX = e.clientX - x;
-      dragOffY = e.clientY - y;
-      wrap.style.cursor = 'grabbing';
-      e.preventDefault();
-    });
-
-    document.addEventListener('mouseup', function(e) {
-      if (!dragging) return;
-      dragging = false;
-      // Only a real drag parks the logo; a plain click is handled by the
-      // click listener, which toggles the float instead
-      if (Math.abs(e.clientX - downX) > 4 || Math.abs(e.clientY - downY) > 4) {
-        paused = true;
-        closeBtn.innerHTML = iconPlay;
-      }
-      wrap.style.cursor = isSelected ? 'pointer' : 'grab';
-    });
-
-    var lastTs = 0;
-    var lastX = null, lastY = null;
-    function tick(ts) {
-      var dt = lastTs ? Math.min(ts - lastTs, 50) : 16.667;
-      lastTs = ts;
-      var scale = dt / 16.667;
-      var minX = 0;
-      var maxX = Math.max(0, window.innerWidth - size);
-      var minY = 0;
-      var maxY = Math.max(0, window.innerHeight - size);
-      if (!hovering && !dragging && !paused) {
-        x += vx * scale;
-        y += vy * scale;
-        if (x <= minX) { x = minX; vx =  Math.abs(vx); }
-        if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
-        if (y <= minY) { y = minY; vy =  Math.abs(vy); }
-        if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
-      }
-      x = Math.min(Math.max(x, minX), maxX);
-      y = Math.min(Math.max(y, minY), maxY);
-      // Only touch the style when the logo actually moved — a parked logo
-      // otherwise invalidates the compositor every frame
-      if (x !== lastX || y !== lastY) {
-        wrap.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-        lastX = x; lastY = y;
-      }
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-
   })();
 
