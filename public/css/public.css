@@ -891,7 +891,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: calc(var(--rail-h) * 0.14);
+    top: calc(var(--rail-h) * 0.14 + 10px);
     margin: 0 auto;
     width: max-content;
     writing-mode: vertical-rl;
