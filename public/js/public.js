@@ -584,6 +584,7 @@
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
     grid.classList.add('show-archive');
     if (introBlock) introBlock.style.display = 'none';
+    if (aboutPanel) aboutPanel.classList.remove('active');
     updateIntroOffClass();
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = 'none';
@@ -626,9 +627,19 @@
       document.querySelectorAll('.card .tags span[data-tag="' + value + '"]').forEach(s => s.classList.add('active'));
     }
 
-    // Show/hide intro block + archive toggle when filtering
+    // Show/hide intro block + archive toggle when filtering.
+    // In 3-col mode the intro-block is an invisible space-holder for the panel;
+    // when filtering, both the space-holder and the panel are hidden.
     const isFiltered = value !== 'all';
-    if (introBlock) introBlock.style.display = (isFiltered || !aboutActive || scaleIndex > 0) ? 'none' : '';
+    const introShouldHold = !isFiltered && aboutActive && scaleIndex === 0;
+    if (introBlock) {
+      introBlock.style.display = introShouldHold ? '' : 'none';
+      if (introShouldHold) introBlock.style.opacity = '0';
+    }
+    if (aboutPanel) {
+      if (isFiltered) aboutPanel.classList.remove('active');
+      else if (aboutActive && scaleIndex === 0) { positionAboutPanel(); aboutPanel.classList.add('active'); }
+    }
     updateIntroOffClass();
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
@@ -794,15 +805,18 @@
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
     // Restore the intro unless the user deliberately closed it meanwhile.
-    if (introBlock && idx === 0 && prev !== 0) {
-      if (aboutPanel) aboutPanel.classList.remove('active');
+    if (idx === 0 && prev !== 0) {
+      // Returning to 3-col: restore panel (intro-block is invisible space-holder)
       if (introAutoHidden) {
         introAutoHidden = false;
         aboutActive = true;
         var inlimboLblBack = document.getElementById('inlimbo-btn');
         if (inlimboLblBack) inlimboLblBack.classList.add('active');
       }
-      if (aboutActive) { introBlock.style.opacity = '0'; introBlock.style.display = ''; }
+      if (aboutActive && aboutPanel) {
+        if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
+        // Panel repositioned after grid-class change below
+      }
     }
     updateIntroOffClass();
 
@@ -817,9 +831,9 @@
     // FLIP — Last: read new positions (forces reflow so layout is committed)
     const lastRects = cards.map(c => c.getBoundingClientRect());
 
-    // Fade intro in after positions are captured
-    if (introBlock && idx === 0 && prev !== 0 && aboutActive) {
-      requestAnimationFrame(function() { introBlock.style.opacity = '1'; });
+    // Re-show panel after grid settles (returning to 3-col)
+    if (idx === 0 && prev !== 0 && aboutActive && aboutPanel) {
+      requestAnimationFrame(function() { positionAboutPanel(); aboutPanel.classList.add('active'); });
     }
 
     // FLIP — Invert + Play via Web Animations API:
@@ -876,33 +890,57 @@
   }
 
   // About toggle — the vertical "inlimbo.video" rail label opens/closes the
-  // about section (floating panel in compact modes, in-grid intro in 3-col)
+  // about section. In all grid sizes the panel is used; the in-grid intro-block
+  // acts as an invisible space-holder (opacity:0) when the panel is open so the
+  // grid reserves the column. Closing the panel triggers a FLIP animation that
+  // fills the freed column with cards.
   var aboutBtn = document.getElementById('inlimbo-btn');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
       aboutActive = !aboutActive;
-      introAutoHidden = false; // explicit choice from here on
-      updateIntroOffClass();
-
+      introAutoHidden = false;
       aboutBtn.classList.toggle('active', aboutActive);
+
       if (scaleIndex > 0) {
+        // Compact modes: simple panel show/hide (no in-grid space to animate)
         if (aboutActive) { positionAboutPanel(); aboutPanel.classList.add('active'); }
         else { aboutPanel.classList.remove('active'); }
       } else {
-        if (aboutPanel) aboutPanel.classList.remove('active');
-        if (introBlock) {
-          if (aboutActive) {
-            introBlock.style.opacity = '0';
-            introBlock.style.display = '';
-            requestAnimationFrame(function() {
-              introBlock.style.opacity = '1';
-              requestAnimationFrame(positionScaleCtrl);
-            });
-          } else {
-            introBlock.style.display = 'none';
-            requestAnimationFrame(positionScaleCtrl);
-          }
+        if (aboutActive) {
+          // Opening: restore intro-block as invisible space-holder, show panel over it
+          var cards3o = Array.from(grid.querySelectorAll('.card:not(.hidden)')).filter(function(c) { return getComputedStyle(c).display !== 'none'; });
+          var rects3of = cards3o.map(function(c) { return c.getBoundingClientRect(); });
+          if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
+          updateIntroOffClass();
+          var rects3ol = cards3o.map(function(c) { return c.getBoundingClientRect(); });
+          positionAboutPanel();
+          aboutPanel.classList.add('active');
+          cards3o.forEach(function(card, i) {
+            var f = rects3of[i], l = rects3ol[i];
+            if (!l.width || (f.left === l.left && f.top === l.top)) return;
+            card.animate([
+              { transformOrigin: '0 0', transform: 'translate3d('+(f.left-l.left)+'px,'+(f.top-l.top)+'px,0) scale('+(f.width/l.width)+','+(f.height/l.height)+')' },
+              { transformOrigin: '0 0', transform: 'none' }
+            ], { duration: 500, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'none' });
+          });
+        } else {
+          // Closing: FLIP — cards animate into the freed space
+          var cards3c = Array.from(grid.querySelectorAll('.card:not(.hidden)')).filter(function(c) { return getComputedStyle(c).display !== 'none'; });
+          var rects3cf = cards3c.map(function(c) { return c.getBoundingClientRect(); });
+          aboutPanel.classList.remove('active');
+          if (introBlock) introBlock.style.display = 'none';
+          updateIntroOffClass();
+          var rects3cl = cards3c.map(function(c) { return c.getBoundingClientRect(); });
+          cards3c.forEach(function(card, i) {
+            var f = rects3cf[i], l = rects3cl[i];
+            if (!l.width) return;
+            card.animate([
+              { transformOrigin: '0 0', transform: 'translate3d('+(f.left-l.left)+'px,'+(f.top-l.top)+'px,0) scale('+(f.width/l.width)+','+(f.height/l.height)+')' },
+              { transformOrigin: '0 0', transform: 'none' }
+            ], { duration: 600, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)', fill: 'none' });
+          });
         }
+        requestAnimationFrame(positionScaleCtrl);
       }
     });
   }
@@ -955,6 +993,15 @@
   // intro → tags → cards instead of tags → intro → cards
   if (window.innerWidth <= 768 && introBlock && filtersBar) {
     filtersBar.parentNode.insertBefore(introBlock, filtersBar);
+  }
+
+  // On desktop load: show the about panel immediately over the intro-block
+  // space-holder, matching the compact-mode overlay behaviour.
+  if (aboutPanel && aboutBtn && scaleIndex === 0 && aboutActive) {
+    if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
+    positionAboutPanel();
+    aboutPanel.classList.add('active');
+    updateIntroOffClass();
   }
 
   // Prepend year to duration label (year column is hidden on the main view)
