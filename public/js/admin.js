@@ -6,6 +6,7 @@
     const body = {
       title: fd.get('title'),
       students: fd.get('students'),
+      tutor: fd.get('tutor'),
       year: fd.get('year'),
       video_link: fd.get('video_link'),
       description: fd.get('description'),
@@ -55,6 +56,7 @@
     document.getElementById('edit-id').value = id;
     document.getElementById('edit-title').value = item.dataset.title;
     document.getElementById('edit-students').value = item.dataset.students;
+    document.getElementById('edit-tutor').value = item.dataset.tutor || '';
     document.getElementById('edit-year').value = item.dataset.year;
     const vtype = item.dataset.videoType || 'vimeo';
     const vid = item.dataset.videoId;
@@ -138,6 +140,7 @@
     const body = {
       title: fd.get('title'),
       students: fd.get('students'),
+      tutor: fd.get('tutor'),
       year: fd.get('year'),
       video_link: fd.get('video_link'),
       description: fd.get('description'),

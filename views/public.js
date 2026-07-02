@@ -45,7 +45,7 @@ function renderPublic(rows) {
       ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" loading="lazy" decoding="async" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
       : `<div class="thumb"><img alt=""></div>`;
     return `
-    <div class="card${extraClass}" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-year="${v.year}" data-desc="${esc(v.description)}">
+    <div class="card${extraClass}" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-tutor="${esc(v.tutor||'')}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
       ${thumbHtml}
       <div class="meta">
@@ -77,7 +77,7 @@ function renderPublic(rows) {
     (v.tags_medium || '').split(',').map(t => t.trim()).filter(Boolean).forEach(t => { mediumTagCounts[t] = (mediumTagCounts[t] || 0) + 1; });
   });
 
-  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}">${t}<span class="tag-count">${themeTagCounts[t] || 0}</span></button>`).join('\n    ');
+  const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}"><span class="tag-label">${t}</span><span class="tag-count">${themeTagCounts[t] || 0}</span></button>`).join('\n    ');
   const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}<span class="tag-count">${mediumTagCounts[t] || 0}</span></button>`).join('\n    ');
 
   return `<!DOCTYPE html>

@@ -5,18 +5,18 @@ async function getVideoRows() {
   return result.rows.map(r => { const row = Object.assign({}, r); delete row.thumb_data; return row; });
 }
 
-// v: { title, students, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order }
+// v: { title, students, tutor, description, video_id, video_type, year, tags_theme, tags_medium, featured, archived, sort_order }
 // values already coerced by the caller
 async function createVideo(v) {
   await pool.query(
-    `INSERT INTO videos (title, students, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-    [v.title, v.students, v.description, v.video_id, v.video_type, v.video_id, v.year, v.tags_theme, v.tags_medium, v.featured, v.archived, v.sort_order]);
+    `INSERT INTO videos (title, students, tutor, description, video_id, video_type, vimeo_id, year, tags_theme, tags_medium, featured, archived, sort_order) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+    [v.title, v.students, v.tutor || '', v.description, v.video_id, v.video_type, v.video_id, v.year, v.tags_theme, v.tags_medium, v.featured, v.archived, v.sort_order]);
 }
 
 async function updateVideo(id, v) {
   await pool.query(
-    `UPDATE videos SET title=$1, students=$2, description=$3, video_id=$4, video_type=$5, vimeo_id=$6, year=$7, tags_theme=$8, tags_medium=$9, featured=$10, archived=$11, sort_order=$12 WHERE id=$13`,
-    [v.title, v.students, v.description, v.video_id, v.video_type, v.video_id, v.year, v.tags_theme, v.tags_medium, v.featured, v.archived, v.sort_order, id]);
+    `UPDATE videos SET title=$1, students=$2, tutor=$3, description=$4, video_id=$5, video_type=$6, vimeo_id=$7, year=$8, tags_theme=$9, tags_medium=$10, featured=$11, archived=$12, sort_order=$13 WHERE id=$14`,
+    [v.title, v.students, v.tutor || '', v.description, v.video_id, v.video_type, v.video_id, v.year, v.tags_theme, v.tags_medium, v.featured, v.archived, v.sort_order, id]);
 }
 
 async function deleteVideo(id) {

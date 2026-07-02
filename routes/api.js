@@ -19,10 +19,10 @@ router.get('/videos', async (req, res) => {
 
 router.post('/videos', requireAuth, async (req, res) => {
   try {
-    const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
+    const { title, students, tutor, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
     const { id, type } = parseVideoUrl(video_link);
     await createVideo({
-      title, students, description, video_id: id, video_type: type,
+      title, students, tutor, description, video_id: id, video_type: type,
       year: parseInt(year), tags_theme: tags_theme || '', tags_medium: tags_medium || '',
       featured: featured ? 1 : 0, archived: archived ? 1 : 0, sort_order: parseInt(sort_order) || 0
     });
@@ -32,10 +32,10 @@ router.post('/videos', requireAuth, async (req, res) => {
 
 router.put('/videos/:id', requireAuth, async (req, res) => {
   try {
-    const { title, students, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
+    const { title, students, tutor, description, video_link, year, tags_theme, tags_medium, featured, archived, sort_order } = req.body;
     const { id, type } = parseVideoUrl(video_link);
     await updateVideo(req.params.id, {
-      title, students, description, video_id: id, video_type: type,
+      title, students, tutor, description, video_id: id, video_type: type,
       year: parseInt(year), tags_theme: tags_theme || '', tags_medium: tags_medium || '',
       featured: featured ? 1 : 0, archived: archived ? 1 : 0, sort_order: parseInt(sort_order) || 0
     });

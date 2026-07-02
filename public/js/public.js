@@ -581,6 +581,8 @@
     activeType = 'search';
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
     grid.classList.add('show-archive');
+    if (introBlock) introBlock.style.display = 'none';
+    updateIntroOffClass();
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = 'none';
     updateArchiveCloseBtn();
@@ -588,8 +590,10 @@
       if (!card.dataset.videoId) return;
       const title = (card.dataset.title || '').toLowerCase();
       const authors = (card.dataset.authors || '').toLowerCase();
+      const tutor = (card.dataset.tutor || '').toLowerCase();
       const tags = (card.dataset.tags || '').toLowerCase();
-      const match = title.includes(q) || authors.includes(q) || tags.includes(q);
+      const desc = (card.dataset.desc || '').toLowerCase();
+      const match = title.includes(q) || authors.includes(q) || tutor.includes(q) || tags.includes(q) || desc.includes(q);
       card.classList.toggle('hidden', !match);
     });
   }
@@ -649,7 +653,8 @@
   }
 
   filtersBar.addEventListener('click', e => {
-    if (e.target.tagName === 'BUTTON' && e.target.dataset.filter) applyFilter(e.target.dataset.filter, 'tag');
+    const btn = e.target.closest('button[data-filter]');
+    if (btn) applyFilter(btn.dataset.filter, 'tag');
   });
 
   document.querySelector('.grid').addEventListener('click', e => {

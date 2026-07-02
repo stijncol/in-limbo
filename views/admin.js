@@ -40,6 +40,9 @@ function renderAdmin(videos) {
         </div>
       </div>
 
+      <label>tutor</label>
+      <input type="text" name="tutor" placeholder="Naam Tutor">
+
       <label>video link (Vimeo of YouTube)</label>
       <input type="text" name="video_link" placeholder="https://vimeo.com/123456789 of https://youtu.be/..." required>
 
@@ -111,7 +114,7 @@ function renderAdmin(videos) {
   <div class="video-list" style="margin-top:32px;">
     <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">alle video's (${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').length})</h2>
     ${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').map(v => `
-    <div class="video-item" data-id="${v.id}" data-title="${esc(v.title)}" data-students="${esc(v.students)}" data-year="${v.year}" data-video-id="${v.video_id || v.vimeo_id}" data-video-type="${v.video_type || 'vimeo'}" data-desc="${esc(v.description)}" data-tags-theme="${esc(v.tags_theme||v.tags||'')}" data-tags-medium="${esc(v.tags_medium||'')}" data-sort="${v.sort_order}" data-featured="${v.featured}" data-archived="${v.archived}" data-has-thumb="${v.has_thumb ? '1' : ''}">
+    <div class="video-item" data-id="${v.id}" data-title="${esc(v.title)}" data-students="${esc(v.students)}" data-tutor="${esc(v.tutor||'')}" data-year="${v.year}" data-video-id="${v.video_id || v.vimeo_id}" data-video-type="${v.video_type || 'vimeo'}" data-desc="${esc(v.description)}" data-tags-theme="${esc(v.tags_theme||v.tags||'')}" data-tags-medium="${esc(v.tags_medium||'')}" data-sort="${v.sort_order}" data-featured="${v.featured}" data-archived="${v.archived}" data-has-thumb="${v.has_thumb ? '1' : ''}">
       <div class="info">
         <h3>${esc(v.title)}</h3>
         <div class="meta">
@@ -155,6 +158,9 @@ function renderAdmin(videos) {
             <input type="number" name="year" id="edit-year" min="2020" max="2030" required>
           </div>
         </div>
+
+        <label>tutor</label>
+        <input type="text" name="tutor" id="edit-tutor" placeholder="Naam Tutor">
 
         <label>video link (Vimeo of YouTube)</label>
         <input type="text" name="video_link" id="edit-video-link" required>

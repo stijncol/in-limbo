@@ -35,6 +35,7 @@ async function initDB() {
   try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_data BYTEA"); } catch(e) {}
   try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_settings JSONB"); } catch(e) {}
   try { await pool.query("ALTER TABLE videos ADD COLUMN thumb_sharp BYTEA"); } catch(e) {}
+  try { await pool.query("ALTER TABLE videos ADD COLUMN tutor TEXT DEFAULT ''"); } catch(e) {}
 }
 
 module.exports = { pool, initDB };
