@@ -185,6 +185,7 @@ ${archiveCards}
     <div class="lb-meta">
       <h2 id="lb-title"></h2>
       <div class="lb-authors" id="lb-authors"></div>
+      <div class="lb-tutor" id="lb-tutor"></div>
       <div class="lb-year" id="lb-year"></div>
       <button class="lb-read-more" id="lb-read-more">read synopsis ↓</button>
       <div class="lb-desc-wrap" id="lb-desc-wrap">

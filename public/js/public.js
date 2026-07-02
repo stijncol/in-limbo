@@ -441,6 +441,8 @@
       }
       lbTitle.textContent = card.dataset.title || '';
       lbAuthors.textContent = card.dataset.authors || '';
+      const lbTutor = document.getElementById('lb-tutor');
+      if (lbTutor) lbTutor.textContent = card.dataset.tutor || '';
       lbYear.textContent = card.dataset.year || '';
       lbDesc.textContent = card.dataset.desc || '';
       lbDescWrap.classList.remove('open');
