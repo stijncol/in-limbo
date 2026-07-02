@@ -838,11 +838,10 @@
   }
   .rail-search.open .rail-search-input { opacity: 1; pointer-events: auto; }
   .rail-search-input::placeholder { color: rgba(255, 255, 255, 0.55); }
-  /* − / + column (density dots between them); sits where it did before the
-     search pill was pulled out of the flow (search height 33 + gap 13). */
+  /* − / + column (density dots between them); pinned to the bottom of the rail */
   .rail-top {
     position: absolute;
-    top: calc(var(--rail-h) * 0.055 + 46px);
+    bottom: 20px;
     left: 0;
     right: 0;
     display: flex;
@@ -887,12 +886,12 @@
     border-radius: 50%;
     background: #231f20;
   }
-  /* inlimbo.video: vertical label in the lower rail; opens the about panel */
+  /* inlimbo.video: vertical label below search, opens the about panel */
   #inlimbo-btn {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: calc(25px + 49px + 20px);
+    top: calc(var(--rail-h) * 0.14);
     margin: 0 auto;
     width: max-content;
     writing-mode: vertical-rl;
@@ -909,16 +908,6 @@
     transition: color 0.15s ease;
   }
   #inlimbo-btn:hover { color: #1e40af; }
-  /* lab-O mark pinned to the bottom of the rail */
-  #rail-labo {
-    position: absolute;
-    left: 50%;
-    bottom: 20px;
-    transform: translateX(-50%);
-    width: 49px;
-    height: 49px;
-    display: block;
-  }
   #about-panel {
     position: absolute;
     background: #fff;
