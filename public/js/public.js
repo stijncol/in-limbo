@@ -873,7 +873,8 @@
     var gridEl = document.querySelector('.grid');
     if (!gridEl) return;
     var gridRect = gridEl.getBoundingClientRect();
-    var colW = Math.round(gridRect.width / 3 - 14);
+    var gap = parseFloat(getComputedStyle(gridEl).columnGap) || 32;
+    var colW = Math.round((gridRect.width - gap * 2) / 3);
     aboutPanel.style.left  = Math.round(gridRect.left + window.scrollX) + 'px';
     aboutPanel.style.top   = Math.round(gridRect.top + window.scrollY) + 'px';
     aboutPanel.style.width = colW + 'px';
