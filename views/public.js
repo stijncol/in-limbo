@@ -149,18 +149,18 @@ ${archiveCards}
   <div class="left-rail" id="left-rail">
     <div id="rail-search" class="rail-search" role="search">
       <button id="rail-search-btn" class="rail-search-toggle" aria-label="search" aria-expanded="false">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.215" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
       </button>
       <input type="text" id="rail-search-input" class="rail-search-input" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false" />
     </div>
     <button id="inlimbo-btn" class="active" aria-label="about — in limbo">inlimbo.video</button>
     <div class="rail-top">
       <button id="scale-down" class="rail-circle scale-step" aria-label="bigger thumbnails" disabled>
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
       <div id="scale-matrix" aria-hidden="true"></div>
       <button id="scale-up" class="rail-circle scale-step" aria-label="smaller thumbnails">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
   </div>
