@@ -49,7 +49,7 @@
   * { text-underline-offset: 4px; }
   html { scroll-behavior: smooth; }
   body {
-    background: #f0f0f0;
+    background: #eef0f2;
     font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
     font-weight: 300;
     color: #111;
@@ -66,6 +66,11 @@
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
     --rail-h: min(71.3vh, 690px);
+    /* Single source of truth for the outer margin around the grid — always
+       equal left and right, at every viewport width. Everything (page padding,
+       footer, filters) aligns to the grid edge this margin creates. Fluid:
+       14px on phones → 32px on large desktops, no jumps at breakpoints. */
+    --margin: clamp(14px, 2.2vw, 32px);
   }
   .page {
     flex: 1;
@@ -73,7 +78,7 @@
     max-width: 1700px;
     margin: 0 auto;
     position: relative;
-    padding: calc(var(--rail-h) * 0.05416) 32px 0 calc(var(--rail-h) * 0.13183 + 32px);
+    padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 calc(var(--rail-h) * 0.13183 + var(--margin));
     box-sizing: border-box;
     /* Flex column so the footer can be pushed to the bottom regardless of how
        few thumbnails are shown — keeps it level with the fixed lab-O mark. */
@@ -977,7 +982,7 @@
      (capped at 385px, the size the 3-column layout reaches just before the
      switch — so thumbnails don't jump bigger), with the intro still in column 1. */
   @media (max-width: 1260px) {
-    .page { padding: 40px 40px 60px; }
+    .page { padding: 40px var(--margin) 60px; }
     .page::before { display: none; }
     .left-rail { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
@@ -985,7 +990,7 @@
   /* Brand header: desktop has the floating logo, mobile gets this instead */
   .mobile-brand { display: none; }
   @media (max-width: 900px) {
-    .page { padding: 32px 20px 80px; }
+    .page { padding: 32px var(--margin) 80px; }
     .mobile-brand { display: block; margin-bottom: 20px; }
     .mobile-brand img { width: 64px; height: auto; display: block; }
     /* iOS zooms the page when a focused input is under 16px */
@@ -1049,10 +1054,12 @@
     .intro-block .intro-text { font-size: 20px; }
 
     /* Footer: stack vertically */
-    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 20px 40px; }
+    /* Sides stay 0 so the footer aligns with the grid edge (the page padding
+       already provides the equal outer margin) */
+    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 0 40px; }
   }
   @media (max-width: 540px) {
-    .page { padding: 20px 14px 48px; }
+    .page { padding: 20px var(--margin) 48px; }
     /* Single column; gap is simple row space between cards (meta is already in flow) */
     .grid { grid-template-columns: 1fr; gap: 28px; }
     /* Intro text slightly smaller on small phones */
@@ -1061,6 +1068,6 @@
     .lightbox .lb-inner { padding: 0 12px; }
     .lightbox .lb-close { left: 12px; top: -32px; }
     /* Footer */
-    .site-footer { padding: 20px 14px 32px; }
+    .site-footer { padding: 20px 0 32px; }
   }
 
