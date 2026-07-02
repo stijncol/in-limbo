@@ -628,16 +628,16 @@
     }
 
     // Show/hide intro block + archive toggle when filtering.
-    // In 3-col mode the intro-block is an invisible space-holder for the panel;
-    // when filtering, both the space-holder and the panel are hidden.
+    // Above 1260px the intro-block is an invisible space-holder for the panel;
+    // below, it is ordinary visible content. Filtering hides both.
     const isFiltered = value !== 'all';
     const introShouldHold = !isFiltered && aboutActive && scaleIndex === 0;
     if (introBlock) {
       introBlock.style.display = introShouldHold ? '' : 'none';
-      if (introShouldHold) introBlock.style.opacity = '0';
+      introBlock.style.opacity = (introShouldHold && usePanel()) ? '0' : '';
     }
     if (aboutPanel) {
-      if (isFiltered) aboutPanel.classList.remove('active');
+      if (isFiltered || !usePanel()) aboutPanel.classList.remove('active');
       else if (aboutActive && scaleIndex === 0) { positionAboutPanel(); aboutPanel.classList.add('active'); }
     }
     updateIntroOffClass();
@@ -880,6 +880,33 @@
     aboutPanel.style.width = colW + 'px';
   }
 
+  // The floating panel + invisible space-holder mechanic needs the left rail
+  // (its open/close button). Below 1260px the rail is hidden, so the intro is
+  // ordinary inline content there: visible, in the flow, no panel.
+  function usePanel() { return window.innerWidth > 1260; }
+
+  // Reconcile panel/intro state with the current viewport — used on load and
+  // when a resize crosses the 1260px rail boundary.
+  function syncAboutUI() {
+    if (!aboutPanel) return;
+    if (usePanel()) {
+      if (aboutActive && scaleIndex === 0 && activeFilter === 'all') {
+        if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
+        positionAboutPanel();
+        aboutPanel.classList.add('active');
+      } else {
+        positionAboutPanel();
+      }
+    } else {
+      aboutPanel.classList.remove('active');
+      if (introBlock && scaleIndex === 0) {
+        introBlock.style.opacity = '';
+        introBlock.style.display = (aboutActive && activeFilter === 'all') ? '' : 'none';
+      }
+    }
+    updateIntroOffClass();
+  }
+
   // Close cross on the floating panel acts as the [about] toggle
   var aboutClose = document.querySelector('.about-close');
   if (aboutClose) {
@@ -945,7 +972,7 @@
       }
     });
   }
-  window.addEventListener('resize', positionAboutPanel);
+  window.addEventListener('resize', syncAboutUI);
 
   // Rail search: the circle expands into a black pill with a text input.
   var railSearch = document.getElementById('rail-search');
@@ -996,14 +1023,9 @@
     filtersBar.parentNode.insertBefore(introBlock, filtersBar);
   }
 
-  // On desktop load: show the about panel immediately over the intro-block
-  // space-holder, matching the compact-mode overlay behaviour.
-  if (aboutPanel && aboutBtn && scaleIndex === 0 && aboutActive) {
-    if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
-    positionAboutPanel();
-    aboutPanel.classList.add('active');
-    updateIntroOffClass();
-  }
+  // On load: desktop (rail visible) shows the about panel over the intro-block
+  // space-holder; smaller screens keep the intro as ordinary inline content.
+  syncAboutUI();
 
   // Prepend year to duration label (year column is hidden on the main view)
   (function() {

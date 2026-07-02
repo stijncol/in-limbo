@@ -1042,10 +1042,15 @@
     .intro-block { padding: 0 0 24px; }
     .intro-block .intro-text { font-size: 20px; }
 
-    /* Footer: stack vertically */
+    /* Footer: stack vertically — text first, logo below. The fixed desktop
+       height would clip the stacked content, so it goes auto here. The logo
+       img is a vertical PNG rotated 90°; sizing the box to the rotated visual
+       (140 × 47 ≈ the image ratio) shows it exactly, no crop. */
     /* Sides stay 0 so the footer aligns with the grid edge (the page padding
        already provides the equal outer margin) */
-    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 0 40px; }
+    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 0 40px; height: auto; }
+    .site-footer .footer-logos { order: 1; width: 140px; height: 47px; }
+    .site-footer .footer-logos img { height: 140px; }
   }
   @media (max-width: 540px) {
     .page { padding: 20px var(--margin) 48px; }

@@ -97,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260702b">
+<link rel="stylesheet" href="/public/css/public.css?v=20260702c">
 </head>
 <body>
 <div class="page">
@@ -195,7 +195,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260702b"></script>
+<script src="/public/js/public.js?v=20260702c"></script>
 
 </body>
 </html>`;
