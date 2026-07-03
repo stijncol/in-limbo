@@ -100,31 +100,33 @@
     pointer-events: none;
     z-index: 9;
   }
-  /* Mirror of the divider on the rail's other side: the right line sits at
-     the rail's right edge, so its mirror around the rail centre (where the
-     search circle, inlimbo.video and −/+ are) is the rail's left edge. */
+  /* Mirror of the divider on the rail's other side: a white strip covering
+     the area outside the centred page, with the black line as its inner
+     border. On screens under the 1700px cap the strip is 0 wide, so only
+     the 1px line at the window edge shows; on very large screens the
+     outside margins read as white. */
   .page::after {
     content: '';
     position: fixed;
-    left: var(--rail-x);
+    left: 0;
     top: 0;
     bottom: 0;
-    width: 1px;
-    background: #000;
+    width: var(--rail-x);
+    background: #fff;
+    border-right: 1px solid #000;
     pointer-events: none;
     z-index: 9;
   }
-  /* Closing line on the far right: mirrors the rail's left line across the
-     page, sitting at the window edge (or the centred page's right edge on
-     screens wider than the 1700px cap). */
+  /* Same closing strip on the far right of the window. */
   body::after {
     content: '';
     position: fixed;
-    right: var(--rail-x);
+    right: 0;
     top: 0;
     bottom: 0;
-    width: 1px;
-    background: #000;
+    width: var(--rail-x);
+    background: #fff;
+    border-left: 1px solid #000;
     pointer-events: none;
     z-index: 9;
   }
