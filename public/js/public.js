@@ -884,6 +884,12 @@
     aboutPanel.style.left  = Math.round(gridRect.left - parentRect.left) + 'px';
     aboutPanel.style.top   = Math.round(gridRect.top - parentRect.top) + 'px';
     aboutPanel.style.width = colW + 'px';
+    // Match the intro-block space-holder's height (it spans two grid rows) so
+    // the panel's bottom corners land on the grid. In compact modes the
+    // space-holder is hidden and the panel stays content-sized.
+    var holderVisible = introBlock && scaleIndex === 0 && introBlock.style.display !== 'none';
+    var holderH = holderVisible ? introBlock.getBoundingClientRect().height : 0;
+    aboutPanel.style.height = holderH > 0 ? Math.round(holderH) + 'px' : '';
   }
 
   // The floating panel + invisible space-holder mechanic needs the left rail

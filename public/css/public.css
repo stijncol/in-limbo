@@ -950,6 +950,11 @@
     grid-column: auto;
     grid-row: auto;
   }
+  /* The panel is pinned to the height of the two grid rows it covers (set in
+     JS), so its type scales with the viewport to fill that frame: the panel
+     height grows linearly with viewport width, hence the pure-vw slope.
+     Max kicks in past the 1700px page cap, where the panel stops growing. */
+  #about-panel .intro-text { font-size: clamp(15px, 1.28vw, 22.5px); }
   .scale-step { user-select: none; }
   .scale-matrix { display: none; }
   .grid.grid-cols-5 {
