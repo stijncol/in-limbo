@@ -100,6 +100,20 @@
     pointer-events: none;
     z-index: 9;
   }
+  /* Mirror of the divider on the rail's other side: the right line sits at
+     the rail's right edge, so its mirror around the rail centre (where the
+     search circle, inlimbo.video and −/+ are) is the rail's left edge. */
+  .page::after {
+    content: '';
+    position: fixed;
+    left: var(--rail-x);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #000;
+    pointer-events: none;
+    z-index: 9;
+  }
   .filters {
     display: flex;
     justify-content: space-between;
@@ -981,7 +995,7 @@
      switch — so thumbnails don't jump bigger), with the intro still in column 1. */
   @media (max-width: 1260px) {
     .page { padding: 40px var(--margin) 60px; }
-    .page::before { display: none; }
+    .page::before, .page::after { display: none; }
     .left-rail { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
   }
