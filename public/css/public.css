@@ -886,16 +886,20 @@
     border-radius: 50%;
     background: #231f20;
   }
-  /* inlimbo.video: vertical label below search, opens the about panel */
+  /* inlimbo.video: vertical label below search, opens the about panel.
+     Rotated via transform only (horizontal text turned -90°, reading
+     bottom-to-top) — writing-mode:vertical-rl + rotate(180deg) renders
+     upside-down-horizontal on iPadOS WebKit. The rotated strip is one
+     line-height (22px) wide, so left centers it in the rail. */
   #inlimbo-btn {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: calc(50% - 11px);
     top: calc(var(--rail-h) * 0.14 + 10px);
-    margin: 0 auto;
     width: max-content;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
+    line-height: 1;
+    white-space: nowrap;
+    transform-origin: 0 0;
+    transform: rotate(-90deg) translateX(-100%);
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 500;
     font-size: 22px;

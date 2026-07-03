@@ -875,8 +875,14 @@
     var gridRect = gridEl.getBoundingClientRect();
     var gap = parseFloat(getComputedStyle(gridEl).columnGap) || 32;
     var colW = Math.round((gridRect.width - gap * 2) / 3);
-    aboutPanel.style.left  = Math.round(gridRect.left + window.scrollX) + 'px';
-    aboutPanel.style.top   = Math.round(gridRect.top + window.scrollY) + 'px';
+    // The panel is absolutely positioned inside .page (position: relative),
+    // so convert to that containing block's coordinates. Document coordinates
+    // break on viewports wider than the page's max-width, where .page is
+    // centered. Note: offsetParent can't be used — it is null while the panel
+    // is still display:none, and positioning happens before showing.
+    var parentRect = aboutPanel.parentElement.getBoundingClientRect();
+    aboutPanel.style.left  = Math.round(gridRect.left - parentRect.left) + 'px';
+    aboutPanel.style.top   = Math.round(gridRect.top - parentRect.top) + 'px';
     aboutPanel.style.width = colW + 'px';
   }
 
