@@ -114,6 +114,20 @@
     pointer-events: none;
     z-index: 9;
   }
+  /* Closing line on the far right: mirrors the rail's left line across the
+     page, sitting at the window edge (or the centred page's right edge on
+     screens wider than the 1700px cap). */
+  body::after {
+    content: '';
+    position: fixed;
+    right: var(--rail-x);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #000;
+    pointer-events: none;
+    z-index: 9;
+  }
   .filters {
     display: flex;
     justify-content: space-between;
@@ -995,7 +1009,7 @@
      switch — so thumbnails don't jump bigger), with the intro still in column 1. */
   @media (max-width: 1260px) {
     .page { padding: 40px var(--margin) 60px; }
-    .page::before, .page::after { display: none; }
+    .page::before, .page::after, body::after { display: none; }
     .left-rail { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
   }
