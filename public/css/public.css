@@ -113,6 +113,8 @@
     bottom: 0;
     width: var(--rail-x);
     background: #fff;
+    background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
+    background-size: 20px 20px;
     border-right: 1px solid #000;
     pointer-events: none;
     z-index: 9;
@@ -126,6 +128,8 @@
     bottom: 0;
     width: var(--rail-x);
     background: #fff;
+    background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
+    background-size: 20px 20px;
     border-left: 1px solid #000;
     pointer-events: none;
     z-index: 9;
