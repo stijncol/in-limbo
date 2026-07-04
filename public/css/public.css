@@ -166,12 +166,18 @@
   .filters.show-all .filters-medium {
     display: block;
   }
+  /* Same comma-separated formatting as the theme row, led by "all strategies:" */
   .filters-medium .medium-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 0;
     align-items: baseline;
   }
+  .medium-tags button[data-filter]:not([data-filter="all"])::before {
+    content: ',\00a0\2009';
+    background: none;
+  }
+  .medium-tags button[data-filter="all"] + button[data-filter]::before { content: '\00a0\2009'; }
   .filters-extra {
     display: none;
     flex-wrap: wrap;
@@ -273,6 +279,7 @@
     transition: color 0.15s ease;
     display: none;
   }
+  .tag-collapse::before { content: ',\00a0'; }
   .tag-collapse:hover { color: rgba(0, 0, 0, 0.8); }
   .filters.show-all .tag-collapse { display: inline-block; }
   /* Prevent phantom flex items in default (row) layout */
@@ -991,12 +998,35 @@
     .left-rail { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
   }
-  /* Brand header: desktop has the floating logo, mobile gets this instead */
-  .mobile-brand { display: none; }
+  /* Black search pill under the intro text — mobile only */
+  .mobile-search { display: none; }
   @media (max-width: 900px) {
     .page { padding: 32px var(--margin) 80px; }
-    .mobile-brand { display: block; margin-bottom: 20px; }
-    .mobile-brand img { width: 64px; height: auto; display: block; }
+    .mobile-search {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .mobile-search svg { flex-shrink: 0; display: block; }
+    .mobile-search input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      outline: none;
+      color: #fff;
+      caret-color: #fff;
+      font-family: 'Neue Haas Unica', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.01em;
+    }
     /* iOS zooms the page when a focused input is under 16px */
     .filters-search-input, .inline-search-input { font-size: 16px; }
     /* Roomier tap targets */

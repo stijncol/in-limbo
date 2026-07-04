@@ -78,7 +78,7 @@ function renderPublic(rows) {
   });
 
   const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}"><span class="tag-label">${t}</span><span class="tag-count">${themeTagCounts[t] || 0}</span></button>`).join('\n    ');
-  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}">${t}<span class="tag-count">${mediumTagCounts[t] || 0}</span></button>`).join('\n    ');
+  const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}"><span class="tag-label">${t}</span><span class="tag-count">${mediumTagCounts[t] || 0}</span></button>`).join('\n    ');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -97,11 +97,10 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260704d">
+<link rel="stylesheet" href="/public/css/public.css?v=20260704e">
 </head>
 <body>
 <div class="page">
-  <a class="mobile-brand" href="/" aria-label="in limbo — home"><img src="/public/dvd-logo.png" alt="in limbo"></a>
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
@@ -113,7 +112,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
       </div>
       <div class="filters-extra" id="filters-extra"></div>
       <div class="filters-row filters-medium">
-        <div class="medium-tags">${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
+        <div class="medium-tags"><button data-filter="all">all strategies</button>${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
       </div>
     </div>
     <div class="filters-search-wrap">
@@ -129,6 +128,10 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
         <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles.</p>
       </div>
+    </div>
+    <div class="mobile-search" id="mobile-search">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      <input type="text" id="mobile-search-input" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false">
     </div>
 ${featuredCards}
 ${archiveCards}
@@ -192,7 +195,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260704d"></script>
+<script src="/public/js/public.js?v=20260704e"></script>
 
 </body>
 </html>`;

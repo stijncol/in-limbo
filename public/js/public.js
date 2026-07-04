@@ -529,7 +529,7 @@
     Array.from(themeTags.querySelectorAll('button[data-filter]:not([data-filter="all"])')).forEach(btn => {
       if (btn.offsetTop > firstTop + ROW_TOL) { filtersExtra.appendChild(btn); hasOverflow = true; }
     });
-    const hasMediumTags = !!document.querySelector('.medium-tags button[data-filter]');
+    const hasMediumTags = !!document.querySelector('.medium-tags button[data-filter]:not([data-filter="all"])');
     expandBtn.style.display = (!hasOverflow && !hasMediumTags) ? 'none' : '';
     // Keep pulling the last visible tag out until + fits on line 1
     let guard = 50;
@@ -581,6 +581,8 @@
     if (filterBarSearch) filterBarSearch.value = '';
     var rsi = document.getElementById('rail-search-input');
     if (rsi) rsi.value = '';
+    var msi = document.getElementById('mobile-search-input');
+    if (msi) msi.value = '';
   }
 
   function runSearch(q) {
@@ -609,6 +611,8 @@
 
   if (searchInput) searchInput.addEventListener('input', () => runSearch(searchInput.value.toLowerCase().trim()));
   if (filterBarSearch) filterBarSearch.addEventListener('input', () => runSearch(filterBarSearch.value.toLowerCase().trim()));
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  if (mobileSearchInput) mobileSearchInput.addEventListener('input', () => runSearch(mobileSearchInput.value.toLowerCase().trim()));
 
   function applyFilter(value, type) {
     activeFilter = value;
@@ -1040,10 +1044,12 @@
     if (!(railSearchInput && railSearchInput.value.trim())) closeRailSearch();
   });
 
-  // On mobile: move intro block above the filter tags so reading order is
-  // intro → tags → cards instead of tags → intro → cards
+  // On mobile: move intro block (and the search pill under it) above the
+  // filter tags so reading order is intro → search → tags → cards
   if (window.innerWidth <= 768 && introBlock && filtersBar) {
     filtersBar.parentNode.insertBefore(introBlock, filtersBar);
+    var mobileSearchEl = document.getElementById('mobile-search');
+    if (mobileSearchEl) filtersBar.parentNode.insertBefore(mobileSearchEl, filtersBar);
   }
 
   // On load: desktop (rail visible) shows the about panel over the intro-block
