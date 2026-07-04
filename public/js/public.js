@@ -558,12 +558,18 @@
       applyFilter('all', 'tag');
     }
     filtersBar.classList.add('show-all');
+    // The taller filter bar pushes the grid down — move the panel with it.
+    // Synchronous on purpose: layout is already settled after the class
+    // change, and rAF callbacks can be throttled in background tabs.
+    positionAboutPanel();
     requestAnimationFrame(positionScaleCtrl);
   });
 
   document.getElementById('tag-collapse').addEventListener('click', () => {
     filtersBar.classList.remove('show-all');
-    requestAnimationFrame(() => { enforceFirstLine(); positionScaleCtrl(); });
+    enforceFirstLine();
+    positionAboutPanel();
+    requestAnimationFrame(positionScaleCtrl);
   });
 
   // Support both inline intro search and filter-bar search
@@ -985,6 +991,11 @@
     });
   }
   window.addEventListener('resize', syncAboutUI);
+  // Expanding/collapsing the tag rows changes the filter bar's height and
+  // pushes the grid down — keep the absolutely-positioned panel glued to it.
+  if (window.ResizeObserver && filtersBar) {
+    new ResizeObserver(function () { positionAboutPanel(); }).observe(filtersBar);
+  }
 
   // Rail search: the circle expands into a black pill with a text input.
   var railSearch = document.getElementById('rail-search');

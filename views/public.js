@@ -97,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260703f">
+<link rel="stylesheet" href="/public/css/public.css?v=20260704d">
 </head>
 <body>
 <div class="page">
@@ -105,7 +105,6 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
   <div class="filters" id="filters">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
-        <span class="filters-label">theme</span>
         <div class="theme-tags">
           <button class="active" data-filter="all">all tags</button>
           ${themeButtons}
@@ -114,10 +113,8 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
       </div>
       <div class="filters-extra" id="filters-extra"></div>
       <div class="filters-row filters-medium">
-        <span class="filters-label">medium</span>
-        <div class="medium-tags">${mediumButtons}</div>
+        <div class="medium-tags">${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
       </div>
-      <button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button>
     </div>
     <div class="filters-search-wrap">
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
@@ -195,7 +192,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260703f"></script>
+<script src="/public/js/public.js?v=20260704d"></script>
 
 </body>
 </html>`;

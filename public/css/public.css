@@ -152,28 +152,11 @@
     display: block;
     position: relative;
   }
-  .filters-row .filters-label {
-    position: absolute;
-    left: -57px;
-    top: 7px;
-    width: 44px;
-    text-align: right;
-    display: none;
-  }
-  .filters.show-all .filters-row .filters-label { display: block; }
   .filters-row .theme-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0;
     align-items: baseline;
-  }
-  .filters-label {
-    font-family: inherit;
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    color: #aaa;
-    text-transform: lowercase;
-    white-space: nowrap;
   }
   .filters-medium {
     display: none;
@@ -183,17 +166,11 @@
   .filters.show-all .filters-medium {
     display: block;
   }
-  .filters-medium .filters-label {
-    position: absolute;
-    left: -57px;
-    top: 7px;
-    width: 44px;
-    text-align: right;
-  }
   .filters-medium .medium-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    align-items: baseline;
   }
   .filters-extra {
     display: none;
@@ -212,9 +189,6 @@
   }
   .filters.show-all .filters-medium {
     animation: filterFadeIn 0.3s ease 0.05s both;
-  }
-  .filters.show-all .filters-row .filters-label {
-    animation: filterFadeIn 0.25s ease forwards;
   }
   /* Base for all filter buttons */
   .filters button {
@@ -286,23 +260,21 @@
   .tag-expand::before { content: ',\00a0'; }
   .tag-expand:hover { color: rgba(0, 0, 0, 0.8); }
   .filters.show-all .tag-expand { display: none; }
+  /* Collapse "–" sits inline at the end of the medium row, mirroring the
+     "+" at the end of the theme row */
   .tag-collapse {
     font-family: inherit;
     font-size: 16px;
-    width: 32px;
-    height: 32px;
     padding: 0;
     border: none;
     background: transparent;
-    color: #000;
+    color: rgba(0, 0, 0, 0.38);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.15s ease;
     display: none;
-    align-items: center;
-    justify-content: center;
   }
-  .tag-collapse:hover { color: #1e40af; }
-  .filters.show-all .tag-collapse { display: flex; }
+  .tag-collapse:hover { color: rgba(0, 0, 0, 0.8); }
+  .filters.show-all .tag-collapse { display: inline-block; }
   /* Prevent phantom flex items in default (row) layout */
   .filters::before, .filters::after { display: none; }
   /* Filter-bar search is hidden on the main view; the inline intro search is used instead */
@@ -1033,16 +1005,6 @@
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
     .left-rail { display: none; }
-    .filters-row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: start; }
-    /* The grid reserves a 52px label column, so the label must be in the grid
-       even in collapsed state (base CSS hides it until show-all) */
-    .filters-row .filters-label { display: block; position: static; width: 52px; text-align: left; top: auto; left: auto; }
-    /* .filters-medium also carries .filters-row, whose grid rule above would
-       otherwise override its display:none — keep it collapsed until show-all */
-    .filters-row.filters-medium { display: none; position: static; }
-    .filters-medium .filters-label { position: static; width: 52px; text-align: left; top: auto; left: auto; }
-    .filters.show-all .filters-medium { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
-    .filters-extra { padding-left: 60px; }
   }
   @media (max-width: 768px) {
     /* Lightbox */
