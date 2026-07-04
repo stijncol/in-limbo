@@ -105,14 +105,14 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
     <div class="filters-left">
       <div class="filters-row" id="filters-row">
         <div class="theme-tags">
-          <button class="active" data-filter="all">all tags</button>
+          <button class="active" data-filter="all">tags</button>
           ${themeButtons}
           <button class="tag-expand" id="tag-expand" title="show all tags">+</button>
         </div>
       </div>
       <div class="filters-extra" id="filters-extra"></div>
       <div class="filters-row filters-medium">
-        <div class="medium-tags"><button data-filter="all">all strategies</button>${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
+        <div class="medium-tags"><button data-filter="all">strategies</button>${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
       </div>
     </div>
     <div class="filters-search-wrap">
