@@ -173,11 +173,11 @@
     gap: 0;
     align-items: baseline;
   }
-  .medium-tags button[data-filter]:not([data-filter="all"])::before {
+  .medium-tags button[data-filter]:not(.filter-lead)::before {
     content: ',\00a0\2009';
     background: none;
   }
-  .medium-tags button[data-filter="all"] + button[data-filter]::before { content: '\00a0\2009'; }
+  .medium-tags .filter-lead + button[data-filter]::before { content: '\00a0\2009'; }
   .filters-extra {
     display: none;
     flex-wrap: wrap;
@@ -222,13 +222,13 @@
     background-repeat: no-repeat;
     transition: background-size 0.25s ease;
   }
-  /* Comma separator before every tag except "all tags" */
-  .theme-tags button[data-filter]:not([data-filter="all"])::before {
+  /* Comma separator before every tag except the bold lead-in */
+  .theme-tags button[data-filter]:not(.filter-lead)::before {
     content: ',\00a0\2009';
     background: none;
   }
-  /* No comma between "all tags:" and the first tag — same spacing as between tags */
-  .theme-tags button[data-filter="all"] + button[data-filter]::before { content: '\00a0\2009'; }
+  /* No comma between the lead-in ("tags:") and the first item ("all") */
+  .theme-tags .filter-lead + button[data-filter]::before { content: '\00a0\2009'; }
   .filters .tag-count { display: none; }
   .filters button[data-filter]:hover { color: #1e40af; }
   .filters button[data-filter].active { color: #1e40af; }
@@ -236,14 +236,14 @@
   .filters button[data-filter].active .tag-label { background-size: 100% 1px; }
   /* "all tags:" — the bold heading that also resets the filter (no underline,
      stays black in every state; listed last so it wins over the rules above) */
-  .filters button[data-filter="all"] {
+  .filters button.filter-lead {
     font-weight: 700;
     background-image: none;
     color: #000;
   }
-  .filters button[data-filter="all"]::after { content: ':'; }
-  .filters button[data-filter="all"]:hover,
-  .filters button[data-filter="all"].active { color: #000; background-size: 0 1px; }
+  .filters button.filter-lead::after { content: ':'; }
+  .filters button.filter-lead:hover,
+  .filters button.filter-lead.active { color: #000; background-size: 0 1px; }
   .tag-count {
     font-size: 8px;
     vertical-align: super;
