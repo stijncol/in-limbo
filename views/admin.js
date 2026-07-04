@@ -17,7 +17,8 @@ function renderAdmin(videos) {
 <title>in limbo — admin</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="/public/favicon.png">
-<link rel="stylesheet" href="/public/css/admin.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/public/css/admin.css?v=20260704a">
 </head>
 <body>
   <h1>in limbo</h1>
@@ -79,15 +80,15 @@ function renderAdmin(videos) {
     </p>
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <button type="button" id="bake-new-btn" class="btn btn-edit">bake nieuwe thumbnails (${unbakedCount})</button>
-      <button type="button" id="bake-all-btn" class="btn" style="background:#fff;color:#555;border-color:#ccc;">alles opnieuw bakken</button>
+      <button type="button" id="bake-all-btn" class="btn btn-edit">alles opnieuw bakken</button>
       <span id="bake-status" style="font-size:13px;color:#666;"></span>
     </div>
   </div>
 
   <div class="video-list">
-    <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;color:#b8860b;">⏳ in afwachting (${videos.filter(v => v.status === 'pending').length})</h2>
+    <h2 style="font-size:16px;margin-bottom:16px;color:#1e40af;">in afwachting (${videos.filter(v => v.status === 'pending').length})</h2>
     ${videos.filter(v => v.status === 'pending').map(v => `
-    <div class="video-item" style="border-left:3px solid #b8860b;" data-id="${v.id}">
+    <div class="video-item" style="border-left:3px solid #1e40af;" data-id="${v.id}">
       <div class="info">
         <h3>${esc(v.title)}</h3>
         <div class="meta">
@@ -103,8 +104,8 @@ function renderAdmin(videos) {
       </div>
       <div class="actions" style="flex-direction:column;gap:6px;">
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-edit" style="background:#2a6e2a;color:#fff;border-color:#2a6e2a;" onclick="approveVideo(${v.id}, true, false)">highlight</button>
-          <button class="btn btn-edit" style="background:#555;color:#fff;border-color:#555;" onclick="approveVideo(${v.id}, false, true)">archief</button>
+          <button class="btn btn-edit" style="background:#000;color:#fff;" onclick="approveVideo(${v.id}, true, false)">highlight</button>
+          <button class="btn btn-edit" onclick="approveVideo(${v.id}, false, true)">archief</button>
         </div>
         <button class="btn btn-danger" onclick="rejectVideo(${v.id})">reject</button>
       </div>
@@ -112,7 +113,7 @@ function renderAdmin(videos) {
   </div>
 
   <div class="video-list" style="margin-top:32px;">
-    <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">alle video's (${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').length})</h2>
+    <h2 style="font-size:16px;margin-bottom:16px;">alle video's (${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').length})</h2>
     ${videos.filter(v => v.status !== 'pending' && v.status !== 'rejected').map(v => `
     <div class="video-item" data-id="${v.id}" data-title="${esc(v.title)}" data-students="${esc(v.students)}" data-tutor="${esc(v.tutor||'')}" data-year="${v.year}" data-video-id="${v.video_id || v.vimeo_id}" data-video-type="${v.video_type || 'vimeo'}" data-desc="${esc(v.description)}" data-tags-theme="${esc(v.tags_theme||v.tags||'')}" data-tags-medium="${esc(v.tags_medium||'')}" data-sort="${v.sort_order}" data-featured="${v.featured}" data-archived="${v.archived}" data-has-thumb="${v.has_thumb ? '1' : ''}">
       <div class="info">
@@ -187,8 +188,8 @@ function renderAdmin(videos) {
         </div>
 
         <div style="display:flex;gap:12px;margin-top:24px;">
-          <button type="submit">opslaan</button>
-          <button type="button" class="btn" style="background:#fff;color:#555;border-color:#ccc;" onclick="closeEdit()">annuleren</button>
+          <button type="submit" style="margin-top:0;">opslaan</button>
+          <button type="button" class="btn btn-edit" style="padding:12px 28px;font-size:13px;" onclick="closeEdit()">annuleren</button>
         </div>
       </form>
     </div>

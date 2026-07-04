@@ -1,22 +1,42 @@
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Student submit page — same design language as the public site: cool grey
+     page, white surface with 1px black border, IBM Plex Sans body, Neue Haas
+     Unica for headings, #1e40af as the only accent. */
+  @font-face {
+    font-family: 'Neue Haas Unica';
+    src: url('/public/fonts/NeueHaasUnica-Medium.woff2') format('woff2'),
+         url('/public/fonts/NeueHaasUnica-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; text-underline-offset: 4px; }
   body {
-    font-family: inherit;
-    background: #fff;
+    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    background: #eef0f2;
     color: #111;
     padding: 40px;
     -webkit-font-smoothing: antialiased;
   }
-  h1 { font-weight: 300; font-size: 32px; margin-bottom: 8px; }
-  .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
-  .subtitle a { color: #111; }
+  h1 {
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
+    font-size: 28px;
+    letter-spacing: 0.005em;
+    margin-bottom: 8px;
+  }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 40px; }
+  .subtitle a { color: #111; text-decoration: underline; text-decoration-style: dotted; }
+  .subtitle a:hover { color: #1e40af; }
   .form-section {
     background: #fff;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #000;
     padding: 32px;
     max-width: 600px;
   }
   .form-section h2 {
-    font-weight: 600;
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
     font-size: 16px;
     margin-bottom: 24px;
   }
@@ -24,7 +44,7 @@
     display: block;
     font-size: 12px;
     letter-spacing: 0.04em;
-    color: #888;
+    color: #666;
     margin-bottom: 6px;
     margin-top: 16px;
   }
@@ -32,36 +52,38 @@
   input[type="text"], input[type="number"], textarea {
     width: 100%;
     font-family: inherit;
+    font-weight: 400;
     font-size: 14px;
     padding: 10px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #000;
     background: #fff;
     color: #111;
     outline: none;
     transition: border-color 0.2s;
   }
-  input:focus, textarea:focus { border-color: #111; }
+  input:focus, textarea:focus { border-color: #1e40af; }
   textarea { resize: vertical; min-height: 120px; }
   .row { display: flex; gap: 16px; }
   .row > div { flex: 1; }
   button[type="submit"] {
     font-family: inherit;
+    font-weight: 400;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
-    border: 1px solid #111;
-    background: #111;
+    border: 1px solid #000;
+    background: #000;
     color: #fff;
     cursor: pointer;
     margin-top: 24px;
-    transition: all 0.2s;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
-  button[type="submit"]:hover { background: #333; }
+  button[type="submit"]:hover { background: #1e40af; border-color: #1e40af; }
   .success {
     padding: 16px 20px;
-    background: #f0faf0;
-    border: 1px solid #c0e0c0;
-    color: #2a6e2a;
+    background: #fff;
+    border: 1px solid #000;
+    color: #111;
     font-size: 14px;
     margin-bottom: 24px;
     max-width: 600px;
@@ -70,7 +92,11 @@
   .success.show { display: block; }
   .note {
     font-size: 12px;
-    color: #999;
+    color: #888;
     margin-top: 12px;
     line-height: 1.5;
+  }
+  @media (max-width: 600px) {
+    body { padding: 20px; }
+    .row { flex-direction: column; gap: 0; }
   }

@@ -1,23 +1,43 @@
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Admin panel — same design language as the public site: cool grey page,
+     white surfaces with 1px black borders, IBM Plex Sans body, Neue Haas
+     Unica for headings, #1e40af as the only accent. */
+  @font-face {
+    font-family: 'Neue Haas Unica';
+    src: url('/public/fonts/NeueHaasUnica-Medium.woff2') format('woff2'),
+         url('/public/fonts/NeueHaasUnica-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; text-underline-offset: 4px; }
   body {
-    font-family: inherit;
-    background: #fafafa;
+    font-family: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    background: #eef0f2;
     color: #111;
     padding: 40px;
     -webkit-font-smoothing: antialiased;
   }
-  h1 { font-weight: 300; font-size: 32px; margin-bottom: 8px; }
-  .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
-  .subtitle a { color: #111; }
+  h1 {
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
+    font-size: 28px;
+    letter-spacing: 0.005em;
+    margin-bottom: 8px;
+  }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 40px; }
+  .subtitle a { color: #111; text-decoration: underline; text-decoration-style: dotted; }
+  .subtitle a:hover { color: #1e40af; }
   .form-section {
     background: #fff;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #000;
     padding: 32px;
     margin-bottom: 32px;
     max-width: 700px;
   }
   .form-section h2 {
-    font-weight: 600;
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
     font-size: 16px;
     margin-bottom: 24px;
   }
@@ -25,7 +45,7 @@
     display: block;
     font-size: 12px;
     letter-spacing: 0.04em;
-    color: #888;
+    color: #666;
     margin-bottom: 6px;
     margin-top: 16px;
   }
@@ -33,15 +53,16 @@
   input[type="text"], input[type="number"], textarea {
     width: 100%;
     font-family: inherit;
+    font-weight: 400;
     font-size: 14px;
     padding: 10px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #000;
     background: #fff;
     color: #111;
     outline: none;
     transition: border-color 0.2s;
   }
-  input:focus, textarea:focus { border-color: #111; }
+  input:focus, textarea:focus { border-color: #1e40af; }
   textarea { resize: vertical; min-height: 100px; }
   .row { display: flex; gap: 16px; }
   .row > div { flex: 1; }
@@ -59,20 +80,21 @@
     color: #111;
     cursor: pointer;
   }
-  .check-row input[type="checkbox"] { width: 16px; height: 16px; }
+  .check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1e40af; }
   button[type="submit"], .btn {
     font-family: inherit;
+    font-weight: 400;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 12px 28px;
-    border: 1px solid #111;
-    background: #111;
+    border: 1px solid #000;
+    background: #000;
     color: #fff;
     cursor: pointer;
     margin-top: 24px;
-    transition: all 0.2s;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
-  button[type="submit"]:hover, .btn:hover { background: #333; }
+  button[type="submit"]:hover, .btn:hover { background: #1e40af; border-color: #1e40af; color: #fff; }
   .btn-danger {
     background: #fff;
     color: #c00;
@@ -81,20 +103,24 @@
     font-size: 12px;
     margin-top: 0;
   }
-  .btn-danger:hover { background: #c00; color: #fff; }
+  .btn-danger:hover { background: #c00; border-color: #c00; color: #fff; }
   .btn-edit {
     background: #fff;
-    color: #111;
-    border-color: #ccc;
+    color: #000;
+    border-color: #000;
     padding: 6px 14px;
     font-size: 12px;
     margin-top: 0;
   }
-  .btn-edit:hover { background: #111; color: #fff; }
+  .btn-edit:hover { background: #fff; color: #1e40af; border-color: #1e40af; }
   .video-list { max-width: 900px; }
+  .video-list h2 {
+    font-family: 'Neue Haas Unica', sans-serif;
+    font-weight: 500;
+  }
   .video-item {
     background: #fff;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #000;
     padding: 20px 24px;
     margin-bottom: 12px;
     display: flex;
@@ -105,33 +131,33 @@
   .video-item .info { flex: 1; }
   .video-item .info h3 {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: 4px;
   }
   .video-item .info .meta {
     font-size: 12px;
-    color: #888;
+    color: #666;
   }
   .video-item .info .meta span { margin-right: 12px; }
-  .video-item .badges { display: flex; gap: 6px; margin-top: 6px; }
+  .video-item .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .badge {
     font-size: 10px;
     letter-spacing: 0.04em;
     padding: 3px 8px;
-    border-radius: 100px;
-    background: #f0f0f0;
-    color: #666;
+    border: 1px solid #bbb;
+    background: none;
+    color: #555;
   }
-  .badge.featured { background: #111; color: #fff; }
-  .badge.archived { background: #c00; color: #fff; }
-  .badge.no-thumb { background: #fbe6c8; color: #946200; }
+  .badge.featured { background: #000; border-color: #000; color: #fff; }
+  .badge.archived { background: #fff; border-color: #000; color: #000; }
+  .badge.no-thumb { border-color: #1e40af; color: #1e40af; }
   .video-item .actions { display: flex; gap: 8px; flex-shrink: 0; }
   .msg {
     padding: 12px 16px;
     margin-bottom: 24px;
-    background: #e8f5e9;
-    border: 1px solid #a5d6a7;
-    color: #2e7d32;
+    background: #fff;
+    border: 1px solid #000;
+    color: #111;
     font-size: 13px;
     max-width: 700px;
   }
