@@ -1044,12 +1044,12 @@
     if (!(railSearchInput && railSearchInput.value.trim())) closeRailSearch();
   });
 
-  // On mobile: move intro block (and the search pill under it) above the
-  // filter tags so reading order is intro → search → tags → cards
+  // On mobile the search pill doubles as the site header: it goes to the very
+  // top ("inlimbo.video" placeholder), then intro → tags → cards
   if (window.innerWidth <= 768 && introBlock && filtersBar) {
-    filtersBar.parentNode.insertBefore(introBlock, filtersBar);
     var mobileSearchEl = document.getElementById('mobile-search');
     if (mobileSearchEl) filtersBar.parentNode.insertBefore(mobileSearchEl, filtersBar);
+    filtersBar.parentNode.insertBefore(introBlock, filtersBar);
   }
 
   // On load: desktop (rail visible) shows the about panel over the intro-block

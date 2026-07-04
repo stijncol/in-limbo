@@ -1012,7 +1012,7 @@
       border-radius: 999px;
       background: #000;
       color: #fff;
-      margin-bottom: 8px;
+      margin-bottom: 20px;
     }
     .mobile-search svg { flex-shrink: 0; display: block; }
     .mobile-search input {
@@ -1024,9 +1024,12 @@
       color: #fff;
       caret-color: #fff;
       font-family: 'Neue Haas Unica', sans-serif;
+      font-weight: 500;
       font-size: 16px;
       letter-spacing: 0.01em;
     }
+    /* The placeholder is the site header on mobile — full white, wordmark weight */
+    .mobile-search input::placeholder { color: #fff; opacity: 1; }
     /* iOS zooms the page when a focused input is under 16px */
     .filters-search-input, .inline-search-input { font-size: 16px; }
     /* Roomier tap targets */

@@ -97,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260704f">
+<link rel="stylesheet" href="/public/css/public.css?v=20260704g">
 </head>
 <body>
 <div class="page">
@@ -132,7 +132,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
     </div>
     <div class="mobile-search" id="mobile-search">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-      <input type="text" id="mobile-search-input" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false">
+      <input type="text" id="mobile-search-input" placeholder="inlimbo.video" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false">
     </div>
 ${featuredCards}
 ${archiveCards}
@@ -196,7 +196,7 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260704f"></script>
+<script src="/public/js/public.js?v=20260704g"></script>
 
 </body>
 </html>`;
