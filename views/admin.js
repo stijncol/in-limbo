@@ -16,7 +16,7 @@ function renderAdmin(videos) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>in limbo — admin</title>
 <meta name="robots" content="noindex">
-<link rel="icon" type="image/png" href="/public/favicon.png">
+<link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/public/css/admin.css?v=20260704a">
 </head>
