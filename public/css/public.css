@@ -365,7 +365,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 0.5px solid #fff;
+    border: 0.5px solid #000;
     z-index: 10;
     pointer-events: none;
     transition: border-color 0.2s ease;
@@ -1054,7 +1054,7 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       aspect-ratio: 16 / 9;
-      border: 0.5px solid #fff;
+      border: 0.5px solid #000;
       pointer-events: none;
       z-index: 10;
       transition: border-color 0.2s ease;
