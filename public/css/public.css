@@ -95,7 +95,7 @@
     left: calc(var(--rail-x) + var(--rail-h) * 0.13183);
     top: 0;
     bottom: 0;
-    width: 1px;
+    width: 0.5px;
     background: #000;
     pointer-events: none;
     z-index: 9;
@@ -115,7 +115,7 @@
     background: #fff;
     background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
     background-size: 20px 20px;
-    border-right: 1px solid #000;
+    border-right: 0.5px solid #000;
     pointer-events: none;
     z-index: 9;
   }
@@ -130,7 +130,7 @@
     background: #fff;
     background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
     background-size: 20px 20px;
-    border-left: 1px solid #000;
+    border-left: 0.5px solid #000;
     pointer-events: none;
     z-index: 9;
   }
@@ -365,7 +365,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 0.5px solid #000;
+    border: 1px solid transparent;
     z-index: 10;
     pointer-events: none;
     transition: border-color 0.2s ease;
@@ -1054,7 +1054,7 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       aspect-ratio: 16 / 9;
-      border: 0.5px solid #000;
+      border: 1px solid transparent;
       pointer-events: none;
       z-index: 10;
       transition: border-color 0.2s ease;
