@@ -10,7 +10,7 @@ function renderSubmit() {
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/submit.css?v=20260704a">
+<link rel="stylesheet" href="/public/css/submit.css?v=20260705a">
 </head>
 <body>
   <h1>in limbo</h1>
