@@ -197,6 +197,7 @@ ${archiveCards}
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
 <script src="/public/js/public.js?v=20260705f"></script>
+<script src="/public/js/graph-view.js?v=20260705f"></script>
 
 </body>
 </html>`;
