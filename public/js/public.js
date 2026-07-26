@@ -646,10 +646,7 @@
       introBlock.style.display = introShouldHold ? '' : 'none';
       introBlock.style.opacity = (introShouldHold && usePanel()) ? '0' : '';
     }
-    if (aboutPanel) {
-      if (isFiltered || !usePanel()) aboutPanel.classList.remove('active');
-      else if (aboutActive && scaleIndex === 0) { positionAboutPanel(); aboutPanel.classList.add('active'); }
-    }
+    if (aboutPanel && (isFiltered || !usePanel())) aboutPanel.classList.remove('active');
     updateIntroOffClass();
     const archiveToggleEl = document.getElementById('archive-toggle');
     if (archiveToggleEl) archiveToggleEl.style.display = isFiltered ? 'none' : '';
@@ -673,6 +670,14 @@
       }
     });
     updateArchiveCloseBtn();
+
+    // The panel is sized to the intro-block, which spans two grid rows — so it
+    // can only be measured once card visibility has settled. Positioning it
+    // earlier locks it to the previous filter's grid, leaving the frame short.
+    if (aboutPanel && !isFiltered && usePanel() && aboutActive && scaleIndex === 0) {
+      positionAboutPanel();
+      aboutPanel.classList.add('active');
+    }
   }
 
   filtersBar.addEventListener('click', e => {
