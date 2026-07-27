@@ -15,6 +15,7 @@
   // ── 1. Read the archive straight out of the rendered grid ───────────────
   // Every card carries its tags as spans; .tag-medium marks the medium ones.
   var themeCount = new Map(), mediumCount = new Map(), pairCount = new Map();
+  var tagVideos = new Map(); // tag name -> the films carrying it
 
   document.querySelectorAll('.card[data-video-id]').forEach(function (card) {
     var tags = [];
@@ -23,9 +24,18 @@
       if (!name) return; // trailing commas in the tag fields leave empty entries
       tags.push({ name: name, medium: s.classList.contains('tag-medium') });
     });
+    // The blurred thumb is already in the page, so its src is free to reuse
+    var thumbImg = card.querySelector('.thumb img.baked-blur');
+    var film = {
+      title: card.getAttribute('data-title') || '',
+      src: thumbImg ? thumbImg.getAttribute('src') : null,
+      card: card
+    };
     tags.forEach(function (t) {
       var m = t.medium ? mediumCount : themeCount;
       m.set(t.name, (m.get(t.name) || 0) + 1);
+      if (!tagVideos.has(t.name)) tagVideos.set(t.name, []);
+      tagVideos.get(t.name).push(film);
     });
     for (var i = 0; i < tags.length; i++) {
       for (var j = i + 1; j < tags.length; j++) {
@@ -136,6 +146,10 @@
       '<span class="thresh">shared videos: ' +
         '<button data-t="1">1</button><button data-t="2">2</button><button data-t="3">3</button>' +
       '</span>' +
+      '<span class="thresh films">films on hover: ' +
+        '<button data-m="satellite">ring</button><button data-m="grid">grid</button>' +
+        '<button data-m="off">off</button>' +
+      '</span>' +
       '<span class="hint">drag to rearrange &middot; click a tag to filter the archive</span>' +
       '<button id="graph-close">close &#10005;</button>' +
     '</div>' +
@@ -145,6 +159,34 @@
   var canvas = view.querySelector('#graph-canvas');
   var ctx = canvas.getContext('2d');
   var W = 0, H = 0, raf = null;
+
+  // ── Films on hover ──────────────────────────────────────────────────────
+  // 'satellite' fans the stills around the tag, 'strip' lays them along the
+  // bottom edge. Images come from the page's own thumbs, so nothing extra is
+  // fetched for stills already on screen.
+  var filmMode = 'satellite';
+  var HOVER_DELAY = 150, HOVER_FADE = 200; // ms — settle before the stills appear
+  var imgCache = new Map();
+  function filmImage(src) {
+    if (!src) return null;
+    if (!imgCache.has(src)) { var im = new Image(); im.src = src; imgCache.set(src, im); }
+    var img = imgCache.get(src);
+    return (img.complete && img.naturalWidth) ? img : null;
+  }
+  // Rects of the stills as last drawn, for hit-testing and sticky hover
+  var filmRects = [];
+
+  function drawFilm(f, x, y, w, h, alpha, lit) {
+    var img = filmImage(f.src);
+    ctx.globalAlpha = alpha;
+    if (img) ctx.drawImage(img, x, y, w, h);
+    else { ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, h); }
+    ctx.strokeStyle = lit ? ACCENT : 'rgba(0,0,0,0.55)';
+    ctx.lineWidth = lit ? 1 : 0.5;
+    ctx.strokeRect(x + 0.25, y + 0.25, w - 0.5, h - 0.5);
+    ctx.globalAlpha = 1;
+  }
+
 
   // ── 3. Force layout ─────────────────────────────────────────────────────
   var REPULSION = 14000, SPRING = 0.0016, IDEAL = 170, GRAVITY = 0.009, DAMP = 0.82;
@@ -249,6 +291,110 @@
       ctx.textAlign = 'left';
       ctx.globalAlpha = 1;
     });
+
+    drawFilms();
+  }
+
+  // The stills for the hovered tag, in whichever arrangement is selected.
+  // Positions are recorded in filmRects so the pointer can pick them up.
+  function drawFilms() {
+    filmRects = [];
+    if (hovered === null || filmMode === 'off') return;
+    var films = tagVideos.get(nodes[hovered].name) || [];
+    if (!films.length) return;
+
+    var reveal = Math.max(0, Math.min(1, (performance.now() - hoverAt - HOVER_DELAY) / HOVER_FADE));
+    if (reveal <= 0) return;
+
+    var node = nodes[hovered];
+    ctx.textBaseline = 'middle';
+
+    if (filmMode === 'satellite') {
+      var n = films.length;
+      var tw = 56, th = Math.round(tw * 9 / 16);
+      // Ring wide enough that the stills clear the neighbouring nodes and
+      // their labels, and grows with the count so they never crowd each other
+      var R = Math.max(170, Math.min(275, 55 + n * 15));
+      films.forEach(function (f, i) {
+        var a = -Math.PI / 2 + (i / n) * Math.PI * 2;
+        var cx = Math.max(tw / 2 + 6, Math.min(W - tw / 2 - 6, node.x + Math.cos(a) * R));
+        var cy = Math.max(th / 2 + 6, Math.min(H - th / 2 - 6, node.y + Math.sin(a) * R));
+        var x = cx - tw / 2, y = cy - th / 2;
+        ctx.globalAlpha = reveal * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(node.x, node.y); ctx.lineTo(cx, cy);
+        ctx.strokeStyle = ACCENT; ctx.lineWidth = 0.5; ctx.stroke();
+        ctx.globalAlpha = 1;
+        var lit = hoveredFilm === i;
+        drawFilm(f, x, y, tw, th, reveal, lit);
+        if (lit) {
+          ctx.font = '500 12px "IBM Plex Sans",Helvetica,Arial,sans-serif';
+          ctx.fillStyle = ACCENT;
+          var right = cx > W * 0.6;
+          ctx.textAlign = right ? 'right' : 'left';
+          ctx.fillText(f.title, cx + (right ? -(tw / 2 + 6) : tw / 2 + 6), cy);
+          ctx.textAlign = 'left';
+        }
+        filmRects.push({ i: i, f: f, x: x, y: y, w: tw, h: th });
+      });
+    } else {
+      // Two columns set beside the tag itself, on whichever side has the most
+      // room — the graph clusters in the middle, so that is the open side.
+      var m = films.length;
+      var COLS = 2, gap = 10, marginX = 32, marginV = 40, GAP = 22;
+      var rows = Math.ceil(m / COLS);
+
+      // Keep clear of the tag's own label, which sits on one side of the node
+      ctx.font = '500 12px "IBM Plex Sans",Helvetica,Arial,sans-serif';
+      var labelFlip = node.x > W * 0.58;
+      var labelW = ctx.measureText(node.name).width;
+      function spaceOn(s) {
+        return s > 0
+          ? W - (node.x + node.r + GAP + (labelFlip ? 0 : labelW + 10)) - marginX
+          : (node.x - node.r - GAP - (labelFlip ? labelW + 10 : 0)) - marginX;
+      }
+      // The graph clusters mid-canvas, so a tag's own half is the open one:
+      // tags on the left open leftwards, tags on the right open rightwards.
+      var side = node.x < W / 2 ? -1 : 1;
+      var avail = spaceOn(side);
+      var MIN = COLS * 60 + gap;
+      // Near the very edge there may be no room — fall back to the other side
+      if (avail < MIN && spaceOn(-side) > avail) { side = -side; avail = spaceOn(side); }
+      avail = Math.max(90, avail);
+
+      // Stills only — no heading, no captions; rows are spaced by the same
+      // gap as the columns
+      var tw2 = Math.min(104, Math.floor((avail - gap) / COLS));
+      var th2 = Math.round(tw2 * 9 / 16);
+      var cell = th2 + gap;
+      // Shrink the cells rather than overflow when a tag carries many films
+      if (rows * cell - gap > H - marginV * 2) {
+        var maxCell = (H - marginV * 2 + gap) / rows;
+        th2 = Math.max(20, Math.floor(maxCell - gap));
+        tw2 = Math.round(th2 * 16 / 9);
+        if (COLS * tw2 + gap > avail) {
+          tw2 = Math.floor((avail - gap) / COLS);
+          th2 = Math.round(tw2 * 9 / 16);
+        }
+        cell = th2 + gap;
+      }
+
+      var blockW = COLS * tw2 + gap;
+      var blockH = rows * cell - gap;
+      var offset = node.r + GAP + ((side > 0) === !labelFlip ? labelW + 10 : 0);
+      var x0 = side > 0 ? node.x + offset : node.x - offset - blockW;
+      x0 = Math.max(marginX, Math.min(W - marginX - blockW, x0));
+      var y0 = Math.max(marginV, Math.min(H - marginV - blockH, Math.round(node.y - blockH / 2)));
+
+      films.forEach(function (f, i) {
+        var col = i % COLS, row = Math.floor(i / COLS);
+        var x = x0 + col * (tw2 + gap);
+        var y = y0 + row * cell;
+        var lit2 = hoveredFilm === i;
+        drawFilm(f, x, y, tw2, th2, reveal, lit2);
+        filmRects.push({ i: i, f: f, x: x, y: y, w: tw2, h: th2 });
+      });
+    }
   }
 
   function frame() { step(); draw(); raf = requestAnimationFrame(frame); }
@@ -262,6 +408,21 @@
 
   // ── 5. Interaction ──────────────────────────────────────────────────────
   var hovered = null, dragged = null, downAt = null, moved = false;
+  var hoverAt = 0, hoveredFilm = null;
+
+  function setHover(i) {
+    if (i === hovered) return;
+    hovered = i;
+    hoveredFilm = null;
+    hoverAt = performance.now(); // restart the reveal delay
+  }
+  function pickFilm(p) {
+    for (var i = 0; i < filmRects.length; i++) {
+      var r = filmRects[i];
+      if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return i;
+    }
+    return null;
+  }
 
   function at(ev) {
     var r = canvas.getBoundingClientRect();
@@ -278,20 +439,39 @@
   canvas.addEventListener('mousemove', function (ev) {
     var p = at(ev);
     if (dragged) { dragged.x = p.x; dragged.y = p.y; moved = true; return; }
-    hovered = pick(p);
+    var over = pick(p);
+    if (over !== null) { setHover(over); hoveredFilm = null; return; }
+    // Reaching for one of the stills must not drop the hover that produced them
+    var fi = pickFilm(p);
+    if (fi !== null) { hoveredFilm = fi; return; }
+    setHover(null);
   });
   canvas.addEventListener('mousedown', function (ev) {
-    var p = at(ev), i = pick(p);
+    var p = at(ev);
+    if (pickFilm(p) !== null) return; // handled on mouseup, never a drag
+    var i = pick(p);
     if (i === null) return;
     dragged = nodes[i]; downAt = i; moved = false;
     canvas.classList.add('dragging');
   });
-  window.addEventListener('mouseup', function () {
+  window.addEventListener('mouseup', function (ev) {
+    // A still under the cursor opens that film rather than filtering the tag
+    if (!dragged && view.classList.contains('open')) {
+      var fi = pickFilm(at(ev));
+      if (fi !== null && filmRects[fi]) { openFilm(filmRects[fi].f); return; }
+    }
     if (dragged && !moved && downAt !== null) filterBy(nodes[downAt].name);
     dragged = null; downAt = null;
     canvas.classList.remove('dragging');
   });
-  canvas.addEventListener('mouseleave', function () { hovered = null; });
+  canvas.addEventListener('mouseleave', function () { setHover(null); });
+
+  // The lightbox sits below this overlay, so the graph steps aside first
+  function openFilm(film) {
+    close();
+    var thumb = film.card && film.card.querySelector('.thumb');
+    if (thumb) setTimeout(function () { thumb.click(); }, 60);
+  }
 
   // Clicking a tag runs the site's own filter, then drops back to the archive
   function filterBy(tag) {
@@ -313,6 +493,8 @@
     view.classList.remove('open');
     document.body.style.overflow = '';
     hovered = dragged = null;
+    hoveredFilm = null;
+    filmRects = [];
     // Keep the simulation running until the fade-out is over, otherwise the
     // graph freezes mid-dissolve
     clearTimeout(stopTimer);
@@ -321,7 +503,9 @@
     }, FADE);
   }
 
-  var threshBtns = view.querySelectorAll('.thresh button');
+  // Scoped so the film-mode buttons, which share the .thresh styling, don't
+  // get picked up as threshold buttons
+  var threshBtns = view.querySelectorAll('.thresh:not(.films) button');
   function markThresh() {
     threshBtns.forEach(function (b) { b.classList.toggle('on', +b.dataset.t === threshold); });
   }
@@ -329,6 +513,19 @@
     b.addEventListener('click', function () { applyThreshold(+b.dataset.t); markThresh(); });
   });
   markThresh();
+
+  var filmBtns = view.querySelectorAll('.thresh.films button');
+  function markFilmMode() {
+    filmBtns.forEach(function (b) { b.classList.toggle('on', b.dataset.m === filmMode); });
+  }
+  filmBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      filmMode = b.dataset.m;
+      hoverAt = performance.now(); // re-run the reveal in the new arrangement
+      markFilmMode();
+    });
+  });
+  markFilmMode();
 
   btn.addEventListener('click', open);
   view.querySelector('#graph-close').addEventListener('click', close);
