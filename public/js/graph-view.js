@@ -268,8 +268,15 @@
       if (n.y - n.r < minY) minY = n.y - n.r;
       if (n.y + n.r > maxY) maxY = n.y + n.r;
     });
-    var dx = W / 2 - (minX + maxX) / 2;
-    var dy = H / 2 - (minY + maxY) / 2;
+    // Centre on the middle of the window, not of the canvas: the canvas starts
+    // below the header, so canvas-centring leaves the cluster sitting low. How
+    // far down the canvas begins varies by browser, so read it rather than
+    // assume a header height.
+    var rect = canvas.getBoundingClientRect();
+    var targetX = Math.min(Math.max(window.innerWidth / 2 - rect.left, W * 0.25), W * 0.75);
+    var targetY = Math.min(Math.max(window.innerHeight / 2 - rect.top, H * 0.25), H * 0.75);
+    var dx = targetX - (minX + maxX) / 2;
+    var dy = targetY - (minY + maxY) / 2;
     if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) return;
     nodes.forEach(function (n) { n.x += dx; n.y += dy; });
   }
@@ -406,11 +413,16 @@
 
   function frame() { step(); draw(); raf = requestAnimationFrame(frame); }
 
+  // Returns true when the canvas actually changed size, so callers can leave
+  // the layout alone otherwise (resizing clears the canvas).
   function resize() {
     var dpr = window.devicePixelRatio || 1;
-    W = canvas.clientWidth; H = canvas.clientHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w === W && h === H && canvas.width === Math.round(w * dpr)) return false;
+    W = w; H = h;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
   }
 
   // ── 5. Interaction ──────────────────────────────────────────────────────
@@ -526,4 +538,13 @@
     if (e.key === 'Escape' && view.classList.contains('open')) close();
   });
   window.addEventListener('resize', function () { if (view.classList.contains('open')) resize(); });
+  // A window resize event misses everything else that can move the canvas —
+  // a scrollbar appearing, page zoom, a mobile URL bar collapsing. Watching the
+  // element itself keeps W/H honest in any browser.
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (!view.classList.contains('open')) return;
+      if (resize()) reheat(0.4); // let the layout adapt to the new box
+    }).observe(canvas);
+  }
 })();
