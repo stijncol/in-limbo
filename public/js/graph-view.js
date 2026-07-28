@@ -146,10 +146,6 @@
       '<span class="thresh">shared videos: ' +
         '<button data-t="1">1</button><button data-t="2">2</button><button data-t="3">3</button>' +
       '</span>' +
-      '<span class="thresh films">films on hover: ' +
-        '<button data-m="satellite">ring</button><button data-m="grid">grid</button>' +
-        '<button data-m="off">off</button>' +
-      '</span>' +
       '<span class="hint">drag to rearrange &middot; click a tag to filter the archive</span>' +
       '<button id="graph-close">close &#10005;</button>' +
     '</div>' +
@@ -161,10 +157,8 @@
   var W = 0, H = 0, raf = null;
 
   // ── Films on hover ──────────────────────────────────────────────────────
-  // 'satellite' fans the stills around the tag, 'strip' lays them along the
-  // bottom edge. Images come from the page's own thumbs, so nothing extra is
-  // fetched for stills already on screen.
-  var filmMode = 'satellite';
+  // Two columns of stills beside the hovered tag. Images come from the page's
+  // own thumbs, so nothing extra is fetched for stills already on screen.
   var HOVER_DELAY = 150, HOVER_FADE = 200; // ms — settle before the stills appear
   var imgCache = new Map();
   function filmImage(src) {
@@ -190,6 +184,13 @@
 
   // ── 3. Force layout ─────────────────────────────────────────────────────
   var REPULSION = 14000, SPRING = 0.0016, IDEAL = 170, GRAVITY = 0.009, DAMP = 0.82;
+  // Repulsion and springs never quite balance, so without cooling the nodes
+  // drift for ever. Heat decays until motion stops; dragging or a fresh layout
+  // warms it back up. Decay is by elapsed time, not by frame: thumbnail
+  // dithering can starve the animation loop, and a per-frame decay would then
+  // leave the graph drifting for many seconds.
+  var heat = 1, HEAT_MIN = 0.012, TAU = 560, lastT = 0;
+  function reheat(v) { heat = Math.max(heat, v); }
 
   function seed() {
     // Themes on an inner ring, mediums on an outer one — a sane starting point
@@ -205,9 +206,18 @@
       n.y = H / 2 + Math.sin(a) * rad;
       n.vx = n.vy = 0;
     });
+    heat = 1; lastT = 0;
   }
 
   function step() {
+    var now = performance.now();
+    var dt = lastT ? Math.min(120, now - lastT) : 16;
+    lastT = now;
+    // Settled and nothing being dragged — hold still and just keep drawing
+    if (heat <= HEAT_MIN && !dragged) return;
+    heat = dragged ? Math.max(heat, 0.35)
+                   : Math.max(HEAT_MIN, heat * Math.exp(-dt / TAU));
+
     var i, j, a, b, dx, dy, d2, d, f;
     for (i = 0; i < nodes.length; i++) {
       a = nodes[i];
@@ -237,7 +247,8 @@
       n.vy += (H / 2 - n.y) * GRAVITY;
       if (n === dragged) { n.vx = n.vy = 0; return; }
       n.vx *= DAMP; n.vy *= DAMP;
-      n.x += n.vx; n.y += n.vy;
+      // Scaled by heat, so movement fades out instead of never ending
+      n.x += n.vx * heat; n.y += n.vy * heat;
       var pad = n.r + Math.min(60, W * 0.1);
       n.x = Math.max(pad, Math.min(W - pad, n.x));
       n.y = Math.max(n.r + 14, Math.min(H - n.r - 14, n.y));
@@ -295,11 +306,11 @@
     drawFilms();
   }
 
-  // The stills for the hovered tag, in whichever arrangement is selected.
+  // The stills for the hovered tag, in two columns beside it.
   // Positions are recorded in filmRects so the pointer can pick them up.
   function drawFilms() {
     filmRects = [];
-    if (hovered === null || filmMode === 'off') return;
+    if (hovered === null) return;
     var films = tagVideos.get(nodes[hovered].name) || [];
     if (!films.length) return;
 
@@ -309,37 +320,7 @@
     var node = nodes[hovered];
     ctx.textBaseline = 'middle';
 
-    if (filmMode === 'satellite') {
-      var n = films.length;
-      var tw = 56, th = Math.round(tw * 9 / 16);
-      // Ring wide enough that the stills clear the neighbouring nodes and
-      // their labels, and grows with the count so they never crowd each other
-      var R = Math.max(170, Math.min(275, 55 + n * 15));
-      films.forEach(function (f, i) {
-        var a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-        var cx = Math.max(tw / 2 + 6, Math.min(W - tw / 2 - 6, node.x + Math.cos(a) * R));
-        var cy = Math.max(th / 2 + 6, Math.min(H - th / 2 - 6, node.y + Math.sin(a) * R));
-        var x = cx - tw / 2, y = cy - th / 2;
-        ctx.globalAlpha = reveal * 0.5;
-        ctx.beginPath();
-        ctx.moveTo(node.x, node.y); ctx.lineTo(cx, cy);
-        ctx.strokeStyle = ACCENT; ctx.lineWidth = 0.5; ctx.stroke();
-        ctx.globalAlpha = 1;
-        var lit = hoveredFilm === i;
-        drawFilm(f, x, y, tw, th, reveal, lit);
-        if (lit) {
-          ctx.font = '500 12px "IBM Plex Sans",Helvetica,Arial,sans-serif';
-          ctx.fillStyle = ACCENT;
-          var right = cx > W * 0.6;
-          ctx.textAlign = right ? 'right' : 'left';
-          ctx.fillText(f.title, cx + (right ? -(tw / 2 + 6) : tw / 2 + 6), cy);
-          ctx.textAlign = 'left';
-        }
-        filmRects.push({ i: i, f: f, x: x, y: y, w: tw, h: th });
-      });
-    } else {
-      // Two columns set beside the tag itself, on whichever side has the most
-      // room — the graph clusters in the middle, so that is the open side.
+    {
       var m = films.length;
       var COLS = 2, gap = 10, marginX = 32, marginV = 40, GAP = 22;
       var rows = Math.ceil(m / COLS);
@@ -452,6 +433,7 @@
     var i = pick(p);
     if (i === null) return;
     dragged = nodes[i]; downAt = i; moved = false;
+    reheat(0.5); // let the neighbours give way again
     canvas.classList.add('dragging');
   });
   window.addEventListener('mouseup', function (ev) {
@@ -503,29 +485,14 @@
     }, FADE);
   }
 
-  // Scoped so the film-mode buttons, which share the .thresh styling, don't
-  // get picked up as threshold buttons
-  var threshBtns = view.querySelectorAll('.thresh:not(.films) button');
+  var threshBtns = view.querySelectorAll('.thresh button');
   function markThresh() {
     threshBtns.forEach(function (b) { b.classList.toggle('on', +b.dataset.t === threshold); });
   }
   threshBtns.forEach(function (b) {
-    b.addEventListener('click', function () { applyThreshold(+b.dataset.t); markThresh(); });
+    b.addEventListener('click', function () { applyThreshold(+b.dataset.t); markThresh(); reheat(0.6); });
   });
   markThresh();
-
-  var filmBtns = view.querySelectorAll('.thresh.films button');
-  function markFilmMode() {
-    filmBtns.forEach(function (b) { b.classList.toggle('on', b.dataset.m === filmMode); });
-  }
-  filmBtns.forEach(function (b) {
-    b.addEventListener('click', function () {
-      filmMode = b.dataset.m;
-      hoverAt = performance.now(); // re-run the reveal in the new arrangement
-      markFilmMode();
-    });
-  });
-  markFilmMode();
 
   btn.addEventListener('click', open);
   view.querySelector('#graph-close').addEventListener('click', close);
