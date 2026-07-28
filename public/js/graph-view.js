@@ -253,6 +253,25 @@
       n.x = Math.max(pad, Math.min(W - pad, n.x));
       n.y = Math.max(n.r + 14, Math.min(H - n.r - 14, n.y));
     });
+
+    // Gravity keeps the cluster compact but leaves it sitting wherever it
+    // happened to settle. Translating it rigidly onto the canvas centre puts
+    // it squarely in the middle without disturbing the layout itself.
+    if (!dragged) recentre();
+  }
+
+  function recentre() {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    nodes.forEach(function (n) {
+      if (n.x - n.r < minX) minX = n.x - n.r;
+      if (n.x + n.r > maxX) maxX = n.x + n.r;
+      if (n.y - n.r < minY) minY = n.y - n.r;
+      if (n.y + n.r > maxY) maxY = n.y + n.r;
+    });
+    var dx = W / 2 - (minX + maxX) / 2;
+    var dy = H / 2 - (minY + maxY) / 2;
+    if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) return;
+    nodes.forEach(function (n) { n.x += dx; n.y += dy; });
   }
 
   // ── 4. Render ───────────────────────────────────────────────────────────
@@ -270,7 +289,7 @@
       if (active) {
         ctx.setLineDash([]);
         ctx.strokeStyle = ACCENT;
-        ctx.lineWidth = (0.4 + 1.5 * (e.w / maxWeight)) * 1.4;
+        ctx.lineWidth = 0.35 + 1.05 * (e.w / maxWeight);
       } else {
         ctx.setLineDash([2, 4]);
         ctx.strokeStyle = hovered === null ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.06)';
@@ -292,13 +311,20 @@
         ctx.fillStyle = i === hovered ? ACCENT : INK; ctx.fill();
       }
       ctx.font = (i === hovered ? '500 ' : '300 ') + '12px "IBM Plex Sans",Helvetica,Arial,sans-serif';
-      ctx.fillStyle = i === hovered ? ACCENT : '#111';
       ctx.textBaseline = 'middle';
       // Flip the label to the left half-way across, so long tag names on the
       // right never run off the canvas (matters most on narrow screens)
       var flip = n.x > W * 0.58;
       ctx.textAlign = flip ? 'right' : 'left';
-      ctx.fillText(n.name, n.x + (flip ? -(n.r + 5) : n.r + 5), n.y);
+      var lx = n.x + (flip ? -(n.r + 5) : n.r + 5);
+      // Links radiate straight through the labels, so lay a halo in the ground
+      // colour behind the text — it keeps the name legible on top of them
+      ctx.strokeStyle = GROUND;
+      ctx.lineWidth = 3.5;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(n.name, lx, n.y);
+      ctx.fillStyle = i === hovered ? ACCENT : '#111';
+      ctx.fillText(n.name, lx, n.y);
       ctx.textAlign = 'left';
       ctx.globalAlpha = 1;
     });
