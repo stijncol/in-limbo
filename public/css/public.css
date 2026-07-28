@@ -57,11 +57,14 @@
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
-    /* Above the 1700px .page max-width, the content block centers and the
-       baked-in divider drifts inward; the fixed left rail/buttons are pinned
-       to the viewport edge. This offset keeps them anchored to the centered
-       block's left edge so the rail, divider and content stay aligned. */
-    --rail-x: max(0px, (100vw - 1700px) / 2);
+    /* How wide the content block may grow. Raised on large displays, where a
+       fourth column reads better than ever-wider empty margins. */
+    --page-max: 1700px;
+    /* Above that cap the content block centers and the baked-in divider drifts
+       inward; the fixed left rail/buttons are pinned to the viewport edge. This
+       offset keeps them anchored to the centered block's left edge so the rail,
+       divider and content stay aligned. */
+    --rail-x: max(0px, (100vw - var(--page-max)) / 2);
     /* The whole rail coordinate system (rail height, buttons, divider, lab-O,
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
@@ -75,7 +78,7 @@
   .page {
     flex: 1;
     width: 100%;
-    max-width: 1700px;
+    max-width: var(--page-max);
     margin: 0 auto;
     position: relative;
     padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 calc(var(--rail-h) * 0.13183 + var(--margin));
@@ -100,11 +103,10 @@
     pointer-events: none;
     z-index: 9;
   }
-  /* Mirror of the divider on the rail's other side: a white strip covering
-     the area outside the centred page, with the black line as its inner
-     border. On screens under the 1700px cap the strip is 0 wide, so only
-     the 1px line at the window edge shows; on very large screens the
-     outside margins read as white. */
+  /* Mirror of the divider on the rail's other side. The area outside the
+     centred page keeps the page's own ground — only the hairline marks the
+     edge. Under the cap the strip is 0 wide, so just the line at the window
+     edge shows. */
   .page::after {
     content: '';
     position: fixed;
@@ -112,14 +114,11 @@
     top: 0;
     bottom: 0;
     width: var(--rail-x);
-    background: #fff;
-    background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
-    background-size: 20px 20px;
     border-right: 0.5px solid #000;
     pointer-events: none;
     z-index: 9;
   }
-  /* Same closing strip on the far right of the window. */
+  /* Same closing line on the far right of the window. */
   body::after {
     content: '';
     position: fixed;
@@ -127,9 +126,6 @@
     top: 0;
     bottom: 0;
     width: var(--rail-x);
-    background: #fff;
-    background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1.1px);
-    background-size: 20px 20px;
     border-left: 0.5px solid #000;
     pointer-events: none;
     z-index: 9;
@@ -998,6 +994,16 @@
     .page::before, .page::after, body::after { display: none; }
     .left-rail { display: none; }
     .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
+  }
+  /* Large displays: rather than let the margins keep growing, the page grows
+     and a fourth column appears — the columns stay about the size they are at
+     the cap instead of the archive shrinking into the middle of the screen. */
+  @media (min-width: 2100px) {
+    body { --page-max: 2260px; }
+    .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    /* A fourth column makes each one narrower, so the intro type has to come
+       back down: the slope below is tuned to the 4-column width, not the 3. */
+    #about-panel .intro-text { font-size: clamp(15px, 0.96vw, 21.5px); }
   }
   /* Black search pill under the intro text — mobile only */
   .mobile-search { display: none; }

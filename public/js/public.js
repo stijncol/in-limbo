@@ -888,8 +888,12 @@
     var gridEl = document.querySelector('.grid');
     if (!gridEl) return;
     var gridRect = gridEl.getBoundingClientRect();
-    var gap = parseFloat(getComputedStyle(gridEl).columnGap) || 32;
-    var colW = Math.round((gridRect.width - gap * 2) / 3);
+    // Read the first track straight off the grid rather than dividing by a
+    // fixed column count — large displays run four columns, compact tiers more.
+    var cs = getComputedStyle(gridEl);
+    var firstTrack = parseFloat((cs.gridTemplateColumns || '').split(' ')[0]);
+    var gap = parseFloat(cs.columnGap) || 32;
+    var colW = Math.round(firstTrack > 0 ? firstTrack : (gridRect.width - gap * 2) / 3);
     // The panel is absolutely positioned inside .page (position: relative),
     // so convert to that containing block's coordinates. Document coordinates
     // break on viewports wider than the page's max-width, where .page is
