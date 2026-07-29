@@ -1065,6 +1065,19 @@
   // space-holder; smaller screens keep the intro as ordinary inline content.
   syncAboutUI();
 
+  // Colophon: the page slides up off a black layer fixed to the bottom of the
+  // window. Flag it once meaningfully exposed so the rail and divider lines,
+  // which are fixed on top of it, can step aside.
+  var pageEl = document.querySelector('.page');
+  function updateColophon() {
+    if (!pageEl) return;
+    var exposed = (window.scrollY + window.innerHeight) - (pageEl.offsetTop + pageEl.offsetHeight);
+    document.body.classList.toggle('colophon', exposed > 60);
+  }
+  window.addEventListener('scroll', updateColophon, { passive: true });
+  window.addEventListener('resize', updateColophon);
+  updateColophon();
+
   // Prepend year to duration label (year column is hidden on the main view)
   (function() {
     function prependYear(dur) {
