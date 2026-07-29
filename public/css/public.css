@@ -57,15 +57,9 @@
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
-    /* Scroll room below the page, so it can travel up off the colophon */
-    padding-bottom: var(--footer-h);
     /* How wide the content block may grow. Raised on large displays, where a
        fourth column reads better than ever-wider empty margins. */
     --page-max: 1700px;
-    /* The page's own ground, reused by .page so it can cover the colophon */
-    --ground: #e2e5e9;
-    /* Height of the black colophon the page slides up over */
-    --footer-h: 220px;
     /* Above that cap the content block centers and the baked-in divider drifts
        inward; the fixed left rail/buttons are pinned to the viewport edge. This
        offset keeps them anchored to the centered block's left edge so the rail,
@@ -87,10 +81,6 @@
     max-width: var(--page-max);
     margin: 0 auto;
     position: relative;
-    /* Carries its own ground and sits above the colophon, so the black layer
-       stays hidden until the page has scrolled clear of it */
-    background: var(--ground);
-    z-index: 1;
     padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 calc(var(--rail-h) * 0.13183 + var(--margin));
     box-sizing: border-box;
     /* Flex column so the footer can be pushed to the bottom regardless of how
@@ -140,15 +130,6 @@
     pointer-events: none;
     z-index: 9;
   }
-  /* Once the colophon is exposed, the fixed furniture would sit on top of it
-     in black-on-black. It steps aside instead; the colophon is its own moment. */
-  .left-rail, #graph-btn { transition: opacity 0.35s ease; }
-  .page::before, .page::after, body::after { transition: opacity 0.35s ease; }
-  body.colophon .left-rail,
-  body.colophon #graph-btn { opacity: 0; pointer-events: none; }
-  body.colophon .page::before,
-  body.colophon .page::after,
-  body.colophon::after { opacity: 0; }
   .filters {
     display: flex;
     justify-content: space-between;
@@ -757,19 +738,15 @@
   /* Min gap between the grid and the (bottom-pinned) footer on tall pages,
      since the footer's own margin-top collapses to auto for the sticky push. */
   #grid-area { margin-bottom: 24px; }
-  /* Colophon: a black layer pinned to the bottom of the window that the page
-     slides up over. Its padding matches the page's content box so the KU
-     Leuven mark still lines up with the grid's left edge. */
   .site-footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: var(--footer-h);
-    z-index: 0;
-    background: #000;
-    padding: 0 calc(var(--rail-x) + var(--margin)) 0
-             calc(var(--rail-x) + var(--rail-h) * 0.13183 + var(--margin));
+    /* Full width, left-aligned: the KU Leuven logo box sits at the grid's left
+       edge (aligned with the left thumbnail column). margin-top:auto pushes the
+       footer to the bottom of the flex-column .page when content is short. */
+    align-self: stretch;
+    margin: 0;
+    margin-top: auto;
+    padding: 0;
+    height: calc(var(--rail-h) * 0.09228 + 40px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -780,8 +757,7 @@
     font-family: inherit;
     font-size: 13px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 46ch;
+    color: #111;
   }
   .site-footer .footer-logos {
     flex-shrink: 0;
@@ -797,8 +773,7 @@
     height: calc(var(--rail-h) * 0.25838);
     width: auto;
     transform: rotate(90deg);
-    /* The mark is a dark outline PNG — inverted so it reads on black */
-    filter: invert(1);
+    opacity: 1;
   }
   /* Left rail: plain HTML column pinned to the left edge of the centred page.
      Width runs up to the vertical divider (rail-h × 0.13183); items are laid
@@ -1112,22 +1087,15 @@
     .intro-block { padding: 0 0 24px; }
     .intro-block .intro-text { font-size: 20px; }
 
-    /* Colophon stacks here — text first, logo below. Its height has to stay
-       equal to the scroll room reserved below the page, or a band of grey
-       shows under the black. The logo img is a vertical PNG rotated 90°;
-       sizing the box to the rotated visual (140 × 47) shows it uncropped. */
-    body { --footer-h: 190px; }
-    .site-footer {
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 0 var(--margin);
-      height: var(--footer-h);
-    }
+    /* Footer: stack vertically — text first, logo below. The fixed desktop
+       height would clip the stacked content, so it goes auto here. The logo
+       img is a vertical PNG rotated 90°; sizing the box to the rotated visual
+       (140 × 47 ≈ the image ratio) shows it exactly, no crop. */
+    /* Sides stay 0 so the footer aligns with the grid edge (the page padding
+       already provides the equal outer margin) */
+    .site-footer { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 0 40px; height: auto; }
     .site-footer .footer-logos { order: 1; width: 140px; height: 47px; }
     .site-footer .footer-logos img { height: 140px; }
-    .site-footer .footer-text { max-width: none; }
   }
   @media (max-width: 540px) {
     .page { padding: 20px var(--margin) 48px; }
@@ -1138,5 +1106,7 @@
     /* Lightbox: reduce horizontal padding so video fills screen */
     .lightbox .lb-inner { padding: 0 12px; }
     .lightbox .lb-close { left: 12px; top: -32px; }
+    /* Footer */
+    .site-footer { padding: 20px 0 32px; }
   }
 

@@ -97,7 +97,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260707a">
+<link rel="stylesheet" href="/public/css/public.css?v=20260706e">
 </head>
 <body>
 <div class="page">
@@ -170,7 +170,6 @@ ${archiveCards}
 <div id="about-panel">
   <button class="about-close" aria-label="close about"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>
 </div>
-</div><!-- /.page -->
 
 <div class="site-footer">
   <div class="footer-text">Students were taught by Stijn Colon, Lukas Claessens, Bert Stoffels, Yann Courouble, Carl Bourgeois, Lodewijk Heylen at KU Leuven. Website made by Stijn Colon in 2026.</div>
@@ -197,8 +196,8 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260707a"></script>
-<script src="/public/js/graph-view.js?v=20260707a"></script>
+<script src="/public/js/public.js?v=20260706e"></script>
+<script src="/public/js/graph-view.js?v=20260706e"></script>
 
 </body>
 </html>`;
