@@ -421,7 +421,7 @@
   }
   setTimeout(trimTags, 100);
   const lightbox = document.getElementById('lightbox');
-  const lbIframe = document.getElementById('lb-iframe');
+  let lbIframe = document.getElementById('lb-iframe');
   const lbTitle = document.getElementById('lb-title');
   const lbAuthors = document.getElementById('lb-authors');
   const lbYear = document.getElementById('lb-year');
@@ -432,6 +432,22 @@
   // The film the lightbox is currently showing — the anchor the arrow keys
   // step from.
   let currentCard = null;
+
+  // Swaps the player in and out by replacing the element rather than
+  // re-assigning src. A nested browsing context adds an entry to the joint
+  // session history on every navigation except its first, so re-using one
+  // iframe would bury the page's own history entry under the player's — Back
+  // would then unwind the video instead of the page. A fresh iframe's first
+  // navigation replaces its initial about:blank, so nothing accumulates.
+  function setPlayer(src) {
+    const fresh = document.createElement('iframe');
+    fresh.id = 'lb-iframe';
+    fresh.setAttribute('allowfullscreen', '');
+    fresh.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+    if (src) fresh.src = src;
+    lbIframe.replaceWith(fresh);
+    lbIframe = fresh;
+  }
 
   // The films the arrow keys walk through: whatever the current filter left on
   // screen, in grid order. Stepping out of a filtered set would be confusing.
@@ -445,11 +461,9 @@
     currentCard = card;
     const id = card.dataset.videoId;
     const type = card.dataset.videoType;
-    if (type === 'youtube') {
-      lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
-    } else {
-      lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
-    }
+    setPlayer(type === 'youtube'
+      ? 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0'
+      : 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0');
     lbTitle.textContent = card.dataset.title || '';
     lbAuthors.textContent = card.dataset.authors || '';
     const lbTutor = document.getElementById('lb-tutor');
@@ -508,21 +522,20 @@
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    // about:blank, not '' — an empty src resolves against the document, so the
-    // whole site would quietly reload inside the hidden iframe on every close.
-    lbIframe.src = 'about:blank';
+    // Drops the player entirely: stops playback and takes any history it made
+    // with it. Assigning src here instead would leave an entry behind.
+    setPlayer(null);
     lbDescWrap.classList.remove('open');
     currentCard = null;
     unlockBody();
   }
-  // Closing on purpose walks history back instead of closing directly, so the
-  // address bar returns to the grid view the film was opened from. The popstate
-  // handler does the actual closing.
+  // Closes directly and then repairs the address bar, rather than walking
+  // history back. Going back would make the close button depend on the state of
+  // a history stack the embedded player also writes to — one stray entry from
+  // the video and the first click does nothing. The browser's own Back still
+  // closes the film, through the popstate handler.
   function dismissLightbox() {
-    if (history.state && history.state.film) { history.back(); return; }
     closeLightbox();
-    // Arrived straight on a /film/ link: there is no grid entry behind this one
-    // to go back to, so the current entry becomes the grid instead.
     if (location.pathname.indexOf('/film/') === 0) history.replaceState(null, '', gridUrl());
   }
   lightbox.addEventListener('click', e => {
