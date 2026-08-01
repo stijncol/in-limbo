@@ -507,12 +507,22 @@
     document.body.style.overflow = 'hidden';
   }
   function unlockBody() {
+    // Unfixing the body drops the page to the top, and the scrollTo below puts
+    // it back. `html` carries scroll-behavior: smooth, so on browsers that
+    // honour it here that restore is animated — you see the page at the top and
+    // then watch it glide down to the film you came from. Suppress it for the
+    // length of the restore so the two steps read as one, then hand the
+    // property back to the stylesheet.
+    const root = document.documentElement;
+    const prevBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
     document.body.style.position = '';
     document.body.style.top = '';
     document.body.style.left = '';
     document.body.style.right = '';
     document.body.style.overflow = '';
     window.scrollTo(0, lockScrollY);
+    root.style.scrollBehavior = prevBehavior;
   }
 
   lbReadMore.addEventListener('click', () => {
