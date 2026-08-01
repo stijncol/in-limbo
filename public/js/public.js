@@ -807,8 +807,22 @@
     if (!link) return;
     e.preventDefault();
     applyFilter(link.dataset.year, 'year');
-    // Keep intro visible when filtering from text
-    if (introBlock && aboutActive && scaleIndex === 0) introBlock.style.display = '';
+    // Filtering normally folds the intro away, because the results are the
+    // point. Filtering *from* the intro is the exception: the panel you just
+    // clicked in should still be there. Restore it the way the wordmark does —
+    // the in-grid block as an invisible space-holder, the panel drawn over it.
+    // Showing the in-grid block on its own would drop the text straight onto
+    // the ground, since the white frame belongs to the panel.
+    if (aboutActive && scaleIndex === 0 && usePanel()) {
+      if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
+      updateIntroOffClass();
+      positionAboutPanel();
+      aboutPanel.classList.add('active');
+    } else if (introBlock && aboutActive && scaleIndex === 0) {
+      // Narrow viewports have no panel — there the intro is ordinary content
+      // and simply staying visible is right.
+      introBlock.style.display = '';
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
