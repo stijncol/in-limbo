@@ -798,15 +798,18 @@
     }
   });
 
-  // Year filter links in intro text
-  document.querySelectorAll('.year-filter').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      applyFilter(link.dataset.year, 'year');
-      // Keep intro visible when filtering from text
-      if (introBlock && aboutActive && scaleIndex === 0) introBlock.style.display = '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+  // Year filter links in intro text. Delegated rather than bound per element:
+  // the about panel is filled with a clone of the intro block, and a clone
+  // carries no listeners. Binding directly reached only the original, leaving
+  // the studio titles in the panel — the copy most people actually see — dead.
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a.year-filter');
+    if (!link) return;
+    e.preventDefault();
+    applyFilter(link.dataset.year, 'year');
+    // Keep intro visible when filtering from text
+    if (introBlock && aboutActive && scaleIndex === 0) introBlock.style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // Archive reveal: the plus in the ghost preview row shows the full archive;
@@ -1006,9 +1009,15 @@
     // Match the intro-block space-holder's height (it spans two grid rows) so
     // the panel's bottom corners land on the grid. In compact modes the
     // space-holder is hidden and the panel stays content-sized.
+    // min-height, not height: a filtered grid can be a single row tall, which
+    // is shorter than the intro text, and a fixed height would cut the frame
+    // through the last paragraph. This way the grid sets the panel's floor —
+    // so its corners still land on the grid whenever there is room — and the
+    // text is free to push it past that when there isn't.
     var holderVisible = introBlock && scaleIndex === 0 && introBlock.style.display !== 'none';
     var holderH = holderVisible ? introBlock.getBoundingClientRect().height : 0;
-    aboutPanel.style.height = holderH > 0 ? Math.round(holderH) + 'px' : '';
+    aboutPanel.style.height = '';
+    aboutPanel.style.minHeight = holderH > 0 ? Math.round(holderH) + 'px' : '';
   }
 
   // The floating panel + invisible space-holder mechanic needs the left rail
