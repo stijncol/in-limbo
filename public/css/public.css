@@ -472,7 +472,12 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -2px;
+    /* 3px under the baseline, down from 4px. Not the full halving that would
+       be nicer to look at: the descender of a y reaches 2.2px at this size, so
+       a 2px gap would have the line cutting straight through "vacancy" and
+       "speculation" — and a ::after rule has no skip-ink to save it. 3px keeps
+       0.8px of daylight. */
+    bottom: -1px;
     height: 1px;
     background: currentColor;
     transform: scaleX(0);
