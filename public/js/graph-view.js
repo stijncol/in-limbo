@@ -532,6 +532,11 @@
   markThresh();
 
   btn.addEventListener('click', open);
+  // The intro text names the graph and links to it, so the three dots in the
+  // corner aren't the only way in
+  document.querySelectorAll('a.graph-link').forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); open(); });
+  });
   view.querySelector('#graph-close').addEventListener('click', close);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && view.classList.contains('open')) close();

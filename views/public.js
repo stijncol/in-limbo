@@ -2,6 +2,20 @@ const { YOUTUBE_API_KEY, SITE_URL } = require('../config');
 
 const SITE_DESCRIPTION = 'in limbo — video archive of KU Leuven Architecture, Positioneren II 2025–2026.';
 
+// A film's address is derived from its title, so /film/achter-de-gevel is
+// readable and stable without adding a column to the database. Accents are
+// folded and punctuation dropped, so "Il n'y a pas de hors-architecture"
+// becomes "il-n-y-a-pas-de-hors-architecture".
+function slugify(s) {
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
 // Fisher–Yates: randomise the order in place so the grid looks different on
 // every page load (the server re-renders per request)
 function shuffle(arr) {
@@ -12,7 +26,11 @@ function shuffle(arr) {
   return arr;
 }
 
-function renderPublic(rows) {
+// `opts.film` is set when the request came in on /film/<slug>: the page is the
+// same archive, but its metadata describes that one film so link previews and
+// crawlers see it, and the client opens its lightbox on load.
+function renderPublic(rows, opts = {}) {
+  const film = opts.film || null;
   const allVideos = rows.filter(v => v.status === 'approved' || !v.status);
   // Every highlight always shows in the grid — only the order is randomised
   const featured = shuffle(allVideos.filter(v => v.featured && !v.archived));
@@ -45,7 +63,7 @@ function renderPublic(rows) {
       ? `<div class="thumb" data-baked="true"><img src="/thumb/${v.id}" class="baked-blur" loading="lazy" decoding="async" alt="${esc(v.title)}"><img data-sharp="/thumb/${v.id}/sharp" class="baked-sharp" alt=""></div>`
       : `<div class="thumb"><img alt=""></div>`;
     return `
-    <div class="card${extraClass}" data-featured="${isFeatured}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-tutor="${esc(v.tutor||'')}" data-year="${v.year}" data-desc="${esc(v.description)}">
+    <div class="card${extraClass}" data-featured="${isFeatured}" data-slug="${slugify(v.title)}" data-tags="${allTags.join(',')}" data-video-id="${videoId}" data-video-type="${videoType}" data-title="${esc(v.title)}" data-authors="${esc(v.students)}" data-tutor="${esc(v.tutor||'')}" data-year="${v.year}" data-desc="${esc(v.description)}">
       <div class="card-duration"></div>
       ${thumbHtml}
       <div class="meta">
@@ -80,24 +98,38 @@ function renderPublic(rows) {
   const themeButtons = [...themeTags].sort().map(t => `<button data-filter="${t}"><span class="tag-label">${t}</span><span class="tag-count">${themeTagCounts[t] || 0}</span></button>`).join('\n    ');
   const mediumButtons = [...mediumTags].sort().map(t => `<button data-filter="${t}"><span class="tag-label">${t}</span><span class="tag-count">${mediumTagCounts[t] || 0}</span></button>`).join('\n    ');
 
+  // Metadata for the page as requested: the archive itself, or the one film
+  // whose deep link was opened. Crawlers never run our JS, so this has to be
+  // decided here rather than in the browser.
+  const filmSlug = film ? slugify(film.title) : '';
+  const pageTitle = film ? `${film.title} — in limbo` : 'in limbo';
+  const pageDesc = film
+    ? [film.students, film.year].filter(Boolean).join(', ') +
+      (film.description ? ' — ' + film.description.replace(/\s+/g, ' ').slice(0, 200) : '')
+    : SITE_DESCRIPTION;
+  const pagePath = film ? `/film/${filmSlug}` : '/';
+  // A film's own still is the only honest preview image; unbaked films fall
+  // back to the archive's card.
+  const pageImage = film && film.has_thumb ? `/thumb/${film.id}/sharp` : '/public/og-image.png';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>in limbo</title>
-<meta name="description" content="${SITE_DESCRIPTION}">
-<meta property="og:title" content="in limbo">
-<meta property="og:description" content="${SITE_DESCRIPTION}">
-<meta property="og:type" content="website">
-${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
-<meta property="og:url" content="${SITE_URL}/">
-<meta property="og:image" content="${SITE_URL}/public/og-image.png">
+<title>${esc(pageTitle)}</title>
+<meta name="description" content="${esc(pageDesc)}">
+<meta property="og:title" content="${esc(pageTitle)}">
+<meta property="og:description" content="${esc(pageDesc)}">
+<meta property="og:type" content="${film ? 'video.other' : 'website'}">
+${SITE_URL ? `<link rel="canonical" href="${SITE_URL}${pagePath}">
+<meta property="og:url" content="${SITE_URL}${pagePath}">
+<meta property="og:image" content="${SITE_URL}${pageImage}">
 <meta name="twitter:card" content="summary_large_image">` : ''}
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260708e">
+<link rel="stylesheet" href="/public/css/public.css?v=20260801a">
 </head>
 <body>
 <div class="page">
@@ -116,6 +148,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
         <div class="medium-tags"><button class="filter-lead" data-filter="all">strategies</button><button class="active" data-filter="all"><span class="tag-label">all</span></button>${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
       </div>
     </div>
+    <span class="result-count" id="result-count" aria-live="polite"></span>
     <div class="filters-search-wrap">
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       <input type="text" class="filters-search-input" placeholder="">
@@ -127,7 +160,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}/">
       <div class="intro-text">
         <p>This video archive brings together a series of films produced by architecture students at <a href="https://arch.kuleuven.be/">KU Leuven</a> within the <span class="labo-hover"><a href="https://www.lab-o.club/">lab-O</a><img class="labo-logo-hover" src="/public/logo-labo.png" alt="lab-O"></span> trajectory for the third-year bachelor studio Positioneren 2: Stelling–Strategie. The archive includes works produced from 2021 to the present.</p>
         <p>Each academic year is structured around a different thematic framework, including <a href="#" class="year-filter" data-year="2022">Frame</a>, <a href="#" class="year-filter" data-year="2023">The Gaze</a>, <a href="#" class="year-filter" data-year="2024">Werk</a>, <a href="#" class="year-filter" data-year="2025">Il n'y a pas de hors-archi&shy;tecture</a>, and most recently (2026), <a href="#" class="year-filter" data-year="2026">In Limbo</a>.</p>
-        <p>The archive can be browsed by theme using the tags above, or by year by clicking any of the studio titles.</p>
+        <p>The archive can be browsed by theme using the tags above and the <a href="#" class="graph-link">tag graph</a> (top right), or by year using any of the studio titles.</p>
       </div>
     </div>
     <div class="mobile-search" id="mobile-search">
@@ -194,11 +227,11 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260708e"></script>
-<script src="/public/js/graph-view.js?v=20260708e"></script>
+<script src="/public/js/public.js?v=20260801a"></script>
+<script src="/public/js/graph-view.js?v=20260801a"></script>
 
 </body>
 </html>`;
 }
 
-module.exports = { renderPublic };
+module.exports = { renderPublic, slugify };

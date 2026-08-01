@@ -429,33 +429,62 @@
   const lbDescWrap = document.getElementById('lb-desc-wrap');
   const lbReadMore = document.getElementById('lb-read-more');
 
+  // The film the lightbox is currently showing — the anchor the arrow keys
+  // step from.
+  let currentCard = null;
+
+  // The films the arrow keys walk through: whatever the current filter left on
+  // screen, in grid order. Stepping out of a filtered set would be confusing.
+  function lightboxCards() {
+    return Array.from(document.querySelectorAll('.card[data-video-id]')).filter(c =>
+      !c.classList.contains('hidden') && getComputedStyle(c).display !== 'none');
+  }
+
+  function openCard(card) {
+    if (!card) return;
+    currentCard = card;
+    const id = card.dataset.videoId;
+    const type = card.dataset.videoType;
+    if (type === 'youtube') {
+      lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+    } else {
+      lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
+    }
+    lbTitle.textContent = card.dataset.title || '';
+    lbAuthors.textContent = card.dataset.authors || '';
+    const lbTutor = document.getElementById('lb-tutor');
+    if (lbTutor) lbTutor.textContent = card.dataset.tutor || '';
+    lbYear.textContent = card.dataset.year || '';
+    lbDesc.textContent = card.dataset.desc || '';
+    lbDescWrap.classList.remove('open');
+    lbReadMore.textContent = 'read synopsis ↓';
+    lightbox.classList.add('open');
+    lockBody();
+    syncFilmUrl(card);
+  }
+
+  // Wraps around at both ends, so the arrow keys never dead-end
+  function stepCard(dir) {
+    if (!currentCard) return;
+    const list = lightboxCards();
+    const i = list.indexOf(currentCard);
+    if (i === -1) return;
+    openCard(list[(i + dir + list.length) % list.length]);
+  }
+
   document.querySelector('.grid').addEventListener('click', e => {
     const card = e.target.closest('.card[data-video-id]');
-    if (card && e.target.closest('.thumb')) {
-      const id = card.dataset.videoId;
-      const type = card.dataset.videoType;
-      if (type === 'youtube') {
-        lbIframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
-      } else {
-        lbIframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0';
-      }
-      lbTitle.textContent = card.dataset.title || '';
-      lbAuthors.textContent = card.dataset.authors || '';
-      const lbTutor = document.getElementById('lb-tutor');
-      if (lbTutor) lbTutor.textContent = card.dataset.tutor || '';
-      lbYear.textContent = card.dataset.year || '';
-      lbDesc.textContent = card.dataset.desc || '';
-      lbDescWrap.classList.remove('open');
-      lbReadMore.textContent = 'read synopsis ↓';
-      lightbox.classList.add('open');
-      lockBody();
-    }
+    if (card && e.target.closest('.thumb')) openCard(card);
   });
 
   // iOS Safari ignores overflow:hidden on body; the position:fixed pattern
   // locks scroll reliably on all platforms (scroll position saved/restored)
   let lockScrollY = 0;
   function lockBody() {
+    // Idempotent: stepping between films with the arrow keys re-enters
+    // openCard, and locking twice would record scrollY as 0 (the body is
+    // already fixed), sending the page to the top on close.
+    if (document.body.style.position === 'fixed') return;
     lockScrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = -lockScrollY + 'px';
@@ -479,14 +508,37 @@
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    lbIframe.src = '';
+    // about:blank, not '' — an empty src resolves against the document, so the
+    // whole site would quietly reload inside the hidden iframe on every close.
+    lbIframe.src = 'about:blank';
     lbDescWrap.classList.remove('open');
+    currentCard = null;
     unlockBody();
   }
+  // Closing on purpose walks history back instead of closing directly, so the
+  // address bar returns to the grid view the film was opened from. The popstate
+  // handler does the actual closing.
+  function dismissLightbox() {
+    if (history.state && history.state.film) { history.back(); return; }
+    closeLightbox();
+    // Arrived straight on a /film/ link: there is no grid entry behind this one
+    // to go back to, so the current entry becomes the grid instead.
+    if (location.pathname.indexOf('/film/') === 0) history.replaceState(null, '', gridUrl());
+  }
   lightbox.addEventListener('click', e => {
-    if (e.target === lightbox || e.target.closest('.lb-close')) closeLightbox();
+    if (e.target === lightbox || e.target.closest('.lb-close')) dismissLightbox();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+  // Escape closes, arrows walk the current selection. Gated on the lightbox
+  // actually being open — otherwise Escape would run unlockBody and jump the
+  // page back to whatever scroll position was last saved.
+  // Note: once you click into the player the keys go to the video's own
+  // iframe, which is cross-origin and out of our reach.
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') { dismissLightbox(); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepCard(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); stepCard(-1); }
+  });
 
   // Filters
   const grid = document.querySelector('.grid');
@@ -494,6 +546,7 @@
   const introBlock = document.getElementById('intro-block');
   let activeFilter = 'all';
   let activeType = 'tag';
+  let activeQuery = '';            // the live search term, for the ?q= link
   let userArchiveOpen = false;     // archive opened deliberately (plus button)
   let archiveAutoOpened = false;   // archive opened automatically by zooming out
   let introAutoHidden = false;     // intro hidden automatically by zooming out
@@ -585,10 +638,26 @@
     if (msi) msi.value = '';
   }
 
+  // Counts what a filter actually left on screen. Reads computed display rather
+  // than the .hidden class alone, because archive cards are also held back by
+  // CSS when the grid isn't in show-archive mode.
+  const resultCountEl = document.getElementById('result-count');
+  function updateResultCount() {
+    if (!resultCountEl) return;
+    let n = 0;
+    document.querySelectorAll('.card[data-video-id]').forEach(card => {
+      if (card.classList.contains('hidden')) return;
+      if (getComputedStyle(card).display === 'none') return;
+      n++;
+    });
+    resultCountEl.textContent = n + (n === 1 ? ' film' : ' films');
+  }
+
   function runSearch(q) {
     if (!q) { applyFilter('all', 'tag'); return; }
     activeFilter = 'search';
     activeType = 'search';
+    activeQuery = q;
     // Searching narrows the archive just as a tag does, so it counts as
     // filtering too — the footer steps back for both
     document.body.classList.add('has-filter');
@@ -610,6 +679,8 @@
       const match = title.includes(q) || authors.includes(q) || tutor.includes(q) || tags.includes(q) || desc.includes(q);
       card.classList.toggle('hidden', !match);
     });
+    updateResultCount();
+    syncGridUrl();
   }
 
   if (searchInput) searchInput.addEventListener('input', () => runSearch(searchInput.value.toLowerCase().trim()));
@@ -620,6 +691,7 @@
   function applyFilter(value, type) {
     activeFilter = value;
     activeType = type || 'tag';
+    if (activeType !== 'search') activeQuery = '';
     document.body.classList.toggle('has-filter', value !== 'all');
     if (value === 'all') { filtersBar.classList.remove('show-all'); requestAnimationFrame(positionScaleCtrl); }
     if (type !== 'search') clearSearchInputs();
@@ -673,6 +745,8 @@
       }
     });
     updateArchiveCloseBtn();
+    updateResultCount();
+    syncGridUrl();
 
     // The panel is sized to the intro-block, which spans two grid rows — so it
     // can only be measured once card visibility has settled. Positioning it
@@ -1071,4 +1145,102 @@
       new MutationObserver(() => prependYear(dur)).observe(dur, { childList: true, characterData: true, subtree: true });
     });
   })();
+
+  // ── Shareable state ────────────────────────────────────────────────────────
+  // What you are looking at is mirrored in the address bar, so any view can be
+  // sent to someone else: /?tag= /?year= /?q= for the grid, /film/<slug> for a
+  // single film. Filter changes replace the current history entry — clicking
+  // through ten tags shouldn't bury the back button — while opening a film
+  // pushes one, so Back closes the film and returns you to the grid.
+  //
+  // Declared with var: applyFilter may run while the page is still setting
+  // itself up, and hoisting makes this reliably falsy until applyUrlState has
+  // read the incoming address. Without that, initialisation would overwrite
+  // the very link the visitor arrived on.
+  var urlSyncReady;
+
+  function gridUrl() {
+    if (activeType === 'search') return activeQuery ? '/?q=' + encodeURIComponent(activeQuery) : '/';
+    if (activeFilter === 'all') return '/';
+    return '/?' + (activeType === 'year' ? 'year=' : 'tag=') + encodeURIComponent(activeFilter);
+  }
+
+  function syncGridUrl() {
+    if (!urlSyncReady) return;
+    // While a film is open the address bar belongs to the film
+    if (lightbox.classList.contains('open')) return;
+    const url = gridUrl();
+    if (url === location.pathname + location.search) return;
+    history.replaceState(null, '', url);
+  }
+
+  function syncFilmUrl(card) {
+    if (!urlSyncReady || !card || !card.dataset.slug) return;
+    const url = '/film/' + card.dataset.slug;
+    if (url === location.pathname) return;
+    // One history entry for a whole viewing session: opening a film pushes,
+    // arrowing to the next one replaces, so Back always lands on the grid
+    // rather than walking back through every film you looked at.
+    if (history.state && history.state.film) history.replaceState({ film: true, grid: history.state.grid }, '', url);
+    else history.pushState({ film: true, grid: gridUrl() }, '', url);
+  }
+
+  // Makes the page match the address bar. Runs on first load and on every
+  // history move.
+  function applyUrlState() {
+    urlSyncReady = false;
+    const p = new URLSearchParams(location.search);
+    const tag = p.get('tag'), year = p.get('year'), q = p.get('q');
+    const wantType = q ? 'search' : (year ? 'year' : 'tag');
+    let wantValue = q || year || tag || 'all';
+    // A link can outlive the tag or year it points at. Rather than stranding
+    // the visitor on an empty grid, an unknown value quietly falls back to the
+    // whole archive.
+    if (!q && wantValue !== 'all') {
+      const known = wantType === 'year'
+        ? document.querySelector('.card[data-year="' + CSS.escape(wantValue) + '"]')
+        : filtersBar.querySelector('button[data-filter="' + CSS.escape(wantValue) + '"]');
+      if (!known) wantValue = 'all';
+    }
+    const already = q
+      ? (activeType === 'search' && activeQuery === q.toLowerCase().trim())
+      : (activeFilter === wantValue && (wantValue === 'all' || activeType === wantType));
+    if (!already) {
+      if (q) {
+        [searchInput, filterBarSearch, mobileSearchInput].forEach(el => { if (el) el.value = q; });
+        runSearch(q.toLowerCase().trim());
+      } else {
+        applyFilter(wantValue, wantType);
+      }
+    }
+
+    // Slugs are [a-z0-9-] by construction, so anything else is not one of ours
+    // and is ignored rather than fed into a selector.
+    let slug = location.pathname.indexOf('/film/') === 0
+      ? decodeURIComponent(location.pathname.slice(6)).replace(/\/$/, '') : '';
+    if (!/^[a-z0-9-]+$/.test(slug)) slug = '';
+
+    if (slug) {
+      const card = document.querySelector('.card[data-slug="' + slug + '"]');
+      if (card) {
+        // A deep-linked film may be sitting in the folded-away archive, so the
+        // archive is opened first — otherwise closing the film would leave an
+        // empty spot where it should be.
+        if (card.dataset.featured === 'false' && !userArchiveOpen) {
+          userArchiveOpen = true;
+          applyFilter(activeFilter, activeType);
+        }
+        openCard(card);
+      }
+    } else if (lightbox.classList.contains('open')) {
+      closeLightbox();
+    }
+    urlSyncReady = true;
+    // Tidies the address bar if it asked for something that no longer exists —
+    // a no-op whenever the URL already describes what is on screen.
+    syncGridUrl();
+  }
+
+  window.addEventListener('popstate', applyUrlState);
+  applyUrlState();
 

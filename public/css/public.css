@@ -255,7 +255,7 @@
     padding: 0;
     border: none;
     background: transparent;
-    color: rgba(0, 0, 0, 0.38);
+    color: rgba(0, 0, 0, 0.45);
     cursor: pointer;
     transition: color 0.15s ease;
   }
@@ -270,7 +270,7 @@
     padding: 0;
     border: none;
     background: transparent;
-    color: rgba(0, 0, 0, 0.38);
+    color: rgba(0, 0, 0, 0.45);
     cursor: pointer;
     transition: color 0.15s ease;
     display: none;
@@ -288,6 +288,24 @@
     gap: 5px;
     padding-top: 7px;
   }
+  /* How many films the current filter leaves. A count is data, so it stays in
+     Plex rather than the filters' Unica, and it only appears while filtering —
+     "35 films" next to an unfiltered archive tells you nothing. Padding matches
+     the search field so the two sit on one line. */
+  .filters .result-count {
+    flex-shrink: 0;
+    /* Sits on the same baseline as the tag row it is counting, rather than at
+       the top of the flex line — the two are one sentence read across. */
+    align-self: baseline;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  body.has-filter .filters .result-count { opacity: 1; }
   .filters-search-icon {
     width: 13px;
     height: 13px;
@@ -339,7 +357,7 @@
     font-family: inherit;
     font-size: 11px;
     letter-spacing: 0.03em;
-    color: #aaa;
+    color: rgba(0, 0, 0, 0.45);
     white-space: nowrap;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -439,8 +457,9 @@
     opacity: 1;
     pointer-events: auto;
   }
+  /* Tags on a card describe that film, so they are data too. The same words in
+     the filter row stay in Unica, because there they are navigation */
   .card .tags span {
-    font-family: 'Neue Haas Unica', sans-serif;
     font-size: 11px;
     letter-spacing: 0.03em;
     color: #777;
@@ -473,8 +492,9 @@
     gap: 10px;
     flex-shrink: 0;
   }
+  /* A film's own title is data, so it is set in Plex like its year and
+     duration — Unica is kept for the site's own voice */
   .card .card-title {
-    font-family: 'Neue Haas Unica', sans-serif;
     font-size: 12px;
     letter-spacing: 0.03em;
     color: #111;
@@ -550,8 +570,8 @@
   }
   .intro-block .intro-text a.year-filter.active { color: #1e40af; text-decoration-style: solid; }
   .inline-search-wrap { white-space: nowrap; display: inline-flex; align-items: center; vertical-align: middle; }
-  .inline-search-wrap::before { content: "["; color: #999; }
-  .inline-search-wrap::after { content: "]"; color: #999; }
+  .inline-search-wrap::before { content: "["; color: rgba(0, 0, 0, 0.45); }
+  .inline-search-wrap::after { content: "]"; color: rgba(0, 0, 0, 0.45); }
   .inline-search-icon { width: 13px; height: 13px; flex-shrink: 0; color: #1e40af; vertical-align: middle; margin-right: 3px; }
   .inline-search-input {
     font-family: inherit;
