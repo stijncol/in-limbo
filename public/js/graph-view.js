@@ -88,7 +88,7 @@
   var css = document.createElement('style');
   css.textContent = [
     '#graph-btn{position:fixed;top:calc(var(--rail-h) * 0.055 - 9px);right:calc(var(--rail-x) + var(--margin));',
-      'width:33px;height:33px;border-radius:50%;border:0.5px solid #000;background:transparent;color:#000;',
+      'width:33px;height:33px;border-radius:50%;border:1px solid #000;background:transparent;color:#000;',
       'display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:20;',
       'transition:color .15s ease,border-color .15s ease}',
     '#graph-btn:hover{color:' + ACCENT + ';border-color:' + ACCENT + '}',
@@ -130,11 +130,10 @@
   var btn = document.createElement('button');
   btn.id = 'graph-btn';
   btn.setAttribute('aria-label', 'tag graph');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4">' +
-    '<line x1="7.6" y1="8.6" x2="15" y2="6.4"/><line x1="8.2" y1="10.6" x2="13.6" y2="15.4"/>' +
-    '<line x1="16.4" y1="8.2" x2="14.6" y2="14"/>' +
-    '<circle cx="6" cy="8" r="2.2" fill="currentColor" stroke="none"/>' +
-    '<circle cx="17" cy="6" r="1.9"/><circle cx="15" cy="16" r="2.4" fill="currentColor" stroke="none"/></svg>';
+  // Three points — the graph reduced to its nodes, in the same dot vocabulary
+  // as the favicon, the margin pattern and the rail's density matrix
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">' +
+    '<circle cx="12" cy="6.5" r="2"/><circle cx="6.5" cy="16.5" r="2"/><circle cx="17.5" cy="16.5" r="2"/></svg>';
   document.body.appendChild(btn);
 
   var view = document.createElement('div');

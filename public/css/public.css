@@ -737,43 +737,48 @@
   .lightbox .lb-close:hover { color: #fff; }
   /* Min gap between the grid and the (bottom-pinned) footer on tall pages,
      since the footer's own margin-top collapses to auto for the sticky push. */
-  #grid-area { margin-bottom: 24px; }
+  #grid-area { margin-bottom: 48px; }
+  /* Closed off by a hairline spanning the grid, with the credits at the grid's
+     left edge and the KU Leuven mark at its right — the same rule and the same
+     alignment the rest of the page is drawn on. margin-top:auto pushes it to
+     the bottom of the flex-column .page when the content is short. */
   .site-footer {
-    /* Full width, left-aligned: the KU Leuven logo box sits at the grid's left
-       edge (aligned with the left thumbnail column). margin-top:auto pushes the
-       footer to the bottom of the flex-column .page when content is short. */
     align-self: stretch;
     margin: 0;
     margin-top: auto;
-    padding: 0;
-    height: calc(var(--rail-h) * 0.09228 + 40px);
+    padding: 26px 0 34px;
+    /* Same weight and colour as the vertical divider beside the rail */
+    border-top: 0.5px solid #000;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 40px;
-    overflow: hidden;
   }
+  /* While filtering or searching, the result is the whole point — the closing
+     rule and the credits would only crowd a short set of thumbnails */
+  body.has-filter .site-footer { display: none; }
   .site-footer .footer-text {
     font-family: inherit;
     font-size: 13px;
     line-height: 1.5;
     color: #111;
   }
+  /* The source PNG is the wordmark standing on end (322 x 958), so it is turned
+     upright to read straight. The box is sized to the turned mark — 140 x 47
+     keeps its proportions — since the rotation doesn't change the layout box. */
   .site-footer .footer-logos {
     flex-shrink: 0;
-    width: calc(var(--rail-h) * 0.25838);
+    width: 140px;
+    height: 47px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    order: -1;
-    margin-left: 0;
   }
   .site-footer .footer-logos img {
-    height: calc(var(--rail-h) * 0.25838);
+    height: 140px;
     width: auto;
     transform: rotate(90deg);
-    opacity: 1;
+    display: block;
   }
   /* Left rail: plain HTML column pinned to the left edge of the centred page.
      Width runs up to the vertical divider (rail-h × 0.13183); items are laid
@@ -932,28 +937,6 @@
     display: none;
   }
   #about-panel.active { display: block; }
-  /* Close cross: a small circle sitting half on the panel border, top right */
-  .about-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    transform: translate(50%, -50%);
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: 0.5px solid #000;
-    border-radius: 50%;
-    background: #fff;
-    color: #111;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-  .about-close:hover { color: #1e40af; border-color: #1e40af; }
-  .about-close svg { stroke: currentColor; display: block; }
   #about-panel .intro-block {
     display: block;
     padding: 20px 0 0 0;

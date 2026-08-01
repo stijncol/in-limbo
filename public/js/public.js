@@ -589,6 +589,9 @@
     if (!q) { applyFilter('all', 'tag'); return; }
     activeFilter = 'search';
     activeType = 'search';
+    // Searching narrows the archive just as a tag does, so it counts as
+    // filtering too — the footer steps back for both
+    document.body.classList.add('has-filter');
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
     grid.classList.add('show-archive');
     if (introBlock) introBlock.style.display = 'none';
@@ -936,16 +939,6 @@
       }
     }
     updateIntroOffClass();
-  }
-
-  // Close cross on the floating panel acts as the [about] toggle
-  var aboutClose = document.querySelector('.about-close');
-  if (aboutClose) {
-    aboutClose.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var btn = document.getElementById('inlimbo-btn');
-      if (btn && aboutActive) btn.click();
-    });
   }
 
   // About toggle — the vertical "inlimbo.video" rail label opens/closes the
