@@ -129,7 +129,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}${pagePath}">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260801g">
+<link rel="stylesheet" href="/public/css/public.css?v=20260801h">
 </head>
 <body>
 <div class="page">
@@ -148,7 +148,6 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}${pagePath}">
         <div class="medium-tags"><button class="filter-lead" data-filter="all">strategies</button><button class="active" data-filter="all"><span class="tag-label">all</span></button>${mediumButtons}<button class="tag-collapse" id="tag-collapse" title="collapse tags">–</button></div>
       </div>
     </div>
-    <span class="result-count" id="result-count" aria-live="polite"></span>
     <div class="filters-search-wrap">
       <svg class="filters-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       <input type="text" class="filters-search-input" placeholder="">
@@ -227,8 +226,8 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260801g"></script>
-<script src="/public/js/graph-view.js?v=20260801g"></script>
+<script src="/public/js/public.js?v=20260801h"></script>
+<script src="/public/js/graph-view.js?v=20260801h"></script>
 
 </body>
 </html>`;

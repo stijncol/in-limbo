@@ -288,24 +288,6 @@
     gap: 5px;
     padding-top: 7px;
   }
-  /* How many films the current filter leaves. A count is data, so it stays in
-     Plex rather than the filters' Unica, and it only appears while filtering —
-     "35 films" next to an unfiltered archive tells you nothing. Padding matches
-     the search field so the two sit on one line. */
-  .filters .result-count {
-    flex-shrink: 0;
-    /* Sits on the same baseline as the tag row it is counting, rather than at
-       the top of the flex line — the two are one sentence read across. */
-    align-self: baseline;
-    font-size: 11px;
-    letter-spacing: 0.03em;
-    color: rgba(0, 0, 0, 0.45);
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-  }
-  body.has-filter .filters .result-count { opacity: 1; }
   .filters-search-icon {
     width: 13px;
     height: 13px;

@@ -661,21 +661,6 @@
     if (msi) msi.value = '';
   }
 
-  // Counts what a filter actually left on screen. Reads computed display rather
-  // than the .hidden class alone, because archive cards are also held back by
-  // CSS when the grid isn't in show-archive mode.
-  const resultCountEl = document.getElementById('result-count');
-  function updateResultCount() {
-    if (!resultCountEl) return;
-    let n = 0;
-    document.querySelectorAll('.card[data-video-id]').forEach(card => {
-      if (card.classList.contains('hidden')) return;
-      if (getComputedStyle(card).display === 'none') return;
-      n++;
-    });
-    resultCountEl.textContent = n + (n === 1 ? ' film' : ' films');
-  }
-
   function runSearch(q) {
     if (!q) { applyFilter('all', 'tag'); return; }
     activeFilter = 'search';
@@ -702,7 +687,6 @@
       const match = title.includes(q) || authors.includes(q) || tutor.includes(q) || tags.includes(q) || desc.includes(q);
       card.classList.toggle('hidden', !match);
     });
-    updateResultCount();
     syncGridUrl();
   }
 
@@ -768,7 +752,6 @@
       }
     });
     updateArchiveCloseBtn();
-    updateResultCount();
     syncGridUrl();
 
     // The panel is sized to the intro-block, which spans two grid rows — so it
