@@ -517,7 +517,11 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -4px;
+    /* Halved: 3px under the baseline instead of 6px, which read as a line
+       floating loose beneath the title. Lands on the same 3px as the tag
+       underlines beside it, so the whole caption shares one offset. Tight —
+       the g of "Night Shift" reaches 2.54px, leaving 0.46px of daylight. */
+    bottom: -1px;
     height: 1px;
     background: currentColor;
     transform: scaleX(0);
