@@ -128,8 +128,39 @@ function preprocess(imageData,cfg){
     if(co!==1){r=((r/255-.5)*co+.5)*255;g=((g/255-.5)*co+.5)*255;b=((b/255-.5)*co+.5)*255}
     var j=i/4*3;res[j]=Math.max(0,Math.min(255,r));res[j+1]=Math.max(0,Math.min(255,g));res[j+2]=Math.max(0,Math.min(255,b));
   }
-  // ── optional tone control (both off by default — production unaffected) ──
+  // ── tone control ──
   function meanLum(){var s=0;for(var q=0;q<res.length;q+=3){s+=0.299*res[q]+0.587*res[q+1]+0.114*res[q+2]}return(s/(res.length/3))/255}
+  // Auto-levels: stretch every frame onto a common black and white point, so a
+  // washed-out source ends up using the same tonal range as a contrasty one.
+  // This is what stops the grid reading as a patchwork: exposure alone only
+  // moves the average, while this fixes how far each frame reaches. Percentiles
+  // rather than min/max, so a handful of stray pixels can't set the ends.
+  if(cfg.image.autoLevels&&cfg.image.autoLevels.enabled){
+    var alS=cfg.image.autoLevels.strength==null?1:cfg.image.autoLevels.strength;
+    if(alS>0){
+      var hist=new Uint32Array(256),tot=res.length/3;
+      for(var q2=0;q2<res.length;q2+=3){
+        var L=0.299*res[q2]+0.587*res[q2+1]+0.114*res[q2+2];
+        hist[L<0?0:L>255?255:L|0]++;
+      }
+      var loCut=(cfg.image.autoLevels.lowPct||1)/100*tot;
+      var hiCut=(1-(cfg.image.autoLevels.highPct||1)/100)*tot;
+      var acc=0,lo=0,hi=255,bb;
+      for(bb=0;bb<256;bb++){acc+=hist[bb];if(acc>=loCut){lo=bb;break}}
+      acc=0;
+      for(bb=0;bb<256;bb++){acc+=hist[bb];if(acc>=hiCut){hi=bb;break}}
+      // Refuse to stretch a frame that is genuinely almost flat — that would
+      // amplify noise into a texture of its own
+      if(hi-lo>12){
+        var sc=255/(hi-lo);
+        for(var al=0;al<res.length;al++){
+          var st=(res[al]-lo)*sc;
+          st=st<0?0:st>255?255:st;
+          res[al]=res[al]+alS*(st-res[al]);
+        }
+      }
+    }
+  }
   // Auto-exposure: per-image gamma that nudges the mean luminance toward a
   // target so dark frames stop dominating the grid (out = in^e maps mean→target).
   // `strength` (0..1) moves the mean only part way there, so dark frames keep
@@ -269,12 +300,20 @@ function sampleCard(card,img,w,h){
 // settings used to bake the production thumbnails. Change here = change the
 // look of newly baked thumbnails everywhere (lab + admin auto-bake).
 var DEFAULT_DITHER_CFG={
-  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.27,blur:2,autoExpose:{enabled:true,target:0.70,strength:0.45}},
+  // Tone settings chosen by eye against the whole archive at once, in the
+  // comparison harness — not derived. Harder exposure toward a lighter target
+  // lifts the dark frames so the grid stops reading as a patchwork, the raised
+  // contrast pushes mid greys apart into white areas and real shadow, and the
+  // light charcoal keeps the palette's darkest step from flooding the frame:
+  // the deep tones come from the duo shades instead.
+  image:{brightness:7,shadows:67,gamma:1.35,contrast:1.72,blur:2,
+    autoLevels:{enabled:true,lowPct:1,highPct:1,strength:0.04},
+    autoExpose:{enabled:true,target:0.80,strength:0.60}},
   dither:{technique:'fs',width:500},
   palette:{mode:'duo',colors:4,pastel:60,lightness:50,
     monoHue:'#3C5A78',tintHue:'#3C5A78',fixedExtras:'warm',
     duo1:'#5991a6',duo2:'#bab4b0',cus1:'#3C3C78',cus2:'#82412D',cus3:'#F8F5EE'},
-  baseTones:{enabled:true,cream:'#ffffff',charcoal:'#787878'},
+  baseTones:{enabled:true,cream:'#ffffff',charcoal:'#bfbfbf'},
   sharedPalette:{enabled:false,pool:6},
   hover:{shimmer:true,fps:8,intensity:20,reveal:true,
     accentMode:'single',acc1:'#825A38',acc2:'#285A46',revealPct:15}

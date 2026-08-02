@@ -84,7 +84,10 @@ var renderTimer=null;
 function readCfg(){
   function v(id){return document.getElementById(id)}
   return{
-    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:v('i-blur')?+v('i-blur').value:1},
+    // Tone control has no sliders of its own — it is taken from the baking
+    // defaults so what the lab shows is what the thumbnails actually get
+    image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:v('i-blur')?+v('i-blur').value:1,
+      autoLevels:DEFAULT_DITHER_CFG.image.autoLevels,autoExpose:DEFAULT_DITHER_CFG.image.autoExpose},
     dither:{technique:v('i-tech').value,width:+v('i-width').value},
     palette:{mode:v('i-pmode').value,colors:+v('i-pcolors').value,pastel:+v('i-pastel').value,lightness:+v('i-light').value,
       monoHue:v('i-monohue').value,tintHue:v('i-tinthue').value,fixedExtras:v('i-fixedx').value,
