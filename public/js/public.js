@@ -1199,8 +1199,15 @@
     // While a film is open the address bar belongs to the film
     if (lightbox.classList.contains('open')) return;
     const url = gridUrl();
-    if (url === location.pathname + location.search) return;
-    history.replaceState(null, '', url);
+    const here = location.pathname + location.search;
+    if (url === here) return;
+    // One entry for stepping into the filtered archive, none for moving around
+    // inside it. So Back from any tag, year or search lands on the whole
+    // archive, and only a second Back leaves the site. Pushing on every filter
+    // change instead would bury the back button under a dozen near-identical
+    // entries, and typing in the search field would add one per keystroke.
+    if (here === '/' && url !== '/') history.pushState(null, '', url);
+    else history.replaceState(null, '', url);
   }
 
   function syncFilmUrl(card) {
