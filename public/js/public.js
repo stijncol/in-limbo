@@ -988,12 +988,23 @@
     var gridEl = document.querySelector('.grid');
     if (!gridEl) return;
     var gridRect = gridEl.getBoundingClientRect();
-    // Read the first track straight off the grid rather than dividing by a
-    // fixed column count — large displays run four columns, compact tiers more.
     var cs = getComputedStyle(gridEl);
-    var firstTrack = parseFloat((cs.gridTemplateColumns || '').split(' ')[0]);
     var gap = parseFloat(cs.columnGap) || 32;
-    var colW = Math.round(firstTrack > 0 ? firstTrack : (gridRect.width - gap * 2) / 3);
+    var colW;
+    if (scaleIndex === 0) {
+      // Normal view: the panel stands in the grid's own first column, so read
+      // that track rather than dividing by a fixed count — large displays run
+      // four columns here, not three.
+      var firstTrack = parseFloat((cs.gridTemplateColumns || '').split(' ')[0]);
+      colW = Math.round(firstTrack > 0 ? firstTrack : (gridRect.width - gap * 2) / 3);
+    } else {
+      // Compact views: the panel is a window laid over a denser grid, not a
+      // cell in it. Taking the 5- or 7-column track would squeeze it into a
+      // strip and run the text down the whole page, so it keeps the width it
+      // has in the normal view. Same breakpoint the grid uses for four columns.
+      var baseCols = window.matchMedia('(min-width: 2100px)').matches ? 4 : 3;
+      colW = Math.round((gridRect.width - gap * (baseCols - 1)) / baseCols);
+    }
     // The panel is absolutely positioned inside .page (position: relative),
     // so convert to that containing block's coordinates. Document coordinates
     // break on viewports wider than the page's max-width, where .page is
