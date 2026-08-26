@@ -84,10 +84,12 @@ var renderTimer=null;
 function readCfg(){
   function v(id){return document.getElementById(id)}
   return{
-    // Tone control has no sliders of its own — it is taken from the baking
-    // defaults so what the lab shows is what the thumbnails actually get
+    // The percentile cut-offs stay on the defaults — they decide how many stray
+    // pixels may set the ends of the range, which is not a per-image judgement.
     image:{brightness:+v('i-bright').value,shadows:+v('i-shadows').value,gamma:+v('i-gamma').value/100,contrast:+v('i-contrast').value/100,blur:v('i-blur')?+v('i-blur').value:1,
-      autoLevels:DEFAULT_DITHER_CFG.image.autoLevels,autoExpose:DEFAULT_DITHER_CFG.image.autoExpose},
+      autoLevels:{enabled:+v('i-levels').value>0,lowPct:DEFAULT_DITHER_CFG.image.autoLevels.lowPct,
+        highPct:DEFAULT_DITHER_CFG.image.autoLevels.highPct,strength:+v('i-levels').value/100},
+      autoExpose:{enabled:true,target:+v('i-exptarget').value/100,strength:+v('i-expstr').value/100}},
     dither:{technique:v('i-tech').value,width:+v('i-width').value},
     palette:{mode:v('i-pmode').value,colors:+v('i-pcolors').value,pastel:+v('i-pastel').value,lightness:+v('i-light').value,
       monoHue:v('i-monohue').value,tintHue:v('i-tinthue').value,fixedExtras:v('i-fixedx').value,
@@ -191,6 +193,9 @@ document.getElementById('i-amode').addEventListener('change',updAMode);updAMode(
   setVal('i-bright',c.image.brightness);setVal('i-shadows',c.image.shadows);
   setVal('i-gamma',Math.round(c.image.gamma*100));setVal('i-contrast',Math.round(c.image.contrast*100));
   setVal('i-blur',c.image.blur);
+  setVal('i-levels',Math.round(c.image.autoLevels.strength*100));
+  setVal('i-exptarget',Math.round(c.image.autoExpose.target*100));
+  setVal('i-expstr',Math.round(c.image.autoExpose.strength*100));
   setVal('i-tech',c.dither.technique);setVal('i-width',c.dither.width);
   setVal('i-pmode',c.palette.mode);setVal('i-pcolors',c.palette.colors);
   setVal('i-pastel',c.palette.pastel);setVal('i-light',c.palette.lightness);
@@ -206,7 +211,7 @@ document.getElementById('i-amode').addEventListener('change',updAMode);updAMode(
   setVal('i-acc1',c.hover.acc1);setVal('i-acc2',c.hover.acc2);setVal('i-revpct',c.hover.revealPct);
 })();
 
-[['i-bright','v-bright',1,''],['i-shadows','v-shadows',1,''],['i-gamma','v-gamma',100,''],['i-contrast','v-contrast',100,''],['i-blur','v-blur',1,''],
+[['i-bright','v-bright',1,''],['i-shadows','v-shadows',1,''],['i-gamma','v-gamma',100,''],['i-contrast','v-contrast',100,''],['i-blur','v-blur',1,''],['i-levels','v-levels',100,''],['i-exptarget','v-exptarget',100,''],['i-expstr','v-expstr',100,''],
  ['i-width','v-width',1,'px'],['i-pcolors','v-pcolors',1,''],['i-pastel','v-pastel',1,'%'],['i-light','v-light',1,'%'],
  ['i-pool','v-pool',1,''],['i-fps','v-fps',1,''],['i-inten','v-inten',1,''],['i-revpct','v-revpct',1,'%']
 ].forEach(function(row){

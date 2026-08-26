@@ -44,6 +44,12 @@ function renderLab(rows) {
       <label>blur <input type="range" id="i-blur" min="0" max="3" step="1" value="2"><span class="val" id="v-blur">2</span></label>
     </div>
     <div class="pg">
+      <div class="pgl">tone (per image)</div>
+      <label>levels <input type="range" id="i-levels" min="0" max="100" value="4"><span class="val" id="v-levels">0.04</span></label>
+      <label>target <input type="range" id="i-exptarget" min="40" max="95" value="80"><span class="val" id="v-exptarget">0.80</span></label>
+      <label>lift <input type="range" id="i-expstr" min="0" max="100" value="60"><span class="val" id="v-expstr">0.60</span></label>
+    </div>
+    <div class="pg">
       <div class="pgl">dither</div>
       <label>technique <select id="i-tech"><option value="fs">floyd-steinberg</option><option value="atkinson">atkinson</option><option value="ordered">ordered (bayer)</option><option value="chsep">channel sep</option></select></label>
       <label>width <input type="range" id="i-width" min="200" max="800" value="500"><span class="val" id="v-width">500</span></label>
