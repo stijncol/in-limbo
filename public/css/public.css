@@ -366,6 +366,10 @@
     pointer-events: none;
     transition: border-color 0.2s ease;
   }
+  /* The hover affordance, and the only one: a filled white play triangle used
+     to sit on top of this, which was the one solid glyph in a site built from
+     hairlines. The frame says "this opens" in the same vocabulary as the
+     outlined buttons in the rail. */
   .card:hover .thumb::before,
   .card:active .thumb::before {
     border-color: #1e40af;
@@ -395,25 +399,6 @@
     transition: opacity 0.45s ease-in-out;
   }
   .card .thumb[data-baked] canvas { display: none; }
-  .card .thumb::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 14px 0 14px 22px;
-    border-color: transparent transparent transparent rgba(255,255,255,0.8);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-    z-index: 5;
-  }
-  .card .thumb:hover::after {
-    opacity: 1;
-  }
   .card .meta {
     position: absolute;
     top: 100%;
