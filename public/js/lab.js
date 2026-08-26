@@ -1,6 +1,6 @@
 // Dither pipeline (color utils, palette, preprocess, dither algorithms,
 // sampleCard) lives in dither.js, loaded before this file. This file holds
-// the lab-specific UI: per-card rendering, hover shimmer, controls, baking.
+// the lab-specific UI: per-card rendering, controls, baking.
 
 function renderCard(card,cfg,forcePal){
   var img=card.querySelector('img');
@@ -20,63 +20,6 @@ function renderCard(card,cfg,forcePal){
   card._px=px;card._pal=pal;card._plab=plab;card._cfg=cfg;card._w=w;card._h=h;
   var sw=card.querySelector('.lsw');
   if(sw)sw.innerHTML=pal.map(function(c){return'<span class="sw" style="background:rgb('+c[0]+','+c[1]+','+c[2]+')"></span>'}).join('');
-}
-
-// ── hover / shimmer ───────────────────────────────────────
-function accPalette(card,cfg){
-  var m=cfg.hover.accentMode;
-  if(m==='extract')return card._pal;
-  var base=(card._pal||[]).slice();
-  var a1=hexToRgb(cfg.hover.acc1);
-  if(m==='dual'){var a2=hexToRgb(cfg.hover.acc2);return base.concat([a1,a2])}
-  return base.concat([a1]);
-}
-
-function shimmerFrame(card,blend){
-  if(!card._px||!card._cfg)return;
-  var cfg=card._cfg,w=card._w,h=card._h,inten=cfg.hover.intensity;
-  var canvas=card.querySelector('canvas');if(!canvas)return;
-  var ctx=canvas.getContext('2d');
-  var noisy=new Float32Array(card._px);
-  for(var i=0;i<noisy.length;i++)noisy[i]+=(Math.random()-.5)*inten*2;
-  var base=runDither(noisy,w,h,card._pal,card._plab,cfg.dither.technique);
-  if(blend>0&&cfg.hover.reveal){
-    var ap=accPalette(card,cfg);
-    var al=ap.map(function(c){return rgbToLab(c[0],c[1],c[2])});
-    var acc=runDither(noisy,w,h,ap,al,cfg.dither.technique);
-    var t=blend*cfg.hover.revealPct/100,blended=new Uint8ClampedArray(w*h*4);
-    for(var i=0;i<w*h*4;i+=4){
-      blended[i]=Math.round(base[i]*(1-t)+acc[i]*t);
-      blended[i+1]=Math.round(base[i+1]*(1-t)+acc[i+1]*t);
-      blended[i+2]=Math.round(base[i+2]*(1-t)+acc[i+2]*t);
-      blended[i+3]=255;
-    }
-    ctx.putImageData(new ImageData(blended,w,h),0,0);
-  }else{ctx.putImageData(new ImageData(base,w,h),0,0)}
-}
-
-function attachHover(card){
-  var active=false,blend=0,raf=null,to=null;
-  var lt=card.querySelector('.lt');
-  function fps(){return card._cfg?card._cfg.hover.fps:8}
-  function tick(){
-    shimmerFrame(card,blend);
-    to=setTimeout(function(){raf=requestAnimationFrame(tick)},1000/fps());
-  }
-  lt.addEventListener('mouseenter',function(){
-    if(!card._cfg||!card._cfg.hover.shimmer)return;
-    active=true;clearTimeout(to);if(raf)cancelAnimationFrame(raf);
-    function fi(){blend=Math.min(1,blend+0.1);shimmerFrame(card,blend);
-      if(blend<1&&active)to=setTimeout(function(){raf=requestAnimationFrame(fi)},1000/fps());
-      else if(active)to=setTimeout(function(){raf=requestAnimationFrame(tick)},1000/fps());
-    }raf=requestAnimationFrame(fi);
-  });
-  lt.addEventListener('mouseleave',function(){
-    active=false;clearTimeout(to);if(raf)cancelAnimationFrame(raf);
-    function fo(){blend=Math.max(0,blend-0.15);shimmerFrame(card,blend);
-      if(blend>0)to=setTimeout(function(){raf=requestAnimationFrame(fo)},1000/fps());
-    }raf=requestAnimationFrame(fo);
-  });
 }
 
 // ── re-render all ─────────────────────────────────────────
@@ -126,7 +69,6 @@ function scheduleRerender(){clearTimeout(renderTimer);renderTimer=setTimeout(rer
 
 // ── thumbnail loading ─────────────────────────────────────
 document.querySelectorAll('.lc').forEach(function(card){
-  attachHover(card);
   var vid=card.dataset.vid,vtype=card.dataset.vtype;
   var img=document.createElement('img');
   img.crossOrigin='anonymous';
