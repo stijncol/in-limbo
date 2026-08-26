@@ -241,7 +241,11 @@ function bakeCard(card,auth){
     fetch('/thumb/'+id,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':auth},
-      body:JSON.stringify({blurData:blurData,sharpData:sharpData,settings:cfg})
+      // Flagged so a later re-bake of the whole archive knows these settings
+      // were chosen for this one film, rather than being whatever the defaults
+      // happened to be at the time. Without that mark every film would look
+      // hand-corrected and changing the defaults would stop having any effect.
+      body:JSON.stringify({blurData:blurData,sharpData:sharpData,settings:Object.assign({},cfg,{perFilm:true})})
     }).then(function(r){return r.json()}).then(function(data){
       if(data.ok){
         var dot=card.querySelector('.ldot');

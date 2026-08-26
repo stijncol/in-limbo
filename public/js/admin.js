@@ -85,8 +85,28 @@
 
   // ── thumbnail baking ──────────────────────────────────────
   // Bakes the dithered thumbnails (blur + sharp) client-side with the shared
-  // pipeline in dither.js, using the canonical DEFAULT_DITHER_CFG, then POSTs
-  // them to /thumb/:id. CORS-reads the source thumbnail from YouTube/Vimeo.
+  // pipeline in dither.js, then POSTs them to /thumb/:id. CORS-reads the source
+  // thumbnail from YouTube/Vimeo.
+  //
+  // A film baked individually in the lab carries its own settings, kept in
+  // thumb_settings. Those are used here in place of the canonical defaults, so
+  // a hand-corrected thumbnail survives a re-bake of the whole archive instead
+  // of being flattened back. Anything unreadable falls back to the defaults —
+  // a bad stored value should cost one film its correction, not the bake.
+  function settingsFor(item) {
+    const raw = item.dataset.thumbSettings;
+    if (!raw) return null;
+    try {
+      const cfg = JSON.parse(raw);
+      // perFilm marks a bake done deliberately in the lab. Every film also has
+      // settings stored from the last full bake; honouring those would freeze
+      // the archive at whatever the defaults were then.
+      if (cfg && cfg.perFilm && cfg.image && cfg.dither && cfg.palette) return cfg;
+      if (cfg && cfg.image) return null;   // a plain snapshot of the defaults
+    } catch (e) { /* fall through */ }
+    console.warn('unusable thumb_settings for', item.dataset.id, '— using defaults');
+    return null;
+  }
   function bakeTargets(onlyNew) {
     return [...document.querySelectorAll('.video-item[data-video-id]')].filter((it) => {
       if (!it.dataset.videoId) return false;
@@ -99,11 +119,12 @@
     const vid = item.dataset.videoId;
     const vtype = item.dataset.videoType || 'vimeo';
     const img = await loadSourceThumb(vid, vtype);
-    const out = bakeImage(img); // DEFAULT_DITHER_CFG
+    const cfg = settingsFor(item) || DEFAULT_DITHER_CFG;
+    const out = bakeImage(img, cfg);
     const r = await fetch('/thumb/' + id, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-      body: JSON.stringify({ blurData: out.blurData, sharpData: out.sharpData, settings: DEFAULT_DITHER_CFG })
+      body: JSON.stringify({ blurData: out.blurData, sharpData: out.sharpData, settings: cfg })
     });
     if (!r.ok) throw new Error('save failed (' + r.status + ')');
     item.dataset.hasThumb = '1';
