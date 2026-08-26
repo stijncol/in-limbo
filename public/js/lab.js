@@ -180,6 +180,32 @@ function updAMode(){document.getElementById('pc-acc2').classList.toggle('vis',do
 document.getElementById('i-amode').addEventListener('change',updAMode);updAMode();
 
 // slider labels
+// The controls carry their defaults in the HTML, which silently goes stale
+// every time DEFAULT_DITHER_CFG is retuned — you would open the lab on last
+// season's look and bake a film that no longer matches the archive, without
+// touching a thing. Seed them from the canonical config instead, so the lab
+// opens exactly where production stands and every change is deliberate. Runs
+// before the value labels are wired below, so those pick these up on their own.
+(function seedControlsFromDefaults(){
+  var c=DEFAULT_DITHER_CFG;
+  setVal('i-bright',c.image.brightness);setVal('i-shadows',c.image.shadows);
+  setVal('i-gamma',Math.round(c.image.gamma*100));setVal('i-contrast',Math.round(c.image.contrast*100));
+  setVal('i-blur',c.image.blur);
+  setVal('i-tech',c.dither.technique);setVal('i-width',c.dither.width);
+  setVal('i-pmode',c.palette.mode);setVal('i-pcolors',c.palette.colors);
+  setVal('i-pastel',c.palette.pastel);setVal('i-light',c.palette.lightness);
+  setVal('i-monohue',c.palette.monoHue);setVal('i-tinthue',c.palette.tintHue);
+  setVal('i-fixedx',c.palette.fixedExtras);
+  setVal('i-duo1',c.palette.duo1);setVal('i-duo2',c.palette.duo2);
+  setVal('i-cus1',c.palette.cus1);setVal('i-cus2',c.palette.cus2);setVal('i-cus3',c.palette.cus3);
+  setChk('i-basetones',c.baseTones.enabled);
+  setVal('i-cream',c.baseTones.cream);setVal('i-charcoal',c.baseTones.charcoal);
+  setChk('i-shared',c.sharedPalette.enabled);setVal('i-pool',c.sharedPalette.pool);
+  setChk('i-shimmer',c.hover.shimmer);setVal('i-fps',c.hover.fps);setVal('i-inten',c.hover.intensity);
+  setChk('i-reveal',c.hover.reveal);setVal('i-amode',c.hover.accentMode);
+  setVal('i-acc1',c.hover.acc1);setVal('i-acc2',c.hover.acc2);setVal('i-revpct',c.hover.revealPct);
+})();
+
 [['i-bright','v-bright',1,''],['i-shadows','v-shadows',1,''],['i-gamma','v-gamma',100,''],['i-contrast','v-contrast',100,''],['i-blur','v-blur',1,''],
  ['i-width','v-width',1,'px'],['i-pcolors','v-pcolors',1,''],['i-pastel','v-pastel',1,'%'],['i-light','v-light',1,'%'],
  ['i-pool','v-pool',1,''],['i-fps','v-fps',1,''],['i-inten','v-inten',1,''],['i-revpct','v-revpct',1,'%']
