@@ -894,21 +894,34 @@
     return 1;
   }
 
-  // The intro block is a grid cell spanning whole rows. It used to span two,
-  // always — but a column added makes its column narrower (more lines) and the
-  // rows shorter (smaller thumbnails) at the same time, so at four columns the
-  // text no longer fitted and stretched every row in the grid to make room:
-  // 34px at four columns, 160px at five, which reads as uneven gaps between
-  // thumbnails in the other columns. It now takes the rows it needs.
-  function syncIntroSpan() {
-    if (!introBlock) return;
+  // The intro block covers exactly two thumbnails, at every width — that is
+  // what makes it read as part of the grid rather than a panel parked beside
+  // it. So the type is fitted to the frame instead of the frame to the type:
+  // it steps down until the text clears two rows.
+  //
+  // Letting the block take a third row instead looked worse: it jumped a whole
+  // row for a few pixels of overflow and left the rest of that row empty. And
+  // leaving it at two rows without fitting the type was worse still — the text
+  // simply stretched every row in the grid to make space, 34px at four columns
+  // and 160px at five, which showed up as uneven gaps in the other columns.
+  function fitIntroType(colW) {
+    if (!introBlock || !grid) return;
     var txt = introBlock.querySelector('.intro-text');
     var thumb = grid.querySelector('.card[data-video-id] .thumb');
     if (!txt || !thumb) return;
-    var rowH = thumb.getBoundingClientRect().height + 32;
-    if (rowH < 40) return;
-    var need = Math.max(2, Math.ceil((txt.scrollHeight + 32) / rowH));
-    introBlock.style.gridRow = '1 / span ' + need;
+    if (getComputedStyle(introBlock).display === 'none') return;   // filtered away
+    var target = thumb.getBoundingClientRect().height * 2 + 32;
+    if (target < 80) return;
+    var size = Math.min(22.5, Math.max(11, colW * 0.045));
+    var guard = 0;
+    txt.style.fontSize = size + 'px';
+    while (size > 11 && txt.scrollHeight > target && guard++ < 40) {
+      size -= 0.5;
+      txt.style.fontSize = size + 'px';
+    }
+    txt.style.fontSize = '';
+    // Written to the root so the copy inside the about panel gets it too
+    document.documentElement.style.setProperty('--intro-size', size.toFixed(1) + 'px');
   }
 
   // Density follows how wide a thumbnail actually lands, not how many columns
@@ -940,12 +953,12 @@
     // On the root, not the grid: the about panel is a sibling of .grid, not a
     // descendant, so a custom property set on the grid never reaches it.
     document.documentElement.style.setProperty('--col-w', Math.round(cw) + 'px');
+    fitIntroType(cw);
     scaleIndex = cw < 190 ? 2 : cw < 260 ? 1 : 0;
     grid.classList.toggle('is-dense', scaleIndex >= 1);
     grid.classList.toggle('is-densest', scaleIndex >= 2);
     if (scaleDown) scaleDown.disabled = off <= -1;
     if (scaleUp) scaleUp.disabled = off >= 2 || cols >= 7;
-    syncIntroSpan();
     renderScaleMatrix();
     return cols;
   }
@@ -1067,6 +1080,14 @@
     MQ[k].addEventListener('change', function () { applyColumns(); updateIntroOffClass(); });
   });
   applyColumns();
+  // The intro is fitted by measuring text, and at first paint that text is
+  // still in the fallback face — Neue Haas Unica loads async. The fallback sets
+  // shorter, so the fit passes, and then the real face arrives and overflows
+  // with nothing left to recheck it. Measure again once the fonts are in.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { applyColumns(); });
+  }
+  window.addEventListener('load', function () { applyColumns(); });
 
   // About panel (fixed overlay for compact grid modes)
   var aboutPanel = document.getElementById('about-panel');

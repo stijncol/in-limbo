@@ -487,10 +487,10 @@
   .intro-block .intro-text {
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 400;
-    font-size: clamp(15px, calc(var(--col-w, 417px) * 0.041), 22.5px);
-    /* Scale with the grid: the intro sits in one column, so its type tracks the
-       column width — ~19px on a laptop, growing to ~27px on a wide 27" display. */
-    font-size: clamp(16px, 0.3vw + 14.6px, 21px);
+    /* Fitted in JS to exactly two thumbnail rows — see fitIntroType. A slope
+       against the viewport used to sit here, which is what stretched the grid:
+       a wider window grew the type while the column holding it got narrower. */
+    font-size: var(--intro-size, 18px);
     line-height: 1.55;
     color: #111;
   }
@@ -920,7 +920,7 @@
      to nearly three rows and covered the row beneath it. Tying type to column
      width makes the fit scale-invariant: line count stops depending on window
      size at all. 0.045 is the ratio the 3-column laptop view already had. */
-  #about-panel .intro-text { font-size: clamp(15px, calc(var(--col-w, 417px) * 0.041), 22.5px); }
+  #about-panel .intro-text { font-size: var(--intro-size, 18px); }
   .scale-step { user-select: none; }
   .scale-matrix { display: none; }
   .grid.is-dense {
