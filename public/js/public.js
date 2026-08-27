@@ -173,7 +173,15 @@
     let dissolveFrame = null, dissolveIndices = null;
     let dissolveRevealed = 0, dissolveTimer = null;
 
-    const DC_YR = 255, DC_YG = 230, DC_YB = 0, DC_OP = 0.08;
+    // The tint. Was 255/230/0 at 0.08: a fully saturated yellow, barely mixed
+    // in. Now a pale yellow mixed a little harder, which lands softer overall
+    // because the colour it moves toward is closer to white.
+    // On a white pixel the blue channel now stops at ~242 instead of ~235.
+    // Two knobs: DC_YB is the hue (lower = more yellow), DC_OP the strength.
+    // Note they interact through the luminance gate below — only pixels
+    // brighter than the yellow are touched, so a paler yellow also shrinks the
+    // area it applies to (threshold moves from ~228 to ~237 of 255).
+    const DC_YR = 255, DC_YG = 240, DC_YB = 120, DC_OP = 0.10;
     function toLin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
     const DC_YLUM = 0.2126 * toLin(DC_YR) + 0.7152 * toLin(DC_YG) + 0.0722 * toLin(DC_YB);
 
