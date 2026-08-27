@@ -61,16 +61,24 @@
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
     --rail-h: min(71.3vh, 690px);
-    /* Single source of truth for the outer margin around the grid — always
-       equal left and right, at every viewport width. Everything (page padding,
-       footer, filters) aligns to the grid edge this margin creates. Fluid:
-       14px on phones → 32px on large desktops, no jumps at breakpoints. */
+    /* Single source of truth for every outer gap on the page: right of the
+       grid, left of the rail, and between the rail and the first column.
+       Everything (page padding, footer, filters) aligns to the edge this
+       margin creates. Fluid: 14px on phones → 32px on large desktops, no
+       jumps at breakpoints. */
     --margin: clamp(14px, 2.2vw, 32px);
-    /* How much room the rail owns, and where the content starts. It used to
-       stop at the hairline (rail-h × 0.13183) with the margin beyond it as
-       no-man's-land; with the line gone the rail simply owns everything up to
-       the first column, and its contents centre in that. */
-    --rail-w: calc(var(--rail-h) * 0.13183 + var(--margin));
+    /* The wordmark is horizontal text turned -90°, so the strip it occupies is
+       one line-height wide (font-size 20px × line-height 1). That strip is the
+       rail's content column — everything else in the rail centres on the same
+       axis. */
+    --rail-strip: 20px;
+    /* How much room the rail owns, and where the grid starts. The rail used to
+       be sized off the old hairline (rail-h × 0.13183) with the margin beyond
+       it as no-man's-land, which left the wordmark ~50px from both the window
+       edge and the thumbnails — wider than the grid's own 32px right margin.
+       Now the rail is just margin + strip + margin, so the wordmark sits the
+       same distance from the window edge as the grid does on the right. */
+    --rail-w: calc(var(--margin) * 2 + var(--rail-strip));
   }
   .page {
     flex: 1;
@@ -768,6 +776,9 @@
   .rail-search {
     position: absolute;
     top: calc(var(--rail-h) * 0.055 - 9px);
+    /* Centred on the wordmark's axis. The circle is wider than the strip, so
+       it overhangs the margin line by ~6px each side — symmetrically, which a
+       round shape carries better than a straight edge would. */
     left: calc((var(--rail-w) - 33px) / 2);
     display: flex;
     align-items: center;
@@ -874,11 +885,12 @@
   /* inlimbo.video: vertical label below search, opens the about panel.
      Rotated via transform only (horizontal text turned -90°, reading
      bottom-to-top) — writing-mode:vertical-rl + rotate(180deg) renders
-     upside-down-horizontal on iPadOS WebKit. The rotated strip is one
-     line-height (22px) wide, so left centers it in the rail. */
+     upside-down-horizontal on iPadOS WebKit. The rotated strip is --rail-strip
+     wide, and the rail is margin + strip + margin, so a plain left:margin
+     centres it exactly — no half-widths to keep in sync. */
   #inlimbo-btn {
     position: absolute;
-    left: calc(50% - 11px);
+    left: var(--margin);
     top: calc(var(--rail-h) * 0.14 + 10px);
     width: max-content;
     line-height: 1;
