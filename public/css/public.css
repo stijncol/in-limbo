@@ -57,14 +57,6 @@
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
-    /* How wide the content block may grow. Raised on large displays, where a
-       fourth column reads better than ever-wider empty margins. */
-    --page-max: 1700px;
-    /* Above that cap the content block centers and the baked-in divider drifts
-       inward; the fixed left rail/buttons are pinned to the viewport edge. This
-       offset keeps them anchored to the centered block's left edge so the rail,
-       divider and content stay aligned. */
-    --rail-x: max(0px, (100vw - var(--page-max)) / 2);
     /* The whole rail coordinate system (rail height, buttons, divider, lab-O,
        footer, page padding) derives from this one height. Capped so the rail
        and its icons don't balloon on tall/large monitors. */
@@ -77,9 +69,11 @@
   }
   .page {
     flex: 1;
+    /* Fills the window at every width. The content used to stop growing at
+       1700px and turn the surplus into hatched outer strips; now the page runs
+       edge to edge and only the thumbnails change size, until there is room
+       for another column. */
     width: 100%;
-    max-width: var(--page-max);
-    margin: 0 auto;
     position: relative;
     padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 calc(var(--rail-h) * 0.13183 + var(--margin));
     box-sizing: border-box;
@@ -95,38 +89,11 @@
   .page::before {
     content: '';
     position: fixed;
-    left: calc(var(--rail-x) + var(--rail-h) * 0.13183);
+    left: calc(var(--rail-h) * 0.13183);
     top: 0;
     bottom: 0;
     width: 0.5px;
     background: #000;
-    pointer-events: none;
-    z-index: 9;
-  }
-  /* Mirror of the divider on the rail's other side. The area outside the
-     centred page keeps the page's own ground — only the hairline marks the
-     edge. Under the cap the strip is 0 wide, so just the line at the window
-     edge shows. */
-  .page::after {
-    content: '';
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--rail-x);
-    border-right: 0.5px solid #000;
-    pointer-events: none;
-    z-index: 9;
-  }
-  /* Same closing line on the far right of the window. */
-  body::after {
-    content: '';
-    position: fixed;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--rail-x);
-    border-left: 0.5px solid #000;
     pointer-events: none;
     z-index: 9;
   }
@@ -203,8 +170,12 @@
     position: relative;
   }
   /* Comma-separated inline tag style */
+  /* Fixed type sits 10% below where it was. At 90% browser zoom the thumbnails
+     and the intro render at practically the same physical size — the intro is
+     viewport-scaled, so zoom cancels out — and only type with a fixed size
+     actually shrank. That 10% was what read better, so it is the setting now. */
   .filters button[data-filter] {
-    font-size: 16px;
+    font-size: 14.5px;
     font-weight: 400;
     letter-spacing: 0.01em;
     color: #000;
@@ -251,7 +222,7 @@
   }
   .tag-expand {
     font-family: inherit;
-    font-size: 16px;
+    font-size: 14.5px;
     padding: 0;
     border: none;
     background: transparent;
@@ -266,7 +237,7 @@
      "+" at the end of the theme row */
   .tag-collapse {
     font-family: inherit;
-    font-size: 16px;
+    font-size: 14.5px;
     padding: 0;
     border: none;
     background: transparent;
@@ -313,7 +284,10 @@
        across the column tiers (no upscaling when dropping a column); leftover
        space becomes wide outer margins around a centered grid. 3 columns can
        grow to 460px on big screens, shrinking to ~385px at the 2-column switch. */
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* One source of truth for the column count. The width proposes a number
+       and the rail's +/- shifts it by a step; JS writes the result here. The
+       fallback keeps three columns if the script never runs. */
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
     grid-auto-flow: dense;
     gap: 32px;
   }
@@ -337,7 +311,7 @@
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-family: inherit;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.03em;
     color: rgba(0, 0, 0, 0.45);
     white-space: nowrap;
@@ -427,7 +401,7 @@
   /* Tags on a card describe that film, so they are data too. The same words in
      the filter row stay in Unica, because there they are navigation */
   .card .tags span {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.03em;
     color: #777;
     cursor: pointer;
@@ -467,7 +441,7 @@
   /* A film's own title is data, so it is set in Plex like its year and
      duration — Unica is kept for the site's own voice */
   .card .card-title {
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.03em;
     color: #111;
     font-weight: 400;
@@ -521,8 +495,8 @@
   }
   /* In the denser column tiers the columns (and this single-column intro) get
      narrower, so the type steps down to stay in proportion. */
-  .grid.grid-cols-5 .intro-text { font-size: clamp(12px, 0.36vw + 7px, 17px); }
-  .grid.grid-cols-7 .intro-text { font-size: clamp(10px, 0.28vw + 5px, 13px); }
+  .grid.is-dense .intro-text { font-size: clamp(12px, 0.36vw + 7px, 17px); }
+  .grid.is-densest .intro-text { font-size: clamp(10px, 0.28vw + 5px, 13px); }
   .intro-block .intro-text p {
     margin-bottom: 16px;
   }
@@ -781,7 +755,7 @@
      out with flow/flex — no SVG, no coordinate overlays. */
   .left-rail {
     position: fixed;
-    left: var(--rail-x);
+    left: 0;
     top: 0;
     width: calc(var(--rail-h) * 0.13183);
     height: 100vh;
@@ -913,7 +887,7 @@
     transform: rotate(-90deg) translateX(-100%);
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 500;
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: 0.005em;
     color: #000;
     background: none;
@@ -946,19 +920,17 @@
   #about-panel .intro-text { font-size: clamp(15px, 1.28vw, 22.5px); }
   .scale-step { user-select: none; }
   .scale-matrix { display: none; }
-  .grid.grid-cols-5 {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  .grid.is-dense {
     gap: 24px;
   }
-  .grid.grid-cols-7 {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+  .grid.is-densest {
     gap: 6px;
   }
-  .grid.grid-cols-5 .card-title,
-  .grid.grid-cols-5 .card-year { font-size: 10px; }
-  .grid.grid-cols-7 .card .meta { display: none; }
-  .grid.grid-cols-5 .card-duration,
-  .grid.grid-cols-7 .card-duration { display: none; }
+  .grid.is-dense .card-title,
+  .grid.is-dense .card-year { font-size: 9px; }
+  .grid.is-densest .card .meta { display: none; }
+  .grid.is-dense .card-duration,
+  .grid.is-densest .card-duration { display: none; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
   /* ── Column tiers ──────────────────────────────────────────
      Columns have a capped width and the grid is centred, so thumbnails keep a
@@ -972,14 +944,12 @@
     .page { padding: 40px var(--margin) 60px; }
     .page::before, .page::after, body::after { display: none; }
     .left-rail { display: none; }
-    .grid { grid-template-columns: repeat(2, minmax(0, 385px)); justify-content: center; }
+
   }
   /* Large displays: rather than let the margins keep growing, the page grows
      and a fourth column appears — the columns stay about the size they are at
      the cap instead of the archive shrinking into the middle of the screen. */
   @media (min-width: 2100px) {
-    body { --page-max: 2260px; }
-    .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     /* A fourth column makes each one narrower, so the intro type has to come
        back down: the slope below is tuned to the 4-column width, not the 3. */
     #about-panel .intro-text { font-size: clamp(15px, 0.96vw, 21.5px); }
@@ -1021,7 +991,7 @@
     /* Roomier tap targets */
     .filters button { padding: 9px 5px; }
     .card .tags span { padding: 3px 0; display: inline-block; }
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+    .grid { gap: 32px; }
     .intro-block { grid-column: 1 / -1; grid-row: auto; }
     .left-rail { display: none; }
   }
@@ -1079,7 +1049,7 @@
   @media (max-width: 540px) {
     .page { padding: 20px var(--margin) 48px; }
     /* Single column; gap is simple row space between cards (meta is already in flow) */
-    .grid { grid-template-columns: 1fr; gap: 28px; }
+    .grid { gap: 28px; }
     /* Intro text slightly smaller on small phones */
     .intro-block .intro-text { font-size: 18px; }
     /* Lightbox: reduce horizontal padding so video fills screen */

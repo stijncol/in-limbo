@@ -87,7 +87,7 @@
   // ── 2. Chrome: launch button + overlay ──────────────────────────────────
   var css = document.createElement('style');
   css.textContent = [
-    '#graph-btn{position:fixed;top:calc(var(--rail-h) * 0.055 - 9px);right:calc(var(--rail-x) + var(--margin));',
+    '#graph-btn{position:fixed;top:calc(var(--rail-h) * 0.055 - 9px);right:var(--margin);',
       'width:33px;height:33px;border-radius:50%;border:1px solid #000;background:transparent;color:#000;',
       'display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:20;',
       'transition:color .15s ease,border-color .15s ease}',

@@ -860,16 +860,77 @@
   // Grid scale control (desktop only — hidden on mobile via CSS)
   const scaleDown = document.getElementById('scale-down');
   const scaleUp = document.getElementById('scale-up');
-  const scaleSteps = [3, 5, 7];
+  // How the grid is sized, in two parts. The window proposes a column count —
+  // wider window, more columns, thumbnails staying in a comfortable band. The
+  // rail's +/- then shifts that proposal by a step, so it means "denser than
+  // this window suggests" rather than a fixed number. A fixed number was the
+  // old behaviour and it outranked the responsive rules: set seven columns on
+  // a laptop, narrow the window, and you kept seven columns of 51px with no
+  // rail left to undo it.
+  let scaleOffset = 0;        // what the buttons set, relative
+  let currentCols = 3;
+  // Derived density, not a setting: 0 roomy, 1 dense, 2 densest. Everything
+  // that used to ask "are we in the normal 3-column view" asks this instead.
   let scaleIndex = 0;
   var aboutActive = true;
 
-  // Density readout: rebuild the 2×N dot matrix to match the current column
-  // count (3 / 5 / 7) — more dots = more columns = smaller thumbnails
+  // Asked through matchMedia rather than window.innerWidth, so these thresholds
+  // are evaluated exactly the way the stylesheet evaluates its own — same
+  // viewport, same rounding, same treatment of the scrollbar. Writing a
+  // breakpoint twice, once in CSS and once as a number in JS, is how the two
+  // drift apart.
+  var MQ = {
+    rail: matchMedia('(min-width: 1261px)'),
+    c2:   matchMedia('(min-width: 640px)'),
+    c3:   matchMedia('(min-width: 1000px)'),
+    c4:   matchMedia('(min-width: 1720px)'),
+    c5:   matchMedia('(min-width: 2250px)')
+  };
+  function baseCols() {
+    if (MQ.c5.matches) return 5;   // the widest the window proposes on its own
+    if (MQ.c4.matches) return 4;
+    if (MQ.c3.matches) return 3;
+    if (MQ.c2.matches) return 2;
+    return 1;
+  }
+
+  // Density follows how wide a thumbnail actually lands, not how many columns
+  // there are: five columns on a 4K screen are as roomy as three on a laptop,
+  // and shrinking the titles there would be wrong.
+  function columnWidth(cols) {
+    var gap = parseFloat(getComputedStyle(grid).columnGap) || 32;
+    var w = grid.getBoundingClientRect().width;
+    return (w - gap * (cols - 1)) / cols;
+  }
+
+  // Writes the column count and the density classes. Called on every scale
+  // change and on resize, so the window and the button always agree.
+  function applyColumns() {
+    // Below 1260px the rail is gone and with it the +/- buttons, so a density
+    // chosen on a wide screen would be stuck there. The offset only counts
+    // while there is a control to undo it with.
+    var off = MQ.rail.matches ? scaleOffset : 0;
+    var cols = Math.max(1, Math.min(7, baseCols() + off));
+    currentCols = cols;
+    grid.style.setProperty('--cols', cols);
+    // Thresholds sit below where the window's own proposal ever lands (the
+    // tightest it gets on its own is ~290px), so density is something you ask
+    // for with the buttons, never something a window width imposes.
+    var cw = columnWidth(cols);
+    scaleIndex = cw < 190 ? 2 : cw < 260 ? 1 : 0;
+    grid.classList.toggle('is-dense', scaleIndex >= 1);
+    grid.classList.toggle('is-densest', scaleIndex >= 2);
+    if (scaleDown) scaleDown.disabled = off <= -1;
+    if (scaleUp) scaleUp.disabled = off >= 2 || cols >= 7;
+    renderScaleMatrix();
+    return cols;
+  }
+
+  // Density readout: a 2×N dot matrix matching the column count on screen
   const scaleMatrix = document.getElementById('scale-matrix');
   function renderScaleMatrix() {
     if (!scaleMatrix) return;
-    var cols = scaleSteps[scaleIndex];
+    var cols = currentCols;
     scaleMatrix.style.gridTemplateColumns = 'repeat(' + cols + ', 3px)';
     var dots = '';
     for (var i = 0; i < cols * 2; i++) dots += '<i></i>';
@@ -884,9 +945,13 @@
   window.addEventListener('load', function() { requestAnimationFrame(positionScaleCtrl); });
   requestAnimationFrame(positionScaleCtrl);
 
-  function applyScale(idx) {
+  function applyScale(offset) {
     const prev = scaleIndex;
-    scaleIndex = idx;
+    scaleOffset = Math.max(-1, Math.min(2, offset));
+    // Density is read back from the result, so idx below still means what it
+    // always meant: 0 is the roomy view the intro block fits in.
+    var idx = applyColumns();
+    idx = scaleIndex;
 
     // Compact views show the whole archive (before the FLIP snapshot below so
     // the revealed cards take part in the animation). If the user never opened
@@ -935,12 +1000,6 @@
     }
     updateIntroOffClass();
 
-    // Apply grid change instantly
-    grid.classList.toggle('grid-cols-5', idx === 1);
-    grid.classList.toggle('grid-cols-7', idx === 2);
-    renderScaleMatrix();
-    if (scaleDown) scaleDown.disabled = idx === 0;
-    if (scaleUp) scaleUp.disabled = idx === scaleSteps.length - 1;
     requestAnimationFrame(positionScaleCtrl);
 
     // FLIP — Last: read new positions (forces reflow so layout is committed)
@@ -972,8 +1031,18 @@
     });
   }
 
-  if (scaleDown) scaleDown.addEventListener('click', () => applyScale(Math.max(0, scaleIndex - 1)));
-  if (scaleUp) scaleUp.addEventListener('click', () => applyScale(Math.min(scaleSteps.length - 1, scaleIndex + 1)));
+  if (scaleDown) scaleDown.addEventListener('click', () => applyScale(scaleOffset - 1));
+  if (scaleUp) scaleUp.addEventListener('click', () => applyScale(scaleOffset + 1));
+  // The window's proposal changes as it is resized, so the count has to be
+  // recomputed — this is what keeps a chosen density from surviving into a
+  // width it does not fit.
+  window.addEventListener('resize', function () { applyColumns(); updateIntroOffClass(); });
+  // Crossing a threshold fires here even when no resize event does — an iPad
+  // rotating, a window snapping to half the screen.
+  Object.keys(MQ).forEach(function (k) {
+    MQ[k].addEventListener('change', function () { applyColumns(); updateIntroOffClass(); });
+  });
+  applyColumns();
 
   // About panel (fixed overlay for compact grid modes)
   var aboutPanel = document.getElementById('about-panel');
