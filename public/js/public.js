@@ -867,7 +867,10 @@
   // old behaviour and it outranked the responsive rules: set seven columns on
   // a laptop, narrow the window, and you kept seven columns of 51px with no
   // rail left to undo it.
-  let scaleOffset = 0;        // what the buttons set, relative
+  // Three views: the one the window proposes, and two steps out from it. There
+  // was a step inward as well for a while, but one column fewer than the window
+  // asks for makes the thumbnails larger than this kind of image carries.
+  let scaleOffset = 0;        // 0, 1 or 2 — relative to what the width proposes
   let currentCols = 3;
   // Derived density, not a setting: 0 roomy, 1 dense, 2 densest. Everything
   // that used to ask "are we in the normal 3-column view" asks this instead.
@@ -957,7 +960,7 @@
     scaleIndex = cw < 190 ? 2 : cw < 260 ? 1 : 0;
     grid.classList.toggle('is-dense', scaleIndex >= 1);
     grid.classList.toggle('is-densest', scaleIndex >= 2);
-    if (scaleDown) scaleDown.disabled = off <= -1;
+    if (scaleDown) scaleDown.disabled = off <= 0;
     if (scaleUp) scaleUp.disabled = off >= 2 || cols >= 7;
     renderScaleMatrix();
     return cols;
@@ -984,7 +987,7 @@
 
   function applyScale(offset) {
     const prevOffset = scaleOffset;
-    scaleOffset = Math.max(-1, Math.min(2, offset));
+    scaleOffset = Math.max(0, Math.min(2, offset));
     // The intro belongs to the home view. Step away from it in either
     // direction and the block folds away; come back and it returns. Tied to
     // the zoom step rather than to how dense the grid happens to look, so it
