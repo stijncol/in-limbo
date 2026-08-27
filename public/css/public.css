@@ -487,6 +487,7 @@
   .intro-block .intro-text {
     font-family: 'Neue Haas Unica', sans-serif;
     font-weight: 400;
+    font-size: clamp(15px, calc(var(--col-w, 417px) * 0.041), 22.5px);
     /* Scale with the grid: the intro sits in one column, so its type tracks the
        column width — ~19px on a laptop, growing to ~27px on a wide 27" display. */
     font-size: clamp(16px, 0.3vw + 14.6px, 21px);
@@ -913,11 +914,13 @@
     grid-column: auto;
     grid-row: auto;
   }
-  /* The panel is pinned to the height of the two grid rows it covers (set in
-     JS), so its type scales with the viewport to fill that frame: the panel
-     height grows linearly with viewport width, hence the pure-vw slope.
-     Max kicks in past the 1700px page cap, where the panel stops growing. */
-  #about-panel .intro-text { font-size: clamp(15px, 1.28vw, 22.5px); }
+  /* Set from the column the panel stands in, not from the viewport. A pure-vw
+     slope broke the moment a column was added: the window got wider so the type
+     grew, while the column it had to fit in got narrower — the panel then ran
+     to nearly three rows and covered the row beneath it. Tying type to column
+     width makes the fit scale-invariant: line count stops depending on window
+     size at all. 0.045 is the ratio the 3-column laptop view already had. */
+  #about-panel .intro-text { font-size: clamp(15px, calc(var(--col-w, 417px) * 0.041), 22.5px); }
   .scale-step { user-select: none; }
   .scale-matrix { display: none; }
   .grid.is-dense {
@@ -950,9 +953,6 @@
      and a fourth column appears — the columns stay about the size they are at
      the cap instead of the archive shrinking into the middle of the screen. */
   @media (min-width: 2100px) {
-    /* A fourth column makes each one narrower, so the intro type has to come
-       back down: the slope below is tuned to the 4-column width, not the 3. */
-    #about-panel .intro-text { font-size: clamp(15px, 0.96vw, 21.5px); }
   }
   /* Black search pill under the intro text — mobile only */
   .mobile-search { display: none; }

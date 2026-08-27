@@ -894,6 +894,23 @@
     return 1;
   }
 
+  // The intro block is a grid cell spanning whole rows. It used to span two,
+  // always — but a column added makes its column narrower (more lines) and the
+  // rows shorter (smaller thumbnails) at the same time, so at four columns the
+  // text no longer fitted and stretched every row in the grid to make room:
+  // 34px at four columns, 160px at five, which reads as uneven gaps between
+  // thumbnails in the other columns. It now takes the rows it needs.
+  function syncIntroSpan() {
+    if (!introBlock) return;
+    var txt = introBlock.querySelector('.intro-text');
+    var thumb = grid.querySelector('.card[data-video-id] .thumb');
+    if (!txt || !thumb) return;
+    var rowH = thumb.getBoundingClientRect().height + 32;
+    if (rowH < 40) return;
+    var need = Math.max(2, Math.ceil((txt.scrollHeight + 32) / rowH));
+    introBlock.style.gridRow = '1 / span ' + need;
+  }
+
   // Density follows how wide a thumbnail actually lands, not how many columns
   // there are: five columns on a 4K screen are as roomy as three on a laptop,
   // and shrinking the titles there would be wrong.
@@ -917,11 +934,18 @@
     // tightest it gets on its own is ~290px), so density is something you ask
     // for with the buttons, never something a window width imposes.
     var cw = columnWidth(cols);
+    // The intro is set from the column it stands in, not from the viewport.
+    // Viewport-based type broke the moment a column was added: the window got
+    // wider so the text grew, while the column it had to fit in got narrower.
+    // On the root, not the grid: the about panel is a sibling of .grid, not a
+    // descendant, so a custom property set on the grid never reaches it.
+    document.documentElement.style.setProperty('--col-w', Math.round(cw) + 'px');
     scaleIndex = cw < 190 ? 2 : cw < 260 ? 1 : 0;
     grid.classList.toggle('is-dense', scaleIndex >= 1);
     grid.classList.toggle('is-densest', scaleIndex >= 2);
     if (scaleDown) scaleDown.disabled = off <= -1;
     if (scaleUp) scaleUp.disabled = off >= 2 || cols >= 7;
+    syncIntroSpan();
     renderScaleMatrix();
     return cols;
   }
