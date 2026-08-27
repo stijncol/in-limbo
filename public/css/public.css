@@ -66,6 +66,11 @@
        footer, filters) aligns to the grid edge this margin creates. Fluid:
        14px on phones → 32px on large desktops, no jumps at breakpoints. */
     --margin: clamp(14px, 2.2vw, 32px);
+    /* How much room the rail owns, and where the content starts. It used to
+       stop at the hairline (rail-h × 0.13183) with the margin beyond it as
+       no-man's-land; with the line gone the rail simply owns everything up to
+       the first column, and its contents centre in that. */
+    --rail-w: calc(var(--rail-h) * 0.13183 + var(--margin));
   }
   .page {
     flex: 1;
@@ -75,28 +80,19 @@
        for another column. */
     width: 100%;
     position: relative;
-    padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 calc(var(--rail-h) * 0.13183 + var(--margin));
+    padding: calc(var(--rail-h) * 0.05416) var(--margin) 0 var(--rail-w);
     box-sizing: border-box;
     /* Flex column so the footer can be pushed to the bottom regardless of how
        few thumbnails are shown — keeps it level with the fixed lab-O mark. */
     display: flex;
     flex-direction: column;
   }
-  /* Vertical divider: aligned with the divider line baked into rail.svg
-     (x=97.94 in a 742.84-tall viewBox → 97.94/742.84 = 0.13183 of the rail).
-     Fixed + full viewport height so it never ends — including the area
-     revealed by macOS rubber-band overscroll. */
-  .page::before {
-    content: '';
-    position: fixed;
-    left: calc(var(--rail-h) * 0.13183);
-    top: 0;
-    bottom: 0;
-    width: 0.5px;
-    background: #000;
-    pointer-events: none;
-    z-index: 9;
-  }
+  /* The rail used to be fenced off by a hairline at 0.13183 of the rail height,
+     matching the divider baked into rail.svg. It was one of three parallel
+     rules — this one plus a strip down each window edge — and when the page
+     stopped capping its width the other two went with it. A single vertical
+     hairline reads as a leftover rather than a system, and the grid already
+     draws its own left edge: the panel's border, the outer margin. Removed. */
   .filters {
     display: flex;
     justify-content: space-between;
@@ -755,13 +751,13 @@
     display: block;
   }
   /* Left rail: plain HTML column pinned to the left edge of the centred page.
-     Width runs up to the vertical divider (rail-h × 0.13183); items are laid
-     out with flow/flex — no SVG, no coordinate overlays. */
+     Width runs up to the first column; items are laid out with flow/flex —
+     no SVG, no coordinate overlays. */
   .left-rail {
     position: fixed;
     left: 0;
     top: 0;
-    width: calc(var(--rail-h) * 0.13183);
+    width: var(--rail-w);
     height: 100vh;
     z-index: 10;
     pointer-events: none;
@@ -772,7 +768,7 @@
   .rail-search {
     position: absolute;
     top: calc(var(--rail-h) * 0.055 - 9px);
-    left: calc((var(--rail-h) * 0.13183 - 33px) / 2);
+    left: calc((var(--rail-w) - 33px) / 2);
     display: flex;
     align-items: center;
     height: 33px;
@@ -948,7 +944,6 @@
      switch — so thumbnails don't jump bigger), with the intro still in column 1. */
   @media (max-width: 1260px) {
     .page { padding: 40px var(--margin) 60px; }
-    .page::before, .page::after, body::after { display: none; }
     .left-rail { display: none; }
 
   }
