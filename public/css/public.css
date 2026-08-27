@@ -64,9 +64,11 @@
     /* Single source of truth for every outer gap on the page: right of the
        grid, left of the rail, and between the rail and the first column.
        Everything (page padding, footer, filters) aligns to the edge this
-       margin creates. Fluid: 14px on phones → 32px on large desktops, no
-       jumps at breakpoints. */
-    --margin: clamp(14px, 2.2vw, 32px);
+       margin creates. Fluid: 14px on phones → 32px on desktops, no jumps at
+       breakpoints. The 2.5vw slope puts it exactly at its 32px ceiling from
+       1280px up, so a normal laptop already sees the full margin instead of
+       the ~28px an older, shallower slope gave it. */
+    --margin: clamp(14px, 2.5vw, 32px);
     /* The wordmark is horizontal text turned -90°, so the strip it occupies is
        one line-height wide (font-size 20px × line-height 1). That strip is the
        rail's content column — everything else in the rail centres on the same
