@@ -578,7 +578,7 @@
   // .intro-off class lets two extra archive teasers fill its place so the
   // row rhythm before the show-all row stays intact
   function updateIntroOffClass() {
-    const introInGrid = aboutActive && scaleIndex === 0 && activeFilter === 'all';
+    const introInGrid = aboutActive && scaleOffset === 0 && activeFilter === 'all';
     grid.classList.toggle('intro-off', !introInGrid);
   }
 
@@ -723,7 +723,7 @@
     // Above 1260px the intro-block is an invisible space-holder for the panel;
     // below, it is ordinary visible content. Filtering hides both.
     const isFiltered = value !== 'all';
-    const introShouldHold = !isFiltered && aboutActive && scaleIndex === 0;
+    const introShouldHold = !isFiltered && aboutActive && scaleOffset === 0;
     if (introBlock) {
       introBlock.style.display = introShouldHold ? '' : 'none';
       introBlock.style.opacity = (introShouldHold && usePanel()) ? '0' : '';
@@ -757,7 +757,7 @@
     // The panel is sized to the intro-block, which spans two grid rows — so it
     // can only be measured once card visibility has settled. Positioning it
     // earlier locks it to the previous filter's grid, leaving the frame short.
-    if (aboutPanel && !isFiltered && usePanel() && aboutActive && scaleIndex === 0) {
+    if (aboutPanel && !isFiltered && usePanel() && aboutActive && scaleOffset === 0) {
       positionAboutPanel();
       aboutPanel.classList.add('active');
     }
@@ -796,12 +796,12 @@
     // the in-grid block as an invisible space-holder, the panel drawn over it.
     // Showing the in-grid block on its own would drop the text straight onto
     // the ground, since the white frame belongs to the panel.
-    if (aboutActive && scaleIndex === 0 && usePanel()) {
+    if (aboutActive && scaleOffset === 0 && usePanel()) {
       if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
       updateIntroOffClass();
       positionAboutPanel();
       aboutPanel.classList.add('active');
-    } else if (introBlock && aboutActive && scaleIndex === 0) {
+    } else if (introBlock && aboutActive && scaleOffset === 0) {
       // Narrow viewports have no panel — there the intro is ordinary content
       // and simply staying visible is right.
       introBlock.style.display = '';
@@ -816,7 +816,7 @@
 
   function updateArchiveCloseBtn() {
     if (!archiveCloseBtn) return;
-    const visible = userArchiveOpen && activeFilter === 'all' && scaleIndex === 0;
+    const visible = userArchiveOpen && activeFilter === 'all' && scaleOffset === 0;
     archiveCloseBtn.style.display = visible ? 'flex' : 'none';
   }
 
@@ -983,24 +983,23 @@
   requestAnimationFrame(positionScaleCtrl);
 
   function applyScale(offset) {
-    const prev = scaleIndex;
+    const prevOffset = scaleOffset;
     scaleOffset = Math.max(-1, Math.min(2, offset));
+    // The intro belongs to the home view. Step away from it in either
+    // direction and the block folds away; come back and it returns. Tied to
+    // the zoom step rather than to how dense the grid happens to look, so it
+    // behaves the same on a laptop and on a wide display.
+    const wasHome = prevOffset === 0, isHome = scaleOffset === 0;
 
-    // Worked out here but applied further down, after the FLIP has taken its
-    // "first" snapshot. Changing the columns up here put the grid in its new
-    // shape before the animation measured where it was coming from, so first
-    // and last matched and nothing moved: the change snapped instead of
-    // gliding, and the intro appeared out of step with it.
-    // idx still means what it always meant: 0 is the roomy view the intro fits.
-    var off = MQ.rail.matches ? scaleOffset : 0;
-    var nextCols = Math.max(1, Math.min(7, baseCols() + off));
-    var nextW = columnWidth(nextCols);
-    var idx = nextW < 190 ? 2 : nextW < 260 ? 1 : 0;
+    // The columns change further down, after the FLIP has taken its "first"
+    // snapshot. Doing it up here put the grid in its new shape before the
+    // animation measured where it was coming from, so first and last matched
+    // and nothing moved: the change snapped instead of gliding.
 
     // Compact views show the whole archive (before the FLIP snapshot below so
     // the revealed cards take part in the animation). If the user never opened
     // it deliberately, fold it again when returning to the normal view.
-    if (idx > 0) {
+    if (scaleOffset > 0) {
       if (!userArchiveOpen && !archiveAutoOpened) {
         archiveAutoOpened = true;
         revealArchiveCards();
@@ -1018,7 +1017,7 @@
 
     // Intro block going away: remove from flow NOW so lastRects are correct.
     // (Deferring display:none causes a mid-animation reflow that breaks the FLIP.)
-    if (introBlock && idx !== 0 && prev === 0) {
+    if (introBlock && !isHome && wasHome) {
       introBlock.style.display = 'none';
       if (aboutPanel) aboutPanel.classList.remove('active');
       if (aboutActive) introAutoHidden = true;
@@ -1029,8 +1028,9 @@
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
     // Restore the intro unless the user deliberately closed it meanwhile.
-    if (idx === 0 && prev !== 0) {
-      // Returning to 3-col: restore panel (intro-block is invisible space-holder)
+    if (isHome && !wasHome) {
+      // Back home: the in-grid block returns as an invisible space-holder and
+      // the panel is drawn over it
       if (introAutoHidden) {
         introAutoHidden = false;
         aboutActive = true;
@@ -1052,7 +1052,7 @@
     const lastRects = cards.map(c => c.getBoundingClientRect());
 
     // Re-show panel after grid settles (returning to 3-col)
-    if (idx === 0 && prev !== 0 && aboutActive && aboutPanel) {
+    if (isHome && !wasHome && aboutActive && aboutPanel) {
       requestAnimationFrame(function() { positionAboutPanel(); aboutPanel.classList.add('active'); });
     }
 
@@ -1114,7 +1114,7 @@
     var cs = getComputedStyle(gridEl);
     var gap = parseFloat(cs.columnGap) || 32;
     var colW;
-    if (scaleIndex === 0) {
+    if (scaleOffset === 0) {
       // Normal view: the panel stands in the grid's own first column, so read
       // that track rather than dividing by a fixed count — large displays run
       // four columns here, not three.
@@ -1145,7 +1145,7 @@
     // through the last paragraph. This way the grid sets the panel's floor —
     // so its corners still land on the grid whenever there is room — and the
     // text is free to push it past that when there isn't.
-    var holderVisible = introBlock && scaleIndex === 0 && introBlock.style.display !== 'none';
+    var holderVisible = introBlock && scaleOffset === 0 && introBlock.style.display !== 'none';
     var holderH = holderVisible ? introBlock.getBoundingClientRect().height : 0;
     aboutPanel.style.height = '';
     aboutPanel.style.minHeight = holderH > 0 ? Math.round(holderH) + 'px' : '';
@@ -1161,7 +1161,7 @@
   function syncAboutUI() {
     if (!aboutPanel) return;
     if (usePanel()) {
-      if (aboutActive && scaleIndex === 0 && activeFilter === 'all') {
+      if (aboutActive && scaleOffset === 0 && activeFilter === 'all') {
         if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
         positionAboutPanel();
         aboutPanel.classList.add('active');
@@ -1170,7 +1170,7 @@
       }
     } else {
       aboutPanel.classList.remove('active');
-      if (introBlock && scaleIndex === 0) {
+      if (introBlock && scaleOffset === 0) {
         introBlock.style.opacity = '';
         introBlock.style.display = (aboutActive && activeFilter === 'all') ? '' : 'none';
       }
@@ -1186,11 +1186,20 @@
   var aboutBtn = document.getElementById('inlimbo-btn');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
+      // Away from the home zoom the intro is folded away, so the wordmark is
+      // the way back to it: one click returns to the default view and brings
+      // the intro with it, rather than floating a panel over a grid it was
+      // never sized for.
+      if (scaleOffset !== 0) {
+        introAutoHidden = true;      // so returning home restores the intro
+        applyScale(0);
+        return;
+      }
       aboutActive = !aboutActive;
       introAutoHidden = false;
       aboutBtn.classList.toggle('active', aboutActive);
 
-      if (scaleIndex > 0) {
+      if (scaleOffset > 0) {
         // Compact modes: simple panel show/hide (no in-grid space to animate)
         if (aboutActive) { positionAboutPanel(); aboutPanel.classList.add('active'); }
         else { aboutPanel.classList.remove('active'); }
