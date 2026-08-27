@@ -985,10 +985,17 @@
   function applyScale(offset) {
     const prev = scaleIndex;
     scaleOffset = Math.max(-1, Math.min(2, offset));
-    // Density is read back from the result, so idx below still means what it
-    // always meant: 0 is the roomy view the intro block fits in.
-    var idx = applyColumns();
-    idx = scaleIndex;
+
+    // Worked out here but applied further down, after the FLIP has taken its
+    // "first" snapshot. Changing the columns up here put the grid in its new
+    // shape before the animation measured where it was coming from, so first
+    // and last matched and nothing moved: the change snapped instead of
+    // gliding, and the intro appeared out of step with it.
+    // idx still means what it always meant: 0 is the roomy view the intro fits.
+    var off = MQ.rail.matches ? scaleOffset : 0;
+    var nextCols = Math.max(1, Math.min(7, baseCols() + off));
+    var nextW = columnWidth(nextCols);
+    var idx = nextW < 190 ? 2 : nextW < 260 ? 1 : 0;
 
     // Compact views show the whole archive (before the FLIP snapshot below so
     // the revealed cards take part in the animation). If the user never opened
@@ -1037,6 +1044,8 @@
     }
     updateIntroOffClass();
 
+    // Now the grid actually changes — between the two FLIP snapshots.
+    applyColumns();
     requestAnimationFrame(positionScaleCtrl);
 
     // FLIP — Last: read new positions (forces reflow so layout is committed)
