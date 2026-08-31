@@ -1,6 +1,13 @@
 // All environment configuration in one place.
 // DATABASE_URL, ADMIN_PASS and STUDENT_PASS are required: set them in the
 // Render dashboard (Environment) or in a local .env file for development.
+//
+// The .env file used to be decoration: nothing read it, so locally the app
+// only ever saw the fallbacks and the password in .env silently did nothing.
+// dotenv reads it here, before the check below. On Render there is no .env
+// and config() simply finds nothing — the dashboard variables already sit in
+// process.env, and dotenv never overwrites what is already set.
+require('dotenv').config({ quiet: true });
 const required = ['DATABASE_URL', 'ADMIN_PASS', 'STUDENT_PASS'];
 const missing = required.filter(name => !process.env[name]);
 if (missing.length > 0) {

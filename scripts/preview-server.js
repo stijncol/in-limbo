@@ -4,6 +4,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// Before the fallbacks below, not after: they are `||` defaults, so whatever
+// is already in process.env wins. Without this the stub password below would
+// always beat the real one in .env, which is exactly the trap that made the
+// lab login loop forever.
+require('dotenv').config({ quiet: true });
+
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'preview://stub';
 process.env.ADMIN_PASS = process.env.ADMIN_PASS || 'preview';
 process.env.STUDENT_PASS = process.env.STUDENT_PASS || 'preview';
