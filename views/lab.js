@@ -113,7 +113,7 @@ function renderLab(rows) {
   </div>
 </div></div>
 
-<script src="/public/js/dither.js?v=20260615f"></script>
+<script src="/public/js/dither.js?v=20260831a"></script>
 <script src="/public/js/lab.js"></script>
 </body>
 </html>`;

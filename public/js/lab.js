@@ -80,7 +80,16 @@ document.querySelectorAll('.lc').forEach(function(card){
     renderCard(card,cfg,pal);
   });
   if(vtype==='youtube'){
-    img.src='https://img.youtube.com/vi/'+vid+'/hqdefault.jpg';
+    // Same size ladder as the bake path, so the lab previews the still that
+    // will actually be baked (see youtubeThumbUrl in dither.js).
+    var ytStep=0;
+    img.addEventListener('load',function(){
+      if(youtubeThumbMissing(img)&&ytStep<2){ytStep++;img.src=youtubeThumbUrl(vid,ytStep)}
+    });
+    img.addEventListener('error',function(){
+      if(ytStep<2){ytStep++;img.src=youtubeThumbUrl(vid,ytStep)}
+    });
+    img.src=youtubeThumbUrl(vid,0);
   }else{
     fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
       .then(function(r){return r.json()})

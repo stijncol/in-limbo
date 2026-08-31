@@ -343,6 +343,22 @@ function bakeImage(img,cfg){
   return{blurData:blurData,sharpData:sharpData};
 }
 
+// YouTube still sizes, best first. hqdefault.jpg is 480x360 — a 4:3 frame with
+// black bars baked in above and below every 16:9 video. Cropping back to 16:9
+// should remove them exactly, but the rounding leaves a one-pixel black
+// hairline along the top edge of the baked thumbnail. maxresdefault (1280x720)
+// and mqdefault (320x180) are true 16:9 with no bars. maxres is missing for
+// videos never uploaded at 720p, so fall through to mq, and only then back to
+// hqdefault so nothing ever loads worse than it did before.
+var YT_SIZES=['maxresdefault','mqdefault','hqdefault'];
+function youtubeThumbUrl(vid,step){
+  return 'https://img.youtube.com/vi/'+vid+'/'+YT_SIZES[step]+'.jpg';
+}
+// A missing still does not always 404: YouTube also answers with a 120x90 grey
+// placeholder at HTTP 200, which loads happily and bakes into a grey card. Too
+// narrow to be a real still, so treat it as a miss and walk on.
+function youtubeThumbMissing(img){ return img.naturalWidth<=120; }
+
 // Resolve the original colour thumbnail for a video and load it CORS-enabled
 // so its pixels can be read into a canvas. Returns a Promise<HTMLImageElement>.
 function loadSourceThumb(vid,vtype){
@@ -352,7 +368,21 @@ function loadSourceThumb(vid,vtype){
     img.onload=function(){resolve(img)};
     img.onerror=function(){reject(new Error('thumbnail load failed for '+vtype+'/'+vid))};
     if(vtype==='youtube'){
-      img.src='https://img.youtube.com/vi/'+vid+'/hqdefault.jpg';
+      var step=0;
+      function nextSize(){
+        step++;
+        if(step<YT_SIZES.length){img.src=youtubeThumbUrl(vid,step);return true}
+        return false;
+      }
+      img.onload=function(){
+        if(youtubeThumbMissing(img)&&nextSize())return;
+        resolve(img);
+      };
+      img.onerror=function(){
+        if(nextSize())return;
+        reject(new Error('thumbnail load failed for '+vtype+'/'+vid));
+      };
+      img.src=youtubeThumbUrl(vid,0);
     }else{
       fetch('https://vimeo.com/api/oembed.json?url=https://vimeo.com/'+vid)
         .then(function(r){return r.json()})

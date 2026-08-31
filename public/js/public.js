@@ -304,9 +304,26 @@
       }
     } else {
       img.addEventListener('load', () => {
+        // A grey 120x90 placeholder means that size does not exist for this
+        // video; walk on rather than dithering the placeholder.
+        if (ytNextSize && ytNextSize()) return;
         try { ditherImage(img, thumb); } catch(e) {}
       });
     }
+
+    // YouTube stills, best first. hqdefault.jpg is 4:3 with black bars baked in
+    // above and below a 16:9 video, and cropping them back off leaves a 1px
+    // black hairline along the top. maxresdefault and mqdefault are true 16:9.
+    // maxres is missing for videos never uploaded at 720p, hence the ladder,
+    // ending at hqdefault so this never loads worse than it used to.
+    const YT_SIZES = ['maxresdefault', 'mqdefault', 'hqdefault'];
+    let ytStep = 0, ytBase = null;
+    const ytNextSize = () => {
+      if (!ytBase || img.naturalWidth > 120 || ytStep >= YT_SIZES.length - 1) return false;
+      ytStep++;
+      img.src = 'https://img.youtube.com/vi/' + ytBase + '/' + YT_SIZES[ytStep] + '.jpg';
+      return true;
+    };
 
     if (type === 'youtube') {
       let ytId = id;
@@ -316,7 +333,11 @@
           ytId = u.searchParams.get('v') || u.pathname.slice(1);
         }
       } catch(e) {}
-      if (!isBaked) img.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+      ytBase = ytId;
+      if (!isBaked) {
+        img.addEventListener('error', ytNextSize);
+        img.src = 'https://img.youtube.com/vi/' + ytId + '/' + YT_SIZES[0] + '.jpg';
+      }
       const ytKey = window.__CONFIG__.ytKey;
       if (ytKey) {
         fetch('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + ytId + '&key=' + ytKey)
