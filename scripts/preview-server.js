@@ -32,6 +32,7 @@ require.cache[videosPath] = {
   id: videosPath, filename: videosPath, loaded: true,
   exports: {
     getVideoRows: async () => fixtures,
+    warmCache: async () => {},
     createVideo: async () => {},
     updateVideo: async () => {},
     deleteVideo: async () => {},

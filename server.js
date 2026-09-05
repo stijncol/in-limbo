@@ -3,7 +3,7 @@ const path = require('path');
 
 const { PORT, SITE_URL } = require('./config');
 const { initDB } = require('./db/pool');
-const { getThumbStats } = require('./db/videos');
+const { getThumbStats, warmCache } = require('./db/videos');
 
 const app = express();
 
@@ -33,6 +33,9 @@ initDB().then(async () => {
     console.log('admin panel at /user');
     console.log('student submit at /submit');
   });
+  // Read the archive into memory before the first visitor arrives, so nobody
+  // waits for the first query and a later database hiccup stays invisible.
+  await warmCache();
   try {
     const r = await getThumbStats();
     console.log('Thumbnails: ' + r.baked + '/' + r.total + ' baked');
