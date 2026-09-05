@@ -283,12 +283,40 @@ function runDither(px,w,h,pal,plab,tech){
 }
 
 // ── card rendering ────────────────────────────────────────
+// Where the black padding sits depends on the film, not on the size we asked
+// for. YouTube fits every still into a fixed frame: a 16:9 film in the 4:3
+// hqdefault gets bars above and below, and a 4:3 film in the 16:9
+// maxresdefault gets them left and right — 148px of them, for "381 000 ton".
+// Guessing which size happens to fit is a losing game, so measure the border
+// instead and cut it off wherever it is. Vimeo stills have none and come
+// through untouched.
+function contentRect(img){
+  var w=img.naturalWidth,h=img.naturalHeight;
+  var full={sx:0,sy:0,sw:w,sh:h};
+  if(!w||!h)return full;
+  var c=document.createElement('canvas');c.width=w;c.height=h;
+  var x=c.getContext('2d',{willReadFrequently:true});
+  var d;
+  try{x.drawImage(img,0,0);d=x.getImageData(0,0,w,h).data}catch(e){return full}
+  var T=24, stepX=Math.max(1,Math.floor(w/64)), stepY=Math.max(1,Math.floor(h/64));
+  function darkRow(y){for(var i=0;i<w;i+=stepX){var p=(y*w+i)*4;if(d[p]>T||d[p+1]>T||d[p+2]>T)return false}return true}
+  function darkCol(xx){for(var j=0;j<h;j+=stepY){var p=(j*w+xx)*4;if(d[p]>T||d[p+1]>T||d[p+2]>T)return false}return true}
+  var top=0;while(top<h&&darkRow(top))top++;
+  var bot=0;while(bot<h-top-1&&darkRow(h-1-bot))bot++;
+  var left=0;while(left<w&&darkCol(left))left++;
+  var right=0;while(right<w-left-1&&darkCol(w-1-right))right++;
+  // A frame that is mostly "border" is a dark film, not a padded one. Leave it.
+  if(w-left-right<w*0.5||h-top-bot<h*0.5)return full;
+  return {sx:left,sy:top,sw:w-left-right,sh:h-top-bot};
+}
+
 function sampleCard(card,img,w,h){
   var tc=document.createElement('canvas');tc.width=w;tc.height=h;
   var tx=tc.getContext('2d');
-  var ir=img.naturalWidth/img.naturalHeight,cr=w/h;
-  var sx=0,sy=0,sw=img.naturalWidth,sh=img.naturalHeight;
-  if(ir>cr){sw=img.naturalHeight*cr;sx=(img.naturalWidth-sw)/2}else{sh=img.naturalWidth/cr;sy=(img.naturalHeight-sh)/2}
+  var box=contentRect(img);
+  var ir=box.sw/box.sh,cr=w/h;
+  var sx=box.sx,sy=box.sy,sw=box.sw,sh=box.sh;
+  if(ir>cr){sw=box.sh*cr;sx=box.sx+(box.sw-sw)/2}else{sh=box.sw/cr;sy=box.sy+(box.sh-sh)/2}
   tx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
   var d=tx.getImageData(0,0,w,h).data,samples=[];
   for(var i=0;i<d.length;i+=4*10)samples.push([d[i],d[i+1],d[i+2]]);
