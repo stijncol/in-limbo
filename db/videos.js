@@ -10,7 +10,17 @@ const { pool } = require('./pool');
 // panel is visible immediately. The TTL is checked lazily, on read, rather
 // than on a timer: a timer would poll the database around the clock, which is
 // precisely what stops a serverless instance from ever idling.
-const TTL_MS = 15 * 60 * 1000;
+// Six hours, not fifteen minutes. Every write through the admin panel clears
+// the cache on the spot, so this only covers one case: a change made straight
+// in the database, outside the app. That happens roughly never.
+//
+// The short version had a cost that only showed up once uptime monitoring was
+// pointed at /health. A ping every 5 minutes against a 15-minute TTL wakes the
+// database about 96 times a day, and since Neon suspends after 5 idle minutes
+// it then runs a third of the day — on a free plan metered in compute hours,
+// that is the whole allowance spent on nobody visiting. At six hours it is
+// four wake-ups a day.
+const TTL_MS = 6 * 60 * 60 * 1000;
 
 let rows = null;          // last good row list — kept even when stale
 let rowsAt = 0;           // when it was fetched; 0 means "refetch on next read"
