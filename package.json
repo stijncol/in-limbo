@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node scripts/test-cache.js"
+    "test": "node scripts/test-cache.js && node scripts/test-auth.js"
   },
   "keywords": [],
   "author": "",
