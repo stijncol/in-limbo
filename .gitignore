@@ -2,3 +2,15 @@ node_modules/
 .env
 .DS_Store
 scripts/fixtures/
+
+# Local-only working material. These were committed before this file existed
+# and were untracked again in the same commit that added them here; they are
+# still on disk, just not in the repository.
+#
+# archive/ mattered most: it held old server copies with live credentials in
+# plain text, in a public repo. Untracking stops that spreading further, but it
+# does NOT remove it from git history — the passwords still have to be rotated.
+archive/
+old good!
+werkende server/
+videos.db
