@@ -1,16 +1,26 @@
 const { Pool } = require('pg');
 const { DATABASE_URL } = require('../config');
 
-// TLS per host, because the old rule was "Render or nothing": anything that
-// was not Render got ssl:false, which a hosted Postgres refuses outright. That
-// would have broken the moment DATABASE_URL pointed somewhere else.
-// Render's internal certificate is self-signed, so verification has to be off
-// there; every other hosted provider has a real certificate and gets verified
-// properly. Only a database on this machine runs without TLS at all.
+// How to speak TLS to whichever database DATABASE_URL points at.
+//
+// This got it wrong once, so the rule is now deliberately conservative: every
+// URL that worked before keeps its exact old behaviour, and TLS is only turned
+// on where the connection asks for it.
+//
+// The trap was Render's INTERNAL hostname. On Render itself the URL is
+// `@dpg-xxxxx-a/dbname` with no domain in it at all, so a check for
+// "render.com" missed it, strict verification kicked in, and Render's
+// self-signed certificate failed the handshake with DEPTH_ZERO_SELF_SIGNED_CERT
+// — a crash loop on boot, with an error that never says the word TLS.
 function sslFor(url) {
-  if (/@(localhost|127\.0\.0\.1)/.test(url)) return false;
-  if (url.includes('render.com')) return { rejectUnauthorized: false };
-  return true;
+  // Neon and most hosted providers say so in the URL and have real certificates.
+  if (/[?&]sslmode=(require|verify-ca|verify-full)/.test(url)) return true;
+  if (/neon\.tech/.test(url)) return true;
+  // Render's external hostname: TLS, but its certificate cannot be verified.
+  if (/render\.com/.test(url)) return { rejectUnauthorized: false };
+  // Everything else — Render's internal dpg-… host, a database on this
+  // machine — connects exactly as it did before.
+  return false;
 }
 
 const pool = new Pool({
@@ -50,4 +60,4 @@ async function initDB() {
   try { await pool.query("ALTER TABLE videos ADD COLUMN tutor TEXT DEFAULT ''"); } catch(e) {}
 }
 
-module.exports = { pool, initDB };
+module.exports = { pool, initDB, sslFor };
