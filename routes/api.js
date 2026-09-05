@@ -2,7 +2,7 @@ const express = require('express');
 const https = require('https');
 const router = express.Router();
 const { VIMEO_ACCESS_TOKEN } = require('../config');
-const { requireAuth, requireStudent } = require('../middleware/auth');
+const { requireAuth, requireStudent, isAdmin } = require('../middleware/auth');
 const { getVideoRows, createVideo, updateVideo, deleteVideo, submitVideo, approveVideo, rejectVideo } = require('../db/videos');
 
 function parseVideoUrl(url) {
@@ -13,8 +13,14 @@ function parseVideoUrl(url) {
   return { id: url, type: 'vimeo' };
 }
 
+// Public, so it may only ever return what the public page already shows.
+// It used to hand back every row: the moment a student submits, their name,
+// title and synopsis would be readable here by anyone, before you have looked
+// at it. An admin asking gets the full list, pending and rejected included.
 router.get('/videos', async (req, res) => {
-  res.json(await getVideoRows());
+  const rows = await getVideoRows();
+  if (isAdmin(req)) return res.json(rows);
+  res.json(rows.filter(v => v.status === 'approved' || !v.status));
 });
 
 router.post('/videos', requireAuth, async (req, res) => {
@@ -75,11 +81,19 @@ router.put('/videos/:id/reject', requireAuth, async (req, res) => {
 
 const vimeoCache = new Map();
 
-router.get('/vimeo/:id', (req, res) => {
+// Open on purpose — the public page calls it to show a film's duration — but
+// only for films that are in the archive. Without that check anyone could pump
+// arbitrary ids through it and spend your Vimeo quota from your token.
+router.get('/vimeo/:id', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const token = VIMEO_ACCESS_TOKEN;
   if (!token) return res.json({});
   const id = req.params.id;
+  if (!/^\d+$/.test(id)) return res.json({});
+  try {
+    const rows = await getVideoRows();
+    if (!rows.some(v => String(v.video_id) === id || String(v.vimeo_id) === id)) return res.json({});
+  } catch (e) { return res.json({}); }
   if (vimeoCache.has(id)) return res.json(vimeoCache.get(id));
   const options = {
     hostname: 'api.vimeo.com',

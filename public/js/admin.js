@@ -1,4 +1,8 @@
-  const authHeader = 'Basic ' + btoa(window.__CONFIG__.user + ':' + window.__CONFIG__.pass);
+  // No Authorization header is built here any more, and no password is shipped
+  // to the page to build one from. Every request below is same-origin, from a
+  // page that is itself behind the same guard, so the browser attaches the
+  // credentials it already holds. Verified in a browser: a fetch with no
+  // Authorization header returns 200.
 
   document.getElementById('add-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -18,7 +22,7 @@
     };
     await fetch('/api/videos', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     location.reload();
@@ -28,7 +32,6 @@
     if (!confirm('Video verwijderen?')) return;
     await fetch('/api/videos/' + id, {
       method: 'DELETE',
-      headers: { 'Authorization': authHeader }
     });
     location.reload();
   }
@@ -36,7 +39,7 @@
   async function approveVideo(id, featured, archived) {
     await fetch('/api/videos/' + id + '/approve', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ featured, archived })
     });
     location.reload();
@@ -46,7 +49,6 @@
     if (!confirm('Submission afwijzen?')) return;
     await fetch('/api/videos/' + id + '/reject', {
       method: 'PUT',
-      headers: { 'Authorization': authHeader }
     });
     location.reload();
   }
@@ -123,7 +125,7 @@
     const out = bakeImage(img, cfg);
     const r = await fetch('/thumb/' + id, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ blurData: out.blurData, sharpData: out.sharpData, settings: cfg })
     });
     if (!r.ok) throw new Error('save failed (' + r.status + ')');
@@ -173,7 +175,7 @@
     };
     await fetch('/api/videos/' + id, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     location.reload();

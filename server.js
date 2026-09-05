@@ -41,9 +41,38 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// What UptimeRobot should watch instead of the homepage. It answers from the
+// in-memory archive, so a ping every few minutes costs no database query and
+// does not keep a serverless instance awake — but it still fails loudly if the
+// app cannot produce the archive at all, which is the thing worth knowing.
+app.get('/health', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const rows = await require('./db/videos').getVideoRows();
+    res.json({ ok: true, films: rows.length });
+  } catch (e) {
+    res.status(503).json({ ok: false, error: 'archive unavailable' });
+  }
+});
+
 app.use('/thumb', require('./routes/thumbs'));
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/pages'));
+
+// Anything that matched no route. Kept plain: a wrong address is not an
+// occasion for a designed page, and /film/<unknown> already redirects home.
+app.use((req, res) => {
+  res.status(404).type('text/plain').send('Not found');
+});
+
+// Last resort. Express 5 forwards a rejected async handler here, which is why
+// a database hiccup produced a stack trace in the browser rather than a crash.
+// The trace goes to the log, where it is useful; the visitor gets a sentence.
+app.use((err, req, res, next) => {
+  console.error('unhandled error on ' + req.method + ' ' + req.originalUrl + ':', err && err.stack || err);
+  if (res.headersSent) return next(err);
+  res.status(500).type('text/plain').send('Something went wrong. Please try again.');
+});
 
 initDB().then(async () => {
   app.listen(PORT, () => {

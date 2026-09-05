@@ -77,7 +77,19 @@ function basicAuth(realm, accepts) {
 // Admin-only access
 const requireAuth = basicAuth('in limbo admin', [[ADMIN_USER, ADMIN_PASS]]);
 
+// "Is this request already carrying admin credentials?" — for routes that are
+// public but should show more to an admin. It answers a question, it does not
+// guard anything, so it never touches the brute-force counter.
+function isAdmin(req) {
+  const auth = req.headers.authorization || '';
+  if (!auth.startsWith('Basic ')) return false;
+  const decoded = Buffer.from(auth.slice(6), 'base64').toString();
+  const sep = decoded.indexOf(':');
+  if (sep === -1) return false;
+  return safeEqual(decoded.slice(0, sep), ADMIN_USER) && safeEqual(decoded.slice(sep + 1), ADMIN_PASS);
+}
+
 // Student or admin access (submit flow)
 const requireStudent = basicAuth('in limbo submit', [[STUDENT_USER, STUDENT_PASS], [ADMIN_USER, ADMIN_PASS]]);
 
-module.exports = { requireAuth, requireStudent };
+module.exports = { requireAuth, requireStudent, isAdmin };

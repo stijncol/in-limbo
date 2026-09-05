@@ -1,4 +1,3 @@
-const { ADMIN_USER, ADMIN_PASS } = require('../config');
 
 function renderAdmin(videos) {
 
@@ -195,7 +194,6 @@ function renderAdmin(videos) {
     </div>
   </div>
 
-<script>window.__CONFIG__ = { user: '${ADMIN_USER}', pass: '${ADMIN_PASS}' };</script>
 <script src="/public/js/dither.js?v=20260905b"></script>
 <script src="/public/js/admin.js?v=20260905b"></script>
 </body>

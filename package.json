@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node scripts/test-cache.js && node scripts/test-auth.js && node scripts/test-ssl.js"
+    "test": "node scripts/test-cache.js && node scripts/test-auth.js && node scripts/test-ssl.js && node scripts/test-api.js"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +13,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.13.0"
+  },
+  "engines": {
+    "node": ">=20.10.0 <25"
   }
 }
