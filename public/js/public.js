@@ -698,6 +698,7 @@
     // Searching narrows the archive just as a tag does, so it counts as
     // filtering too — the footer steps back for both
     document.body.classList.add('has-filter');
+    syncIntroMark();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => btn.classList.remove('active'));
     grid.classList.add('show-archive');
     if (introBlock) introBlock.style.display = 'none';
@@ -729,6 +730,7 @@
     activeType = type || 'tag';
     if (activeType !== 'search') activeQuery = '';
     document.body.classList.toggle('has-filter', value !== 'all');
+    syncIntroMark();
     if (value === 'all') { filtersBar.classList.remove('show-all'); requestAnimationFrame(positionScaleCtrl); }
     if (type !== 'search') clearSearchInputs();
     filtersBar.querySelectorAll('button[data-filter]').forEach(btn => {
@@ -1056,6 +1058,7 @@
       aboutActive = false;
       var inlimboLbl = document.getElementById('inlimbo-btn');
       if (inlimboLbl) inlimboLbl.classList.remove('active');
+      syncIntroMark();
     }
     // Intro block coming back: put it in the DOM before recording lastRects
     // so cards land in their correct final positions with the block present.
@@ -1068,6 +1071,7 @@
         aboutActive = true;
         var inlimboLblBack = document.getElementById('inlimbo-btn');
         if (inlimboLblBack) inlimboLblBack.classList.add('active');
+        syncIntroMark();
       }
       if (aboutActive && aboutPanel) {
         if (introBlock) { introBlock.style.display = ''; introBlock.style.opacity = '0'; }
@@ -1215,6 +1219,16 @@
   // acts as an invisible space-holder (opacity:0) when the panel is open so the
   // grid reserves the column. Closing the panel triggers a FLIP animation that
   // fills the freed column with cards.
+  // The +/- itself is drawn by CSS from the same classes. This only mirrors
+  // that state into aria-expanded, which a screen reader needs and a class
+  // cannot express.
+  function syncIntroMark() {
+    var b = document.getElementById('inlimbo-btn');
+    if (!b) return;
+    var open = b.classList.contains('active') && !document.body.classList.contains('has-filter');
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
   var aboutBtn = document.getElementById('inlimbo-btn');
   if (aboutBtn) {
     aboutBtn.addEventListener('click', function() {
@@ -1230,6 +1244,7 @@
       aboutActive = !aboutActive;
       introAutoHidden = false;
       aboutBtn.classList.toggle('active', aboutActive);
+      syncIntroMark();
 
       if (scaleOffset > 0) {
         // Compact modes: simple panel show/hide (no in-grid space to animate)

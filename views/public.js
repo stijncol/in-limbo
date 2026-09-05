@@ -129,7 +129,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}${pagePath}">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260905c">
+<link rel="stylesheet" href="/public/css/public.css?v=20260905d">
 </head>
 <body>
 <div class="page">
@@ -186,7 +186,7 @@ ${archiveCards}
       </button>
       <input type="text" id="rail-search-input" class="rail-search-input" aria-label="search titles, names, tags" autocomplete="off" spellcheck="false" />
     </div>
-    <button id="inlimbo-btn" class="active" aria-label="about — in limbo">inlimbo.video</button>
+    <button id="inlimbo-btn" class="active" aria-label="about — in limbo" aria-expanded="true"><span class="intro-mark" aria-hidden="true"></span>inlimbo.video</button>
     <div class="rail-top">
       <button id="scale-down" class="rail-circle scale-step" aria-label="bigger thumbnails" disabled>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -226,8 +226,8 @@ ${archiveCards}
 </div>
 
 <script>window.__CONFIG__ = { ytKey: '${YOUTUBE_API_KEY}' };</script>
-<script src="/public/js/public.js?v=20260831a"></script>
-<script src="/public/js/graph-view.js?v=20260831a"></script>
+<script src="/public/js/public.js?v=20260905d"></script>
+<script src="/public/js/graph-view.js?v=20260905d"></script>
 
 </body>
 </html>`;

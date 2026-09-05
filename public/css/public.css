@@ -910,6 +910,23 @@
     cursor: pointer;
     transition: color 0.15s ease;
   }
+  /* Whether the intro is open, in the same rotated line as the wordmark.
+     The mark is the FIRST child, and the rotation puts the start of the text
+     at the bottom — so first in the markup means below on screen, and the
+     margin after it becomes the gap above it, between mark and word.
+
+     No JavaScript decides this. The two classes it reads are already kept in
+     step wherever the state changes: `active` on the button follows the intro,
+     and `has-filter` on the body follows the filters — and a filter hides the
+     intro without touching the button, which is why both are needed. */
+  #inlimbo-btn .intro-mark {
+    margin-right: 11px;
+    font-size: 15px;
+    font-weight: 400;
+  }
+  #inlimbo-btn .intro-mark::before { content: '+'; }
+  #inlimbo-btn.active .intro-mark::before { content: '\2212'; }  /* a real minus, not a hyphen */
+  body.has-filter #inlimbo-btn .intro-mark::before { content: '+'; }
   #inlimbo-btn:hover { color: #1e40af; }
   #about-panel {
     position: absolute;
