@@ -181,19 +181,25 @@ document.querySelectorAll('#panel-body input,#panel-body select').forEach(functi
 var renderBtn=document.getElementById('render-btn');if(renderBtn)renderBtn.addEventListener('click',rerenderAll);
 
 // ── bake ─────────────────────────────────────────────────
-function getAuthHeader(){
+// You are already logged in — the page you are looking at is behind the same
+// guard as the save it is about to do, in the same realm, on the same origin,
+// so the browser attaches those credentials to the POST by itself. Asking again
+// with a prompt() was never necessary, and it was the thing that looked like a
+// broken login: cancel it or leave a field empty and nothing was remembered, so
+// the next click asked again, forever, with no error in between.
+//
+// The prompt survives only as a fallback for the case where the browser has
+// nothing cached, and it is now asked for once, after a refusal, instead of
+// before every attempt.
+var _authHeader=null;
+function askForAuth(){
   var u=prompt('Admin username (or cancel to abort):');if(!u)return null;
   var p=prompt('Admin password:');if(p===null)return null;
-  return 'Basic '+btoa(u+':'+p);
-}
-var _authHeader=null;
-function ensureAuth(){
-  if(_authHeader)return _authHeader;
-  _authHeader=getAuthHeader();
+  _authHeader='Basic '+btoa(u+':'+p);
   return _authHeader;
 }
 
-function bakeCard(card,auth){
+function bakeCard(card){
   return new Promise(function(resolve){
     var canvas=card.querySelector('canvas');
     if(!canvas){resolve({ok:false,reason:'no canvas'});return}
@@ -220,15 +226,35 @@ function bakeCard(card,auth){
     var origPal=buildPalette(cfg,origSd.samples);
     renderCard(card,cfg,origPal);
 
-    fetch('/thumb/'+id,{
+    function post(authHeader){
+      var headers={'Content-Type':'application/json'};
+      if(authHeader)headers['Authorization']=authHeader;
+      return fetch('/thumb/'+id,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':auth},
+      headers:headers,
       // Flagged so a later re-bake of the whole archive knows these settings
       // were chosen for this one film, rather than being whatever the defaults
       // happened to be at the time. Without that mark every film would look
       // hand-corrected and changing the defaults would stop having any effect.
       body:JSON.stringify({blurData:blurData,sharpData:sharpData,settings:Object.assign({},cfg,{perFilm:true})})
-    }).then(function(r){return r.json()}).then(function(data){
+      });
+    }
+    // 401 on the first try means the browser had nothing to send: ask once,
+    // then try again. Anything else is a real error and has to be visible —
+    // reading a refusal as JSON used to throw and leave the button silent.
+    post(_authHeader).then(function(r){
+      if(r.status===401&&!_authHeader){
+        var h=askForAuth();
+        if(!h){resolve({ok:false,reason:'cancelled'});return null}
+        return post(h);
+      }
+      return r;
+    }).then(function(r){
+      if(!r)return null;
+      if(!r.ok){resolve({ok:false,reason:'save failed ('+r.status+')'});return null}
+      return r.json();
+    }).then(function(data){
+      if(!data)return;
       if(data.ok){
         var dot=card.querySelector('.ldot');
         if(dot){dot.classList.add('baked');dot.title='baked'}
@@ -244,7 +270,6 @@ function bakeCard(card,auth){
 var bakeAllBtn=document.getElementById('bake-all-btn');
 if(bakeAllBtn){
   bakeAllBtn.addEventListener('click',function(){
-    var auth=ensureAuth();if(!auth)return;
     var cards=[...document.querySelectorAll('.lc')].filter(function(c){return c.querySelector('canvas')});
     var total=cards.length,done=0;
     bakeAllBtn.disabled=true;
@@ -253,17 +278,16 @@ if(bakeAllBtn){
       if(done>=total){bakeAllBtn.textContent='✓ all baked ('+total+')';bakeAllBtn.disabled=false;return}
       var card=cards[done];
       bakeAllBtn.textContent='baking '+(done+1)+'/'+total+'...';
-      bakeCard(card,auth).then(function(){done++;next()});
+      bakeCard(card).then(function(){done++;next()});
     })();
   });
 }
 
 document.querySelectorAll('.lbake-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
-    var auth=ensureAuth();if(!auth)return;
     var card=btn.closest('.lc');
     btn.textContent='...';btn.disabled=true;
-    bakeCard(card,auth).then(function(){btn.disabled=false});
+    bakeCard(card).then(function(){btn.disabled=false});
   });
 });
 
