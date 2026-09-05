@@ -501,7 +501,14 @@
        a wider window grew the type while the column holding it got narrower. */
     font-size: var(--intro-size, 18px);
     line-height: 1.55;
-    color: #111;
+    /* A step off black, to sit between Light and Regular without being either.
+       There is no 350 in this family and no variable font to interpolate one,
+       so the weight cannot go halfway — the colour can. It also holds up
+       better: the fitter drops this type to 12px on narrow columns, where a
+       lighter cut starts losing legibility while a lighter grey does not.
+       10:1 against the page, so there is room to go further if it ever
+       needs to. */
+    color: #333;
   }
   /* In the denser column tiers the columns (and this single-column intro) get
      narrower, so the type steps down to stay in proportion. */

@@ -129,7 +129,7 @@ ${SITE_URL ? `<link rel="canonical" href="${SITE_URL}${pagePath}">
 <link rel="icon" type="image/png" href="/public/favicon.png?v=2">
 <link rel="apple-touch-icon" href="/public/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Serif:ital,wght@1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/public/css/public.css?v=20260905d">
+<link rel="stylesheet" href="/public/css/public.css?v=20260905f">
 </head>
 <body>
 <div class="page">
