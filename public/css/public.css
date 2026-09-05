@@ -492,10 +492,10 @@
   }
   .intro-block .intro-text {
     font-family: 'Neue Haas Unica', sans-serif;
-    /* Light rather than Regular — the intro is the one long stretch of prose
-       on the page and reads calmer a step down. 300 is the lightest cut that
-       ships; there is nothing between it and 400. */
-    font-weight: 300;
+    /* Regular. Light was tried for a while — the intro is the one long stretch
+       of prose on the page, and a step down reads calmer — but at the size the
+       fitter lands on it thinned out too far against the rest of the page. */
+    font-weight: 400;
     /* Fitted in JS to exactly two thumbnail rows — see fitIntroType. A slope
        against the viewport used to sit here, which is what stretched the grid:
        a wider window grew the type while the column holding it got narrower. */
