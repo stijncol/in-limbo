@@ -1,9 +1,21 @@
 const { Pool } = require('pg');
 const { DATABASE_URL } = require('../config');
 
+// TLS per host, because the old rule was "Render or nothing": anything that
+// was not Render got ssl:false, which a hosted Postgres refuses outright. That
+// would have broken the moment DATABASE_URL pointed somewhere else.
+// Render's internal certificate is self-signed, so verification has to be off
+// there; every other hosted provider has a real certificate and gets verified
+// properly. Only a database on this machine runs without TLS at all.
+function sslFor(url) {
+  if (/@(localhost|127\.0\.0\.1)/.test(url)) return false;
+  if (url.includes('render.com')) return { rejectUnauthorized: false };
+  return true;
+}
+
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: DATABASE_URL.includes('render.com') ? { rejectUnauthorized: false } : false
+  ssl: sslFor(DATABASE_URL)
 });
 
 async function initDB() {
